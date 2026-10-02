@@ -30,6 +30,7 @@ var solar_positions: Array[Vector3] = []
 @onready var ship: ShipController = $Ship
 @onready var camera: Camera3D = $Camera
 @onready var sunlight: DirectionalLight3D = $Sunlight
+@onready var battle = $Battlefield
 var current_planet: int = 0
 var sun_radius: float
 var camera_pitch: float = -0.15
@@ -42,6 +43,7 @@ func _ready() -> void:
 		var angle := deg_to_rad(orbit_angles_degrees[index])
 		solar_positions.append(Vector3(cos(angle), 0.0, sin(angle)) * orbit_radii[index])
 		planets[index].scale = Vector3.ONE * planet_radii[index]
+	battle.configure(planets[1], ship)
 	_reset()
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
@@ -52,6 +54,8 @@ func _update_occluders() -> void:
 
 
 func _reset() -> void:
+	battle.set_active(false)
+	ship.set_agility_boost(false)
 	ship.bind_to_planet(null)
 	current_planet = 0
 	_update_occluders()
@@ -76,6 +80,7 @@ func _set_frame_origin(origin: Vector3) -> void:
 	for index in range(3):
 		planets[index].position = solar_positions[index] - frame_origin
 	sun.position = -frame_origin
+	battle.follow_planet()
 
 
 func _process(_delta: float) -> void:
@@ -148,6 +153,7 @@ func _update_sunlight() -> void:
 
 
 func _travel_to_next_planet() -> void:
+	battle.set_active(false)
 	travelling = true
 	var view_direction := ship.view_forward
 	ship.bind_to_planet(null)
@@ -168,6 +174,8 @@ func _travel_to_next_planet() -> void:
 	ship.position = fixed_ship_position - destination_center
 	ship.bind_to_planet(planets[destination])
 	ship.set_view_direction(view_direction)
+	ship.set_agility_boost(current_planet >= 1)
+	battle.set_active(current_planet == 1)
 	travelling = false
 	_update_occluders()
 	_update_camera()

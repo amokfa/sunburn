@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://brh7t3jpwrsed"]
 
+[ext_resource type="PackedScene" path="res://combat/battle.tscn" id="8_battle"]
+
 [ext_resource type="Script" uid="uid://bnryxn23l37r4" path="res://scale_prototype.gd" id="1"]
 [ext_resource type="Material" uid="uid://bvvba1c2nd6ga" path="res://sky/starfield_material.tres" id="2_sky"]
 [ext_resource type="PackedScene" uid="uid://bsdcbcqnf7syv" path="res://sun/sun.tscn" id="3_sun"]
@@ -55,3 +57,5 @@ transform = Transform3D(0, 0, -1, -0.880679, 0.473711, 0, 0.473711, 0.880679, 0,
 current = true
 near = 0.1
 far = 30000.0
+
+[node name="Battlefield" parent="." instance=ExtResource("8_battle")]

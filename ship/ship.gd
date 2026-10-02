@@ -14,6 +14,12 @@ const SurfaceCollider = preload("res://planets/surface_collider.gd")
 @export var view_turn_torque: float = 1200.0
 @export var yaw_damping: float = 700.0
 
+@export_group("Planet two agility")
+@export var upgraded_speed_multiplier: float = 2.0
+@export var upgraded_acceleration_multiplier: float = 3.0
+@export var upgraded_turn_multiplier: float = 2.0
+var agility_boost: bool = false
+
 @export_group("Planet boundaries")
 @export_range(0.0, 100.0, 0.1, "or_greater") var surface_clearance: float = 5.0
 @export var boundary_spring_stiffness: float = 5000.0
@@ -116,6 +122,10 @@ func _planet_radius(planet: Node3D) -> float:
 	return maxf(planet.global_basis.x.length(), 0.0001)
 
 
+func set_agility_boost(enabled: bool) -> void:
+	agility_boost = enabled
+
+
 func _process(delta: float) -> void:
 	if not is_instance_valid(_planet):
 		bind_to_planet(null)
@@ -205,17 +215,20 @@ func _update_visual_tilt(delta: float, horizontal: Vector2) -> void:
 func _step_thrust(delta: float, horizontal: Vector2, vertical: float) -> void:
 	# The view target is independent of ship yaw, so turning cannot chase the camera.
 	var error := atan2(_local_forward.cross(_local_view_forward).dot(_local_up), _local_forward.dot(_local_view_forward))
-	var torque := view_turn_torque * error - yaw_damping * _yaw_velocity
+	var turn_multiplier := upgraded_turn_multiplier if agility_boost else 1.0
+	var torque := view_turn_torque * turn_multiplier * turn_multiplier * error - yaw_damping * turn_multiplier * _yaw_velocity
 	_last_yaw_torque = torque
 	_yaw_velocity += torque / maxf(yaw_inertia, 0.001) * delta
 	_local_forward = _local_forward.rotated(_local_up, _yaw_velocity * delta).normalized()
 	var radial_speed := _velocity.dot(_local_up)
 	var tangent_velocity := _velocity - _local_up * radial_speed
-	tangent_velocity *= exp(-maxf(horizontal_damping, 0.0) * delta)
-	radial_speed *= exp(-maxf(vertical_damping, 0.0) * delta)
+	var thrust_multiplier := upgraded_acceleration_multiplier if agility_boost else 1.0
+	var drag_multiplier := thrust_multiplier / maxf(upgraded_speed_multiplier, 0.001) if agility_boost else 1.0
+	tangent_velocity *= exp(-maxf(horizontal_damping, 0.0) * drag_multiplier * delta)
+	radial_speed *= exp(-maxf(vertical_damping, 0.0) * drag_multiplier * delta)
 	var right := _local_forward.cross(_local_up).normalized()
-	var acceleration := (right * horizontal.x + _local_forward * horizontal.y) * horizontal_thrust_force / maxf(mass, 0.001)
-	acceleration += _local_up * vertical * vertical_thrust_force / maxf(mass, 0.001)
+	var acceleration := (right * horizontal.x + _local_forward * horizontal.y) * horizontal_thrust_force * thrust_multiplier / maxf(mass, 0.001)
+	acceleration += _local_up * vertical * vertical_thrust_force * thrust_multiplier / maxf(mass, 0.001)
 	var radius := _planet_radius(_planet)
 	var boundary_force := 0.0
 	if is_instance_valid(_surface_collider):
