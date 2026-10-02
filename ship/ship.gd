@@ -17,8 +17,9 @@ const ThrusterController = preload("res://ship/thruster.gd")
 @export var combat_speed_multiplier: float = 2.0
 
 @export_group("Visual tilt")
-@export var pitch_tilt_degrees: float = 24.0
-@export var roll_tilt_degrees: float = 30.0
+@export var pitch_tilt_degrees: float = 12.0
+@export var backward_pitch_tilt_degrees: float = 6.0
+@export var roll_tilt_degrees: float = 15.0
 @export var tilt_response: float = 4.0
 @export var wobble_degrees: float = 2.0
 @export var wobble_speed: float = 0.35
@@ -203,7 +204,8 @@ func _update_thrusters(horizontal: Vector2, vertical: float, yaw_torque: float) 
 func _update_visual_tilt(delta: float, horizontal: Vector2) -> void:
 	if not is_instance_valid(model):
 		return
-	var target := Vector2(-horizontal.y * deg_to_rad(pitch_tilt_degrees), -horizontal.x * deg_to_rad(roll_tilt_degrees))
+	var pitch_amplitude := backward_pitch_tilt_degrees if horizontal.y < 0.0 else pitch_tilt_degrees
+	var target := Vector2(-horizontal.y * deg_to_rad(pitch_amplitude), -horizontal.x * deg_to_rad(roll_tilt_degrees))
 	_visual_tilt = _visual_tilt.lerp(target, 1.0 - exp(-maxf(tilt_response, 0.0) * delta))
 	_visual_time += delta
 	# Continuous noise adds gentle, irregular motion rather than frame-random shaking.
