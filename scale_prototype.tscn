@@ -1,7 +1,5 @@
 [gd_scene format=3 uid="uid://brh7t3jpwrsed"]
 
-[ext_resource type="PackedScene" path="res://combat/battle.tscn" id="8_battle"]
-
 [ext_resource type="Script" uid="uid://bnryxn23l37r4" path="res://scale_prototype.gd" id="1"]
 [ext_resource type="Material" uid="uid://bvvba1c2nd6ga" path="res://sky/starfield_material.tres" id="2_sky"]
 [ext_resource type="PackedScene" uid="uid://bsdcbcqnf7syv" path="res://sun/sun.tscn" id="3_sun"]
@@ -9,6 +7,8 @@
 [ext_resource type="PackedScene" uid="uid://i0x4ecy3faky" path="res://planets/planet2.tscn" id="5_planet2"]
 [ext_resource type="PackedScene" path="res://planets/planet3.tscn" id="6_planet3"]
 [ext_resource type="PackedScene" uid="uid://c680tv21n08d7" path="res://ship/ship.tscn" id="7_ship"]
+[ext_resource type="PackedScene" path="res://combat/battle.tscn" id="8_battle"]
+[ext_resource type="Script" uid="uid://dt1mrn3kr866n" path="res://perf_label.gd" id="9_perf"]
 
 [sub_resource type="Sky" id="Sky"]
 sky_material = ExtResource("2_sky")
@@ -58,4 +58,16 @@ current = true
 near = 0.1
 far = 30000.0
 
-[node name="Battlefield" parent="." instance=ExtResource("8_battle")]
+[node name="Battlefield" parent="." unique_id=401511412 instance=ExtResource("8_battle")]
+
+[node name="PerformanceOverlay" type="CanvasLayer" parent="." unique_id=1044000258]
+layer = 10
+
+[node name="PerformanceLabel" type="Label" parent="PerformanceOverlay" unique_id=968596934]
+offset_left = 12.0
+offset_top = 12.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 16
+script = ExtResource("9_perf")

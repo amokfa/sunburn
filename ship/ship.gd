@@ -15,7 +15,7 @@ const SurfaceCollider = preload("res://planets/surface_collider.gd")
 @export var yaw_damping: float = 700.0
 
 @export_group("Planet two agility")
-@export var upgraded_speed_multiplier: float = 2.0
+@export var upgraded_speed_multiplier: float = 1.5
 @export var upgraded_acceleration_multiplier: float = 3.0
 @export var upgraded_turn_multiplier: float = 2.0
 var agility_boost: bool = false

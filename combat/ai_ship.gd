@@ -22,14 +22,14 @@ func reset(radius: float) -> void:
 	facing = heading
 	altitude = cruise_altitude
 	position = up * (radius + altitude)
-	velocity = heading * 40.0
+	velocity = Vector3.ZERO
 	previous_position = position
 	target = null
 	target_remaining = 0.0
 	dodge_remaining = 0.0
 	_update_basis()
 
-func fly(delta: float, radius: float, speed: float, turn_speed: float, aim: Vector3, movement_sign: float = 1.0, vertical_speed: float = 0.0) -> void:
+func fly(delta: float, radius: float, speed: float, turn_speed: float, aim: Vector3, movement: Vector3) -> void:
 	if aim.length_squared() > 0.0001:
 		var desired_facing := aim.normalized()
 		var facing_angle := acos(clampf(facing.dot(desired_facing), -1.0, 1.0))
@@ -37,12 +37,13 @@ func fly(delta: float, radius: float, speed: float, turn_speed: float, aim: Vect
 		if facing_axis.length_squared() < 0.000001:
 			facing_axis = heading.cross(up)
 		facing = facing.rotated(facing_axis.normalized(), minf(facing_angle, turn_speed * delta)).normalized()
-	var desired := aim - up * aim.dot(up)
-	if desired.length_squared() > 0.0001:
-		desired = desired.normalized()
-		var angle := atan2(heading.cross(desired).dot(up), heading.dot(desired))
-		heading = heading.rotated(up, clampf(angle, -turn_speed * delta, turn_speed * delta))
-	var travel := heading * movement_sign
+	var vertical_speed := speed * movement.dot(up)
+	var travel := movement - up * movement.dot(up)
+	if travel.length_squared() > 0.0001:
+		travel = travel.normalized()
+		heading = travel
+	else:
+		travel = heading
 	if dodge_remaining > 0.0:
 		dodge_remaining -= delta
 		var side := dodge_direction - up * dodge_direction.dot(up)
