@@ -21,7 +21,7 @@ const ShipController = preload("res://ship/ship.gd")
 @export var travel_duration: float = 3.0
 
 @export_group("Camera")
-@export var camera_distance: float = 11.0
+@export var camera_distance: float = 5.5
 @export var mouse_sensitivity: float = 0.003
 
 @onready var planets: Array[Node3D] = [$Planet1, $Planet2, $Planet3]
