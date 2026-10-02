@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" path="res://planets/planet1.tscn" id="4_planet1"]
 [ext_resource type="PackedScene" path="res://planets/planet2.tscn" id="5_planet2"]
 [ext_resource type="PackedScene" path="res://planets/planet3.tscn" id="6_planet3"]
-[ext_resource type="PackedScene" path="res://ship/ship.tscn" id="7_ship"]
+[ext_resource type="PackedScene" uid="uid://c680tv21n08d7" path="res://ship/ship.tscn" id="7_ship"]
 
 [sub_resource type="PanoramaSkyMaterial" id="Panorama"]
 panorama = ExtResource("2_sky")
@@ -55,23 +55,49 @@ transform = Transform3D(500, 0, 0, 0, 500, 0, 0, 0, 500, -1800, 0, 0)
 transform = Transform3D(0, 0, -1, -0.8, 0.6, 0, 0.6, 0.8, 0, -276, 207, 0)
 
 [node name="Camera" type="Camera3D" parent="." unique_id=1243361966]
-transform = Transform3D(0, 0, -1, -0.880679, 0.473711, 0, 0.473711, 0.880679, 0, -274.5946, 212.74375, 0)
+transform = Transform3D(0, 0, -1, -0.880679, 0.473711, 0, 0.473711, 0.880679, 0, -274.5946, 212.74374, 0)
 current = true
 near = 0.1
 far = 30000.0
 
-[node name="HUD" type="CanvasLayer" parent="." unique_id=1053718607]
+[node name="CombatHUD" type="CanvasLayer" parent="."]
+visible = false
 
-[node name="Readout" type="Label" parent="HUD" unique_id=449338620]
-offset_left = 16.0
-offset_top = 16.0
-offset_right = 900.0
-offset_bottom = 120.0
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
-theme_override_constants/shadow_offset_x = 2
-theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 18
-text = "Planet 1 | Altitude: 45 | Sun radius: 500
-Planet radius: 300 | Orbit radius: 1800 | Sun-to-surface gap: 1000
-W/S forward/back thrust | A/D strafe | Q/E vertical thrust | Mouse look/steer
-P next planet (on planet 3: reset) | Wheel expand/shrink sun | Esc release mouse"
+[node name="Crosshair" type="Control" parent="CombatHUD"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+mouse_filter = 2
+
+[node name="Left" type="ColorRect" parent="CombatHUD/Crosshair"]
+offset_left = -13.0
+offset_top = -1.0
+offset_right = -5.0
+offset_bottom = 1.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.9)
+
+[node name="Right" type="ColorRect" parent="CombatHUD/Crosshair"]
+offset_left = 5.0
+offset_top = -1.0
+offset_right = 13.0
+offset_bottom = 1.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.9)
+
+[node name="Top" type="ColorRect" parent="CombatHUD/Crosshair"]
+offset_left = -1.0
+offset_top = -13.0
+offset_right = 1.0
+offset_bottom = -5.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.9)
+
+[node name="Bottom" type="ColorRect" parent="CombatHUD/Crosshair"]
+offset_left = -1.0
+offset_top = 5.0
+offset_right = 1.0
+offset_bottom = 13.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.9)

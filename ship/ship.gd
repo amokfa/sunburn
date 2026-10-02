@@ -2,6 +2,8 @@ class_name PlanetShip
 extends Node3D
 ## Thrust and damped yaw around uniformly scaled unit-sphere planets; no physics bodies.
 ## Bind after placing the ship in the scene. Unbinding preserves its transform.
+const GunController = preload("res://ship/gun.gd")
+const ThrusterController = preload("res://ship/thruster.gd")
 
 @export var mass: float = 1000.0
 @export var horizontal_thrust_force: float = 32000.0
@@ -12,6 +14,7 @@ extends Node3D
 @export var view_turn_torque: float = 1200.0
 @export var yaw_damping: float = 700.0
 @export var surface_clearance: float = 4.0
+@export var combat_speed_multiplier: float = 2.0
 
 @export_group("Visual tilt")
 @export var pitch_tilt_degrees: float = 24.0
@@ -21,7 +24,17 @@ extends Node3D
 @export var wobble_speed: float = 0.35
 @export var wobble_distance: float = 0.035
 
+@export_group("Thruster visuals")
+@export_range(0.0, 1.0) var hover_thrust_power: float = 0.35
+@export var full_yaw_thrust_torque: float = 1200.0
+
 @onready var model: Node3D = $Model
+@onready var gun: GunController = $Gun
+
+var combat_enabled: bool = false
+var speed_multiplier: float:
+	get:
+		return combat_speed_multiplier if combat_enabled else 1.0
 
 var bound_planet: Node3D:
 	get:
@@ -58,12 +71,18 @@ var _model_rest_transform := Transform3D.IDENTITY
 var _visual_tilt := Vector2.ZERO
 var _visual_time: float = 0.0
 var _wobble_noise := FastNoiseLite.new()
+var _thrusters: Dictionary = {}
+var _last_yaw_torque: float = 0.0
 
 
 func _ready() -> void:
 	_model_rest_transform = model.transform
 	_wobble_noise.seed = 73129
 	_wobble_noise.frequency = 1.0
+	for marker in $Model/markers.get_children():
+		var exhaust := marker.get_node_or_null("Exhaust") as ThrusterController
+		if exhaust != null:
+			_thrusters[marker.name] = exhaust
 	set_process(is_instance_valid(_planet))
 
 
@@ -71,7 +90,9 @@ func bind_to_planet(planet: Node3D) -> void:
 	_unbound_view_forward = view_forward
 	_planet = planet
 	set_process(is_instance_valid(_planet))
+	_update_gun_state()
 	if not is_instance_valid(_planet):
+		_update_thrusters(Vector2.ZERO, 0.0, 0.0)
 		# The owner now has complete control of position and orientation.
 		return
 	var relative_position := _planet.to_local(global_position)
@@ -81,17 +102,29 @@ func bind_to_planet(planet: Node3D) -> void:
 	_local_view_forward = _local_forward
 	_velocity = Vector3.ZERO
 	_yaw_velocity = 0.0
+	_last_yaw_torque = 0.0
 	_visual_tilt = Vector2.ZERO
 	_visual_time = 0.0
 	_update_visual_tilt(0.0, Vector2.ZERO)
 	var radius := _planet_radius(_planet)
 	_altitude = maxf(minimum_altitude_for_planet(_planet), relative_position.length() * radius - radius)
 	_update_transform()
+	_update_thrusters(Vector2.ZERO, 0.0, 0.0)
 
 
 func minimum_altitude_for_planet(planet: Node3D) -> float:
 	var extent: float = planet.get_meta("maximum_surface_radius", 1.0)
 	return maxf(surface_clearance, (extent - 1.0) * _planet_radius(planet) + surface_clearance)
+
+
+func set_combat_enabled(value: bool) -> void:
+	combat_enabled = value
+	_update_gun_state()
+
+
+func _update_gun_state() -> void:
+	if is_instance_valid(gun):
+		gun.enabled = combat_enabled and is_instance_valid(_planet)
 
 
 func _planet_radius(planet: Node3D) -> float:
@@ -108,6 +141,7 @@ func _process(delta: float) -> void:
 	else:
 		_update_transform()
 		_update_visual_tilt(delta, Vector2.ZERO)
+		_update_thrusters(Vector2.ZERO, 0.0, 0.0)
 
 
 func set_view_direction(direction: Vector3) -> void:
@@ -138,6 +172,32 @@ func _move(delta: float) -> void:
 		remaining -= step
 	_update_transform()
 	_update_visual_tilt(minf(maxf(delta, 0.0), 0.25), horizontal)
+	_update_thrusters(horizontal, vertical, _last_yaw_torque)
+
+
+func _update_thrusters(horizontal: Vector2, vertical: float, yaw_torque: float) -> void:
+	var active := is_instance_valid(_planet)
+	var turn := clampf(yaw_torque / maxf(full_yaw_thrust_torque, 0.001), -1.0, 1.0)
+	for marker_name: StringName in _thrusters:
+		var name_text := String(marker_name)
+		var power := 0.0
+		if active:
+			if name_text == "back":
+				power = maxf(horizontal.y, 0.0)
+			elif name_text == "front":
+				power = maxf(-horizontal.y, 0.0)
+			elif name_text.begins_with("down_"):
+				power = maxf(hover_thrust_power, vertical)
+			elif name_text.begins_with("up_"):
+				power = maxf(-vertical, 0.0)
+			elif name_text.begins_with("side_"):
+				var left := name_text.ends_with("_left")
+				power = maxf(horizontal.x if left else -horizontal.x, 0.0)
+				# Positive torque turns left: front-right and back-left push oppositely.
+				var turns_left := (name_text.begins_with("side_front_") and not left) or (name_text.begins_with("side_back_") and left)
+				power = maxf(power, maxf(turn if turns_left else -turn, 0.0))
+		var exhaust: ThrusterController = _thrusters[marker_name]
+		exhaust.set_power(power)
 
 
 func _update_visual_tilt(delta: float, horizontal: Vector2) -> void:
@@ -160,6 +220,7 @@ func _step_thrust(delta: float, horizontal: Vector2, vertical: float) -> void:
 	# The view target is independent of ship yaw, so turning cannot chase the camera.
 	var error := atan2(_local_forward.cross(_local_view_forward).dot(_local_up), _local_forward.dot(_local_view_forward))
 	var torque := view_turn_torque * error - yaw_damping * _yaw_velocity
+	_last_yaw_torque = torque
 	_yaw_velocity += torque / maxf(yaw_inertia, 0.001) * delta
 	_local_forward = _local_forward.rotated(_local_up, _yaw_velocity * delta).normalized()
 	var radial_speed := _velocity.dot(_local_up)
@@ -167,8 +228,8 @@ func _step_thrust(delta: float, horizontal: Vector2, vertical: float) -> void:
 	tangent_velocity *= exp(-maxf(horizontal_damping, 0.0) * delta)
 	radial_speed *= exp(-maxf(vertical_damping, 0.0) * delta)
 	var right := _local_forward.cross(_local_up).normalized()
-	var acceleration := (right * horizontal.x + _local_forward * horizontal.y) * horizontal_thrust_force / maxf(mass, 0.001)
-	acceleration += _local_up * vertical * vertical_thrust_force / maxf(mass, 0.001)
+	var acceleration := (right * horizontal.x + _local_forward * horizontal.y) * horizontal_thrust_force * speed_multiplier / maxf(mass, 0.001)
+	acceleration += _local_up * vertical * vertical_thrust_force * speed_multiplier / maxf(mass, 0.001)
 	_velocity = tangent_velocity + _local_up * radial_speed + acceleration * delta
 	_altitude += _velocity.dot(_local_up) * delta
 	var floor_altitude := minimum_altitude_for_planet(_planet)

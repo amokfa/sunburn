@@ -29,8 +29,8 @@ var solar_positions: Array[Vector3] = []
 @onready var sun: MeshInstance3D = $Sun
 @onready var ship: ShipController = $Ship
 @onready var camera: Camera3D = $Camera
-@onready var hud: Label = $HUD/Readout
 @onready var sunlight: DirectionalLight3D = $Sunlight
+@onready var combat_hud: CanvasLayer = $CombatHUD
 var current_planet: int = 0
 var sun_radius: float
 var camera_pitch: float = -0.15
@@ -66,11 +66,12 @@ func _reset() -> void:
 	ship.position = radial_up * (planet_radii[0] + altitude)
 	ship.basis = Basis(forward.cross(radial_up).normalized(), radial_up, -forward)
 	ship.bind_to_planet(planets[0])
+	ship.set_combat_enabled(false)
 	camera_pitch = -0.15
 	_update_sun()
 	_update_camera()
 	_update_sunlight()
-	_update_hud()
+	_update_combat_hud()
 
 
 func _set_frame_origin(origin: Vector3) -> void:
@@ -83,7 +84,7 @@ func _set_frame_origin(origin: Vector3) -> void:
 func _process(_delta: float) -> void:
 	_update_camera()
 	_update_sunlight()
-	_update_hud()
+	_update_combat_hud()
 
 
 func _update_camera() -> void:
@@ -93,6 +94,19 @@ func _update_camera() -> void:
 	var target := ship.global_position + radial_up * 1.5
 	camera.global_position = target + offset * camera_distance
 	camera.look_at(target, radial_up)
+	if ship.gun.enabled:
+		var center := get_viewport().get_visible_rect().size * 0.5
+		var ray_origin := camera.project_ray_origin(center)
+		var aim_target := ray_origin + camera.project_ray_normal(center) * ship.gun.aim_distance
+		var query := PhysicsRayQueryParameters3D.create(ray_origin, aim_target)
+		var hit := get_world_3d().direct_space_state.intersect_ray(query)
+		if not hit.is_empty():
+			aim_target = hit.position
+		ship.gun.aim_at(aim_target, radial_up)
+
+
+func _update_combat_hud() -> void:
+	combat_hud.visible = ship.gun.enabled and not travelling
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -140,6 +154,7 @@ func _travel_to_next_planet() -> void:
 	travelling = true
 	var view_direction := ship.view_forward
 	ship.bind_to_planet(null)
+	_update_combat_hud()
 	_update_occluders()
 	var destination := current_planet + 1
 	var fixed_ship_position := ship.position
@@ -157,14 +172,9 @@ func _travel_to_next_planet() -> void:
 	ship.position = fixed_ship_position - destination_center
 	ship.bind_to_planet(planets[destination])
 	ship.set_view_direction(view_direction)
+	ship.set_combat_enabled(current_planet >= 1)
 	travelling = false
 	_update_occluders()
 	_update_camera()
 	_update_sunlight()
-	_update_hud()
-
-
-func _update_hud() -> void:
-	var state := "Travelling to planet %d" % (current_planet + 2) if travelling else "Planet %d" % (current_planet + 1)
-	var surface_gap := orbit_radii[current_planet] - planet_radii[current_planet] - sun_radius
-	hud.text = "%s | Altitude: %.0f | Sun radius: %.0f\nPlanet radius: %.0f | Orbit radius: %.0f | Sun-to-surface gap: %.0f\nW/S forward/back thrust | A/D strafe | Q/E vertical thrust | Mouse look/steer\nP next planet (on planet 3: reset) | Wheel expand/shrink sun | Esc release mouse" % [state, ship.altitude, sun_radius, planet_radii[current_planet], orbit_radii[current_planet], surface_gap]
+	_update_combat_hud()
