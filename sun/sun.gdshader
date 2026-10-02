@@ -13,6 +13,7 @@ uniform float spot_scale : hint_range(0.1, 8.0) = 1.8;
 uniform vec2 spot_velocity_a = vec2(0.006, -0.0036);
 uniform vec2 spot_velocity_b = vec2(-0.003, 0.0075);
 uniform float spot_blend_period : hint_range(10.0, 300.0) = 120.0;
+uniform float spot_phase_variation : hint_range(0.0, 2.0) = 0.7;
 uniform float spot_threshold : hint_range(0.0, 1.0) = 0.6;
 uniform float spot_softness : hint_range(0.001, 0.4) = 0.25;
 
@@ -43,8 +44,15 @@ void fragment() {
 	vec3 p = normalize(surface_direction);
 	float field_a = surface_noise(noise_texture, p, spot_scale, TIME * spot_velocity_a);
 	float field_b = surface_noise(noise_texture_b, p, spot_scale, TIME * spot_velocity_b);
-	// A -> B -> A over one period, easing smoothly at both ends.
-	float blend = 0.5 + 0.5 * sin(TAU * TIME / max(spot_blend_period, 0.001) - PI * 0.5);
+	// The unit spherical direction supplies a continuous phase offset, including
+	// across the longitude seam and at the poles. Repeated texture regions no
+	// longer switch between A and B in lockstep.
+	float phase_offset = TAU * spot_phase_variation * (
+		dot(p, vec3(1.3, 1.7, -1.1))
+		+ 0.3 * sin(dot(p, vec3(3.7, -2.9, 4.1)))
+	);
+	// A -> B -> A over one period, with different timing around the sphere.
+	float blend = 0.5 + 0.5 * sin(TAU * TIME / max(spot_blend_period, 0.001) - PI * 0.5 + phase_offset);
 	float spots = mix(field_a, field_b, blend);
 	float darkness = smoothstep(spot_threshold - spot_softness * 0.5, spot_threshold + spot_softness * 0.5, spots);
 	ALBEDO = mix(surface_color.rgb, spot_color.rgb, darkness * spot_strength);
