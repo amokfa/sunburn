@@ -33,7 +33,6 @@ var solar_positions: Array[Vector3] = []
 @onready var sunlight: DirectionalLight3D = $Sunlight
 var current_planet: int = 0
 var sun_radius: float
-var camera_yaw: float = 0.0
 var camera_pitch: float = -0.15
 var travelling: bool = false
 var frame_origin := Vector3.ZERO
@@ -67,7 +66,6 @@ func _reset() -> void:
 	ship.position = radial_up * (planet_radii[0] + altitude)
 	ship.basis = Basis(forward.cross(radial_up).normalized(), radial_up, -forward)
 	ship.bind_to_planet(planets[0])
-	camera_yaw = 0.0
 	camera_pitch = -0.15
 	_update_sun()
 	_update_camera()
@@ -90,7 +88,7 @@ func _process(_delta: float) -> void:
 
 func _update_camera() -> void:
 	var radial_up := ship.radial_up
-	var direction := ship.forward.rotated(radial_up, camera_yaw)
+	var direction := ship.view_forward
 	var offset := -direction * cos(camera_pitch) + radial_up * -sin(camera_pitch)
 	var target := ship.global_position + radial_up * 1.5
 	camera.global_position = target + offset * camera_distance
@@ -99,7 +97,7 @@ func _update_camera() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED and ship.bound_planet != null:
-		camera_yaw -= event.relative.x * mouse_sensitivity
+		ship.rotate_view(-event.relative.x * mouse_sensitivity)
 		camera_pitch = clampf(camera_pitch - event.relative.y * mouse_sensitivity, -1.4, 1.4)
 	elif event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
@@ -140,6 +138,7 @@ func _update_sunlight() -> void:
 
 func _travel_to_next_planet() -> void:
 	travelling = true
+	var view_direction := ship.view_forward
 	ship.bind_to_planet(null)
 	_update_occluders()
 	var destination := current_planet + 1
@@ -157,6 +156,7 @@ func _travel_to_next_planet() -> void:
 	_set_frame_origin(solar_positions[destination])
 	ship.position = fixed_ship_position - destination_center
 	ship.bind_to_planet(planets[destination])
+	ship.set_view_direction(view_direction)
 	travelling = false
 	_update_occluders()
 	_update_camera()
@@ -167,4 +167,4 @@ func _travel_to_next_planet() -> void:
 func _update_hud() -> void:
 	var state := "Travelling to planet %d" % (current_planet + 2) if travelling else "Planet %d" % (current_planet + 1)
 	var surface_gap := orbit_radii[current_planet] - planet_radii[current_planet] - sun_radius
-	hud.text = "%s | Altitude: %.0f | Sun radius: %.0f\nPlanet radius: %.0f | Orbit radius: %.0f | Sun-to-surface gap: %.0f\nW/S move | A/D turn | Q/E altitude | Mouse look\nP next planet (on planet 3: reset) | Wheel expand/shrink sun | Esc release mouse" % [state, ship.altitude, sun_radius, planet_radii[current_planet], orbit_radii[current_planet], surface_gap]
+	hud.text = "%s | Altitude: %.0f | Sun radius: %.0f\nPlanet radius: %.0f | Orbit radius: %.0f | Sun-to-surface gap: %.0f\nW/S forward/back thrust | A/D strafe | Q/E vertical thrust | Mouse look/steer\nP next planet (on planet 3: reset) | Wheel expand/shrink sun | Esc release mouse" % [state, ship.altitude, sun_radius, planet_radii[current_planet], orbit_radii[current_planet], surface_gap]

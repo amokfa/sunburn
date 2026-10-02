@@ -45,23 +45,65 @@ func run_checks() -> void:
 	var old_up: Vector3 = ship.radial_up
 	key(KEY_W, true)
 	ship._move(0.25)
-	key(KEY_W, false)
-	assert(absf(ship.global_position.distance_to(planet.global_position) - 345.0) < 0.001)
-	assert(absf(old_up.dot(ship.radial_up) - cos(ship.flight_speed * 0.25 / 345.0)) < 0.00001)
-	assert(absf(ship.forward.dot(ship.radial_up)) < 0.00001)
-	key(KEY_Q, true)
+	assert(ship.velocity.dot(ship.forward) > 0.0)
+	var first_speed: float = ship.velocity.length()
 	ship._move(0.25)
-	key(KEY_Q, false)
-	assert(absf(ship.altitude - 61.25) < 0.001)
-	key(KEY_E, true)
-	ship._move(10.0)
-	key(KEY_E, false)
-	assert(absf(ship.altitude - 22.0) < 0.001)
-	var old_forward: Vector3 = ship.forward
+	key(KEY_W, false)
+	assert(ship.velocity.length() > first_speed)
+	assert(absf(ship.global_position.distance_to(planet.global_position) - 345.0) < 0.001)
+	assert(old_up.dot(ship.radial_up) < 0.99999)
+	var before_coast: Vector3 = ship.global_position
+	var before_speed: float = ship.velocity.length()
+	ship._move(0.25)
+	assert(ship.global_position.distance_to(before_coast) > 0.1)
+	assert(ship.velocity.length() < before_speed)
+	assert(absf(ship.forward.dot(ship.radial_up)) < 0.00001)
+
+	# A/D are sideways thrust, and do not turn the ship.
+	ship.global_transform = placed
+	ship.bind_to_planet(planet)
+	ship.set_process(false)
 	key(KEY_A, true)
 	ship._move(0.25)
 	key(KEY_A, false)
-	assert(ship.forward.distance_to(old_forward.rotated(ship.radial_up, deg_to_rad(ship.turn_speed_degrees) * 0.25)) < 0.00001)
+	assert(ship.velocity.dot(ship.global_basis.x) < -1.0)
+	assert(absf(ship.yaw_velocity) < 0.00001)
+	key(KEY_D, true)
+	for step in range(60):
+		ship._move(1.0 / 60.0)
+	key(KEY_D, false)
+	assert(ship.velocity.dot(ship.global_basis.x) > 1.0)
+	key(KEY_Q, true)
+	ship._move(0.25)
+	key(KEY_Q, false)
+	assert(ship.altitude > 45.0 and ship.velocity.dot(ship.radial_up) > 1.0)
+	key(KEY_E, true)
+	for step in range(300):
+		ship._move(1.0 / 60.0)
+	key(KEY_E, false)
+	assert(absf(ship.altitude - 22.0) < 0.001)
+	assert(ship.velocity.dot(ship.radial_up) > -0.001)
+
+	# View heading stays still while torque gradually aligns the ship with it.
+	ship.global_transform = placed
+	ship.bind_to_planet(planet)
+	ship.set_process(false)
+	ship.rotate_view(PI * 0.5)
+	var desired_view: Vector3 = ship.view_forward
+	var before_turn: Vector3 = ship.forward
+	ship._move(1.0 / 120.0)
+	assert(ship.forward.distance_to(before_turn) > 0.0001)
+	assert(ship.forward.dot(desired_view) < 0.1)
+	for step in range(480):
+		ship._move(1.0 / 60.0)
+	assert(ship.view_forward.distance_to(desired_view) < 0.00001)
+	assert(ship.forward.dot(desired_view) > 0.99999)
+	assert(absf(ship.yaw_velocity) < 0.001)
+	assert(ship.global_position.distance_to(placed.origin) < 0.001)
+	ship.rotate_view(PI)
+	for step in range(480):
+		ship._move(1.0 / 60.0)
+	assert(ship.forward.dot(ship.view_forward) > 0.99999)
 
 	# Binding follows the planet's frame, even while input is paused.
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -103,14 +145,25 @@ func run_checks() -> void:
 	var prototype = load("res://scale_prototype.tscn").instantiate()
 	root.add_child(prototype)
 	assert(prototype.ship.bound_planet == prototype.planets[0])
-	assert(prototype.ship.flight_speed == 40.0)
+	assert(prototype.ship.horizontal_thrust_force == 32000.0)
+	prototype.ship.set_process(false)
+	prototype.ship.rotate_view(0.8)
+	prototype._update_camera()
+	var camera_basis: Basis = prototype.camera.global_basis
+	for step in range(480):
+		prototype.ship._move(1.0 / 60.0)
+		prototype._update_camera()
+		assert(prototype.camera.global_basis.is_equal_approx(camera_basis))
+	assert(prototype.ship.forward.dot(prototype.ship.view_forward) > 0.99999)
 	for destination in [1, 2]:
 		prototype.travel_duration = 0.05
 		var initial_ship: Transform3D = prototype.ship.transform
 		prototype._travel_to_next_planet()
 		assert(prototype.ship.bound_planet == null and not prototype.ship.is_processing())
 		prototype._unhandled_input(_mouse_motion())
-		assert(prototype.camera_yaw == 0.0)
+		var cutscene_view: Vector3 = prototype.ship.view_forward
+		prototype.ship.rotate_view(0.2)
+		assert(prototype.ship.view_forward.is_equal_approx(cutscene_view))
 		while prototype.travelling:
 			assert(prototype.ship.transform.is_equal_approx(initial_ship))
 			await process_frame
@@ -120,7 +173,7 @@ func run_checks() -> void:
 	prototype._reset()
 	assert(prototype.ship.bound_planet == prototype.planets[0])
 	prototype.free()
-	print("PASS: binding, spherical flight, altitude floor, moving/rotating planets, unbound cutscene ownership, freed planet, transfers, and reset")
+	print("PASS: force-based thrust, strafing, vertical momentum, damping, stable view heading, damped yaw torque, binding, cutscenes, transitions, and reset")
 	quit()
 
 

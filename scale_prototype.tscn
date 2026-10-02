@@ -73,5 +73,5 @@ theme_override_constants/shadow_offset_y = 2
 theme_override_font_sizes/font_size = 18
 text = "Planet 1 | Altitude: 45 | Sun radius: 500
 Planet radius: 300 | Orbit radius: 1800 | Sun-to-surface gap: 1000
-W/S move | A/D turn | Q/E altitude | Mouse look
+W/S forward/back thrust | A/D strafe | Q/E vertical thrust | Mouse look/steer
 P next planet (on planet 3: reset) | Wheel expand/shrink sun | Esc release mouse"
