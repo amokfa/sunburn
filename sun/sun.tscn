@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://bsdcbcqnf7syv"]
+
+[ext_resource type="ArrayMesh" path="res://sun/icosphere.res" id="1_mesh"]
+[ext_resource type="Shader" uid="uid://dmsenlqju6x6r" path="res://sun/sun.gdshader" id="2_shader"]
+
+[sub_resource type="FastNoiseLite" id="SpotNoise"]
+seed = 4242
+frequency = 0.025
+fractal_octaves = 4
+
+[sub_resource type="NoiseTexture2D" id="SpotTexture"]
+noise = SubResource("SpotNoise")
+seamless = true
+
+[sub_resource type="FastNoiseLite" id="SpotNoiseB"]
+seed = 9271
+frequency = 0.025
+fractal_octaves = 4
+
+[sub_resource type="NoiseTexture2D" id="SpotTextureB"]
+noise = SubResource("SpotNoiseB")
+seamless = true
+
+[sub_resource type="ShaderMaterial" id="SunMaterial"]
+render_priority = 0
+shader = ExtResource("2_shader")
+shader_parameter/noise_texture = SubResource("SpotTexture")
+shader_parameter/noise_texture_b = SubResource("SpotTextureB")
+shader_parameter/surface_color = Color(1, 0.28, 0.015, 1)
+shader_parameter/spot_color = Color(0.18, 0.025, 0.008, 1)
+shader_parameter/spot_strength = 0.65
+shader_parameter/wave_amplitude = 0.012
+shader_parameter/wave_frequency = 18.0
+shader_parameter/wave_speed = 0.65
+shader_parameter/spot_scale = 0.69600002980012
+shader_parameter/spot_velocity_a = Vector2(0.006, -0.0036)
+shader_parameter/spot_velocity_b = Vector2(-0.003, 0.0075)
+shader_parameter/spot_blend_period = 10.0
+shader_parameter/spot_threshold = 0.6
+shader_parameter/spot_softness = 0.25
+
+[node name="Sun" type="MeshInstance3D" unique_id=210235326]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.003855586, -0.007962167, -0.009593964)
+material_override = SubResource("SunMaterial")
+cast_shadow = 0
+custom_aabb = AABB(-1.06, -1.06, -1.06, 2.12, 2.12, 2.12)
+mesh = ExtResource("1_mesh")
