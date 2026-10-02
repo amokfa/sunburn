@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://brh7t3jpwrsed"]
 
 [ext_resource type="Script" uid="uid://bnryxn23l37r4" path="res://scale_prototype.gd" id="1"]
-[ext_resource type="Material" path="res://sky/starfield_material.tres" id="2_sky"]
+[ext_resource type="Material" uid="uid://bvvba1c2nd6ga" path="res://sky/starfield_material.tres" id="2_sky"]
 [ext_resource type="PackedScene" uid="uid://bsdcbcqnf7syv" path="res://sun/sun.tscn" id="3_sun"]
 [ext_resource type="PackedScene" uid="uid://cx5sqrx17chtu" path="res://planets/planet1.tscn" id="4_planet1"]
 [ext_resource type="PackedScene" uid="uid://i0x4ecy3faky" path="res://planets/planet2.tscn" id="5_planet2"]
@@ -66,6 +66,8 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 
 [node name="Left" type="ColorRect" parent="CombatHUD/Crosshair" unique_id=1473564825]
