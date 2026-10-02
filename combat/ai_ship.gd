@@ -5,6 +5,8 @@ extends Node3D
 @export var cruise_altitude: float = 45.0
 var up := Vector3.UP
 var heading := Vector3.FORWARD
+var facing := Vector3.FORWARD
+var altitude: float = 45.0
 var velocity := Vector3.ZERO
 var previous_position := Vector3.ZERO
 var target: Node3D
@@ -17,7 +19,9 @@ var dodge_direction := Vector3.ZERO
 func reset(radius: float) -> void:
 	up = spawn_direction.normalized()
 	heading = (spawn_heading - up * spawn_heading.dot(up)).normalized()
-	position = up * (radius + cruise_altitude)
+	facing = heading
+	altitude = cruise_altitude
+	position = up * (radius + altitude)
 	velocity = heading * 40.0
 	previous_position = position
 	target = null
@@ -25,7 +29,14 @@ func reset(radius: float) -> void:
 	dodge_remaining = 0.0
 	_update_basis()
 
-func fly(delta: float, radius: float, speed: float, turn_speed: float, aim: Vector3, movement_sign: float = 1.0) -> void:
+func fly(delta: float, radius: float, speed: float, turn_speed: float, aim: Vector3, movement_sign: float = 1.0, vertical_speed: float = 0.0) -> void:
+	if aim.length_squared() > 0.0001:
+		var desired_facing := aim.normalized()
+		var facing_angle := acos(clampf(facing.dot(desired_facing), -1.0, 1.0))
+		var facing_axis := facing.cross(desired_facing)
+		if facing_axis.length_squared() < 0.000001:
+			facing_axis = heading.cross(up)
+		facing = facing.rotated(facing_axis.normalized(), minf(facing_angle, turn_speed * delta)).normalized()
 	var desired := aim - up * aim.dot(up)
 	if desired.length_squared() > 0.0001:
 		desired = desired.normalized()
@@ -37,11 +48,15 @@ func fly(delta: float, radius: float, speed: float, turn_speed: float, aim: Vect
 		var side := dodge_direction - up * dodge_direction.dot(up)
 		travel = (travel + side * 1.5).normalized()
 	var axis := up.cross(travel).normalized()
-	var angle := speed * delta / (radius + cruise_altitude)
+	vertical_speed = clampf(vertical_speed, -speed, speed)
+	var tangent_speed := sqrt(maxf(speed * speed - vertical_speed * vertical_speed, 0.0))
+	altitude += vertical_speed * delta
+	var angle := tangent_speed * delta / maxf(radius + altitude, 0.001)
 	up = up.rotated(axis, angle).normalized()
 	heading = heading.rotated(axis, angle).normalized()
-	velocity = travel.rotated(axis, angle) * speed
-	position = up * (radius + cruise_altitude)
+	facing = facing.rotated(axis, angle).normalized()
+	velocity = travel.rotated(axis, angle) * tangent_speed + up * vertical_speed
+	position = up * (radius + altitude)
 	_update_basis()
 
 func keep_target_distance(target_position: Vector3, minimum_distance: float, delta: float) -> void:
@@ -59,7 +74,9 @@ func keep_target_distance(target_position: Vector3, minimum_distance: float, del
 	var next_up := (target_up * cosine + side * sqrt(maxf(1.0 - cosine * cosine, 0.0))).normalized()
 	var axis := up.cross(next_up)
 	if axis.length_squared() > 0.000001:
-		heading = heading.rotated(axis.normalized(), acos(clampf(up.dot(next_up), -1.0, 1.0))).normalized()
+		var angle := acos(clampf(up.dot(next_up), -1.0, 1.0))
+		heading = heading.rotated(axis.normalized(), angle).normalized()
+		facing = facing.rotated(axis.normalized(), angle).normalized()
 	up = next_up
 	position = up * orbit_radius
 	velocity = (position - previous_position) / maxf(delta, 0.0001)
@@ -67,4 +84,8 @@ func keep_target_distance(target_position: Vector3, minimum_distance: float, del
 
 func _update_basis() -> void:
 	heading = (heading - up * heading.dot(up)).normalized()
-	basis = Basis(heading.cross(up).normalized(), up, -heading)
+	var right := facing.cross(up)
+	if right.length_squared() < 0.000001:
+		right = heading.cross(up)
+	right = right.normalized()
+	basis = Basis(right, right.cross(facing).normalized(), -facing)

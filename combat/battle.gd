@@ -3,7 +3,7 @@ const Missile = preload("res://combat/missile.tscn")
 const Explosion = preload("res://combat/explosion.tscn")
 
 @export var vision_cone_degrees: float = 60.0
-@export var missile_spread_degrees: float = 0.0
+@export var missile_spread_degrees: float = 10.0
 @export var firing_range: float = 55.0
 @export var minimum_target_distance: float = 25.0
 @export var reload_seconds: float = 5.0
@@ -18,7 +18,7 @@ var player: Node3D
 var ships: Array[Node3D] = []
 var active: bool = false
 var ai_speed: float = 40.0
-var missile_speed: float = 80.0
+var missile_speed: float = 40.0
 var _player_previous := Vector3.ZERO
 var _rng := RandomNumberGenerator.new()
 
@@ -33,7 +33,7 @@ func configure(planet_node: Node3D, player_ship: Node3D) -> void:
 	planet = planet_node
 	player = player_ship
 	ai_speed = player.horizontal_thrust_force / player.mass / maxf(player.horizontal_damping, 0.001)
-	missile_speed = ai_speed * player.upgraded_speed_multiplier
+	missile_speed = ai_speed * player.upgraded_speed_multiplier * 0.5
 	follow_planet()
 
 func follow_planet() -> void:
@@ -82,14 +82,20 @@ func _process(delta: float) -> void:
 		var aim: Vector3 = ship.heading
 		var movement_speed := ai_speed
 		var movement_sign := 1.0
+		var vertical_speed := 0.0
 		if is_instance_valid(ship.target):
 			aim = to_local(ship.target.global_position) - ship.position
 			var separation := aim.length() - minimum_target_distance
 			movement_sign = -1.0 if separation < 0.0 else 1.0
 			movement_speed *= clampf(absf(separation) / 10.0, 0.0, 1.0)
+			vertical_speed = movement_sign * movement_speed * aim.normalized().dot(ship.up)
 		if ship.dodge_remaining > 0.0:
 			movement_speed = ai_speed
-		ship.fly(delta, radius, movement_speed, ai_turn_speed, aim, movement_sign)
+		ship.fly(delta, radius, movement_speed, ai_turn_speed, aim, movement_sign, vertical_speed)
+		var collider = planet.get_node("SurfaceCollider")
+		ship.altitude = clampf(ship.altitude, collider.surface_radius(ship.up) + 2.0 - radius, radius * 0.5)
+		ship.position = ship.up * (radius + ship.altitude)
+		ship.velocity = (ship.position - ship.previous_position) / maxf(delta, 0.0001)
 		if ship.reload_remaining <= 0.0 and is_instance_valid(ship.target):
 			var offset: Vector3 = to_local(ship.target.global_position) - ship.position
 			if offset.length() <= firing_range and _visible(ship, offset, radius):
@@ -106,11 +112,14 @@ func _process(delta: float) -> void:
 func _visible(ship, offset: Vector3, radius: float) -> bool:
 	if offset.length_squared() < 0.001:
 		return false
-	if ship.heading.dot(offset.normalized()) < cos(deg_to_rad(vision_cone_degrees * 0.5)):
+	if ship.facing.dot(offset.normalized()) < cos(deg_to_rad(vision_cone_degrees * 0.5)):
 		return false
 	# The solid planet hides ships on the other side of the horizon.
 	var t := clampf(-ship.position.dot(offset) / offset.length_squared(), 0.0, 1.0)
-	return (ship.position + offset * t).length() > radius
+	# Terrain can sit slightly below the nominal radius. Do not hide a nearby
+	# surface target merely because its centre is inside that nominal sphere.
+	var occluding_radius := minf(radius, (ship.position + offset).length()) - ship_hit_radius
+	return (ship.position + offset * t).length() > maxf(occluding_radius, 0.0)
 
 func _choose_target(ship) -> void:
 	var candidates: Array[Node3D] = ships.duplicate()
@@ -139,7 +148,7 @@ func _check_dodge(ship) -> void:
 		if missile.launcher == ship:
 			continue
 		var offset: Vector3 = missile.position - ship.position
-		if offset.length_squared() < 0.001 or ship.heading.dot(offset.normalized()) < cos(deg_to_rad(vision_cone_degrees * 0.5)):
+		if offset.length_squared() < 0.001 or ship.facing.dot(offset.normalized()) < cos(deg_to_rad(vision_cone_degrees * 0.5)):
 			continue
 		var relative_velocity: Vector3 = missile.velocity - ship.velocity
 		var approach_time := -offset.dot(relative_velocity) / maxf(relative_velocity.length_squared(), 0.001)

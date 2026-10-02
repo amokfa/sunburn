@@ -11,604 +11,1204 @@ script = ExtResource("1")
 [node name="Ships" type="Node3D" parent="."]
 
 [node name="AIShip001" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.141067360, 0.990000000, 0.000000000)
-spawn_heading = Vector3(-0.806758977, 0.114956928, -0.579590250)
+spawn_direction = Vector3(0.099874922, 0.995000000, 0.000000000)
+spawn_heading = Vector3(-0.810833517, 0.081388878, -0.579590250)
 cruise_altitude = 47.444680
-position = Vector3(40.549062054, 284.570232908, 0.000000000)
+position = Vector3(28.708514901, 286.007456307, 0.000000000)
 
 [node name="AIShip002" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.179257999, 0.970000000, 0.164215011)
-spawn_heading = Vector3(0.803340399, 0.240676557, -0.544719192)
+spawn_direction = Vector3(-0.127236200, 0.985000000, 0.116558781)
+spawn_heading = Vector3(0.814290449, 0.170830706, -0.554750335)
 cruise_altitude = 48.597904
-position = Vector3(-51.733482722, 279.939966704, 47.392107947)
+position = Vector3(-36.720100481, 284.268935261, 33.638619986)
 
 [node name="AIShip003" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.027298674, 0.950000000, -0.311054308)
-spawn_heading = Vector3(0.198513515, 0.299820708, 0.933113031)
+spawn_direction = Vector3(0.019426421, 0.975000000, -0.221354047)
+spawn_heading = Vector3(0.196414872, 0.213359935, 0.957025985)
 cruise_altitude = 59.257129
-position = Vector3(8.169322733, 284.294272143, -93.085218986)
+position = Vector3(5.813494955, 291.775700357, -66.241776534)
 
 [node name="AIShip004" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.223637495, 0.930000000, 0.291695510)
-spawn_heading = Vector3(-0.909669590, 0.091693398, 0.405084631)
+spawn_direction = Vector3(0.159563019, 0.965000000, 0.208121702)
+spawn_heading = Vector3(-0.914982046, 0.065422283, 0.398155472)
 cruise_altitude = 62.535359
-position = Vector3(67.658249911, 281.357884088, 88.248206030)
+position = Vector3(48.273455210, 291.946621662, 62.964174018)
 
 [node name="AIShip005" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.408270334, 0.910000000, -0.072217273)
-spawn_heading = Vector3(-0.771453553, -0.386239575, -0.505646523)
+spawn_direction = Vector3(-0.292071730, 0.955000000, -0.051663377)
+spawn_heading = Vector3(-0.812733700, -0.276311188, -0.512948400)
 cruise_altitude = 59.680388
-position = Vector3(-122.350611951, 272.709152912, -21.642100507)
+position = Vector3(-87.528169345, 286.194770363, -15.482500724)
 
 [node name="AIShip006" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.384719107, 0.890000000, -0.244726804)
-spawn_heading = Vector3(-0.167822919, -0.193268974, -0.966686387)
+spawn_direction = Vector3(0.275967322, 0.945000000, -0.175547821)
+spawn_heading = Vector3(-0.148152477, -0.138636008, -0.979199112)
 cruise_altitude = 50.454971
-position = Vector3(111.743576937, 258.504923982, -71.082116831)
+position = Vector3(80.156080364, 274.479947374, -50.988737119)
 
 [node name="AIShip007" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.127998349, 0.870000000, 0.476147480)
-spawn_heading = Vector3(0.766537446, -0.217855263, 0.604118721)
+spawn_direction = Vector3(-0.092068073, 0.935000000, 0.342488642)
+spawn_heading = Vector3(0.759081533, -0.156701350, 0.631854345)
 cruise_altitude = 54.480947
-position = Vector3(-37.693075150, 256.198423875, 140.216360763)
+position = Vector3(-27.112293293, 275.339685429, 100.856379650)
 
 [node name="AIShip008" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.242797841, 0.850000000, -0.467492469)
-spawn_heading = Vector3(0.942799948, 0.320238051, 0.092605880)
+spawn_direction = Vector3(-0.175129507, 0.925000000, -0.337201209)
+spawn_heading = Vector3(0.963814301, 0.230986947, 0.133067739)
 cruise_altitude = 56.806607
-position = Vector3(-72.064003494, 252.285616128, -138.754853532)
+position = Vector3(-51.979594890, 274.546111669, -100.083546929)
 
 [node name="AIShip009" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.523919031, 0.830000000, 0.191334390)
-spawn_heading = Vector3(0.841304016, -0.539360175, 0.036029908)
+spawn_direction = Vector3(0.378972783, 0.915000000, 0.138400252)
+spawn_heading = Vector3(0.918511956, -0.390142015, 0.064226124)
 cruise_altitude = 42.539415
-position = Vector3(148.027776776, 234.507714761, 54.059506662)
+position = Vector3(107.074748501, 258.523565068, 39.103526419)
 
 [node name="AIShip010" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.542063850, 0.810000000, 0.223756077)
-spawn_heading = Vector3(0.763835309, 0.363926487, 0.533022638)
+spawn_direction = Vector3(-0.393227290, 0.905000000, 0.162318509)
+spawn_heading = Vector3(0.818330169, 0.264001789, 0.510527952)
 cruise_altitude = 37.141510
-position = Vector3(-150.228393759, 224.484622762, 62.012097092)
+position = Vector3(-108.979604769, 250.813066172, 44.985196625)
 
 [node name="AIShip011" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.259862880, 0.790000000, -0.555311880)
-spawn_heading = Vector3(-0.480104432, -0.393255495, -0.784123619)
+spawn_direction = Vector3(0.189063346, 0.895000000, -0.404017390)
+spawn_heading = Vector3(-0.451559039, -0.286113199, -0.845123465)
 cruise_altitude = 43.699265
-position = Vector3(73.722907898, 224.122419195, -157.541572023)
+position = Vector3(53.637132366, 253.910842000, -114.619436384)
 
 [node name="AIShip012" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.190956240, 0.770000000, 0.608798583)
-spawn_heading = Vector3(-0.266847186, -0.556132964, 0.787088753)
+spawn_direction = Vector3(0.139343880, 0.885000000, 0.444250248)
+spawn_heading = Vector3(-0.236848017, -0.405819288, 0.882730832)
 cruise_altitude = 63.802328
-position = Vector3(58.012950187, 233.927792543, 184.954426742)
+position = Vector3(42.332995252, 268.865060260, 134.964259598)
 
 [node name="AIShip013" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.572283423, 0.750000000, -0.331649941)
-spawn_heading = Vector3(-0.717315096, -0.261821770, 0.645684454)
+spawn_direction = Vector3(-0.418868576, 0.875000000, -0.242742901)
+spawn_heading = Vector3(-0.760125456, -0.191633913, 0.620874975)
 cruise_altitude = 46.180392
-position = Vector3(-163.776294442, 214.635294095, -94.911710266)
+position = Vector3(-119.871973270, 250.407843111, -69.468258729)
 
 [node name="AIShip014" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.667506269, 0.730000000, -0.146749381)
-spawn_heading = Vector3(0.728040159, -0.681195262, -0.077010009)
+spawn_direction = Vector3(0.490068420, 0.865000000, -0.107740167)
+spawn_heading = Vector3(0.859456953, -0.500118578, -0.105901622)
 cruise_altitude = 63.788254
-position = Vector3(202.780563890, 221.765425283, -44.580738127)
+position = Vector3(148.877029575, 262.776839548, -32.730197319)
 
 [node name="AIShip015" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.405007108, 0.710000000, 0.576080934)
-spawn_heading = Vector3(-0.611961222, 0.257628508, -0.747750637)
+spawn_direction = Vector3(-0.298278224, 0.855000000, 0.424270080)
+spawn_heading = Vector3(-0.581452048, 0.189737346, -0.791146798)
 cruise_altitude = 55.031504
-position = Vector3(-119.489856299, 209.472368151, 169.962024682)
+position = Vector3(-88.001473243, 252.251936295, 125.173040044)
 
 [node name="AIShip016" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.093017241, 0.690000000, -0.717807629)
-spawn_heading = Vector3(-0.820551977, 0.355218134, 0.447788489)
+spawn_direction = Vector3(-0.068723187, 0.845000000, -0.530332088)
+spawn_heading = Vector3(-0.810776411, 0.262442982, 0.523225852)
 cruise_altitude = 60.575886
-position = Vector3(-27.958739677, 207.397361585, -215.755664448)
+position = Vector3(-20.656532732, 253.986623970, -159.405037430)
 
 [node name="AIShip017" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.567645668, 0.670000000, 0.478412370)
-spawn_heading = Vector3(-0.482135863, 0.741575669, -0.466487446)
+spawn_direction = Vector3(0.420748066, 0.835000000, 0.354606916)
+spawn_heading = Vector3(-0.608169460, 0.549667771, -0.572708695)
 cruise_altitude = 41.952772
-position = Vector3(160.049269725, 188.908357400, 134.889693964)
+position = Vector3(118.631083714, 235.430564819, 99.982402946)
 
 [node name="AIShip018" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.759285265, 0.650000000, 0.031398830)
-spawn_heading = Vector3(-0.626354851, -0.716872143, -0.306225294)
+spawn_direction = Vector3(-0.564650135, 0.825000000, 0.023350056)
+spawn_heading = Vector3(-0.791297413, -0.533109190, -0.299404402)
 cruise_altitude = 59.625046
-position = Vector3(-227.500882598, 194.756280048, 9.407875745)
+position = Vector3(-169.183322786, 247.190663138, 6.996261556)
 
 [node name="AIShip019" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.550473473, 0.630000000, -0.547794629)
-spawn_heading = Vector3(-0.012360571, -0.649935044, -0.759889239)
+spawn_direction = Vector3(0.410738970, 0.815000000, -0.408740135)
+spawn_heading = Vector3(0.097385442, -0.484952797, -0.869101179)
 cruise_altitude = 51.729068
-position = Vector3(160.589113367, 183.789312989, -159.807616692)
+position = Vector3(119.824497106, 237.759190612, -119.241378835)
 
 [node name="AIShip020" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.036602167, 0.610000000, 0.791555609)
-spawn_heading = Vector3(0.942458762, -0.242326089, 0.230324876)
+spawn_direction = Vector3(-0.027404221, 0.805000000, 0.592641552)
+spawn_heading = Vector3(0.939704209, -0.181430727, 0.289894620)
 cruise_altitude = 60.916705
-position = Vector3(-11.014203507, 183.559190076, 238.192305572)
+position = Vector3(-8.246387980, 242.237947560, 178.335742972)
 
 [node name="AIShip021" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.517310643, 0.590000000, -0.619911041)
-spawn_heading = Vector3(0.811522446, 0.568163921, -0.136459071)
+spawn_direction = Vector3(-0.388660209, 0.795000000, -0.465744825)
+spawn_heading = Vector3(0.903949252, 0.426866741, -0.025700867)
 cruise_altitude = 39.138221
-position = Vector3(-144.401172602, 164.691550488, -173.040865303)
+position = Vector3(-108.489919357, 221.914885827, -130.007181963)
 
 [node name="AIShip022" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.814306922, 0.570000000, 0.109563845)
-spawn_heading = Vector3(0.271696332, -0.541122653, 0.795843815)
+spawn_direction = Vector3(0.613963302, 0.785000000, 0.082607894)
+spawn_heading = Vector3(0.412027518, -0.407990454, 0.814725177)
 cruise_altitude = 54.385284
-position = Vector3(239.719974968, 167.799612120, 32.253983583)
+position = Vector3(180.741761203, 231.092448270, 24.318548337)
 
 [node name="AIShip023" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.685551869, 0.550000000, 0.476989135)
-spawn_heading = Vector3(-0.451617279, -0.835164627, 0.313913807)
+spawn_direction = Vector3(-0.518750647, 0.775000000, 0.360933188)
+spawn_heading = Vector3(-0.636310399, -0.631961213, 0.442418469)
 cruise_altitude = 38.586720
-position = Vector3(-190.985646782, 153.222696094, 132.882838548)
+position = Vector3(-144.517041261, 215.904708133, 100.551193165)
 
 [node name="AIShip024" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.186119683, 0.530000000, -0.827320653)
-spawn_heading = Vector3(-0.704395960, 0.659003232, 0.263706411)
+spawn_direction = Vector3(0.141352647, 0.765000000, -0.628326690)
+spawn_heading = Vector3(-0.744478794, 0.500494358, 0.441878628)
 cruise_altitude = 46.199191
-position = Vector3(53.267302769, 151.685571028, -236.778501365)
+position = Vector3(40.455013285, 218.942380824, -179.826590054)
 
 [node name="AIShip025" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.427662261, 0.510000000, 0.746327670)
-spawn_heading = Vector3(0.444781573, -0.837499843, 0.317432458)
+spawn_direction = Vector3(0.326013825, 0.755000000, 0.568937594)
+spawn_heading = Vector3(0.563379943, -0.638439609, 0.524402427)
 cruise_altitude = 50.324785
-position = Vector3(124.160953895, 148.065640158, 216.677419910)
+position = Vector3(94.649893453, 219.195212390, 165.176684495)
 
 [node name="AIShip026" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.830483666, 0.490000000, -0.264946941)
-spawn_heading = Vector3(-0.292473120, 0.021235058, 0.956037942)
+spawn_direction = Vector3(-0.635507497, 0.745000000, -0.202744225)
+spawn_heading = Vector3(-0.286555211, 0.016249614, 0.957925916)
 cruise_altitude = 45.882425
-position = Vector3(-237.420684489, 140.082388405, -75.743673932)
+position = Vector3(-181.680424663, 212.982406861, -57.961010748)
 
 [node name="AIShip027" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.801276745, 0.470000000, -0.370210180)
-spawn_heading = Vector3(0.405986007, -0.881644002, -0.240580997)
+spawn_direction = Vector3(0.615543307, 0.735000000, -0.284396620)
+spawn_heading = Vector3(0.646272006, -0.677281685, -0.351599223)
 cruise_altitude = 61.513780
-position = Vector3(241.595980113, 141.711476479, -111.623470656)
+position = Vector3(185.594788980, 221.612628110, -85.749499938)
 
 [node name="AIShip028" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.344763570, 0.450000000, 0.823794926)
-spawn_heading = Vector3(-0.611529360, -0.773485514, 0.166589319)
+spawn_direction = Vector3(-0.265899132, 0.725000000, 0.635352384)
+spawn_heading = Vector3(-0.703484404, -0.596551216, 0.386311195)
 cruise_altitude = 44.276355
-position = Vector3(-98.008131035, 127.924359636, 234.185418699)
+position = Vector3(-75.588836106, 206.100357192, 180.615659593)
 
 [node name="AIShip029" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.305564495, 0.430000000, -0.849547138)
-spawn_heading = Vector3(0.334493148, -0.786878769, -0.518590530)
+spawn_direction = Vector3(-0.236620265, 0.715000000, -0.657864614)
+spawn_heading = Vector3(0.250422444, -0.609336050, -0.752328504)
 cruise_altitude = 43.269642
-position = Vector3(-86.557145238, 121.805946273, -240.650914023)
+position = Vector3(-67.027337750, 202.537794384, -186.353074027)
 
 [node name="AIShip030" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.807368470, 0.410000000, 0.424330241)
-spawn_heading = Vector3(-0.210802998, -0.471256560, 0.856434090)
+spawn_direction = Vector3(0.627782814, 0.705000000, 0.329945053)
+spawn_heading = Vector3(-0.075881832, -0.366433395, 0.927344874)
 cruise_altitude = 59.162566
-position = Vector3(241.534423653, 122.656652240, 126.943723793)
+position = Vector3(187.809117922, 210.909609340, 98.707208814)
 
 [node name="AIShip031" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.890400347, 0.390000000, 0.234706674)
-spawn_heading = Vector3(0.217002977, -0.089559036, 0.972053953)
+spawn_direction = Vector3(-0.695260848, 0.695000000, 0.183268528)
+spawn_heading = Vector3(0.188318302, -0.069931342, 0.979615141)
 cruise_altitude = 45.227708
-position = Vector3(-253.966850127, 111.238806146, 66.944846647)
+position = Vector3(-198.307658143, 198.233257106, 52.273262265)
 
 [node name="AIShip032" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.502455433, 0.370000000, -0.781433643)
-spawn_heading = Vector3(0.272098960, -0.925551410, -0.263280731)
+spawn_direction = Vector3(0.394023584, 0.685000000, -0.612797205)
+spawn_heading = Vector3(0.441824630, -0.725813794, -0.527243144)
 cruise_altitude = 60.157688
-position = Vector3(150.815860984, 111.058344544, -234.553315521)
+position = Vector3(118.269208117, 205.608016250, -183.935792342)
 
 [node name="AIShip033" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.158663079, 0.350000000, 0.923215049)
-spawn_heading = Vector3(-0.721378287, 0.679524813, -0.133639053)
+spawn_direction = Vector3(0.124968743, 0.675000000, 0.727157351)
+spawn_heading = Vector3(-0.761309953, 0.535218163, -0.365989991)
 cruise_altitude = 53.690703
-position = Vector3(46.597871058, 102.791745881, 271.139676433)
+position = Vector3(36.702157866, 198.241224199, 213.559353298)
 
 [node name="AIShip034" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.746333202, 0.330000000, -0.578002381)
-spawn_heading = Vector3(0.217638284, 0.941689840, 0.256619998)
+spawn_direction = Vector3(-0.590471666, 0.665000000, -0.457294447)
+spawn_heading = Vector3(0.481854221, 0.745030728, 0.461243671)
 cruise_altitude = 41.027614
-position = Vector3(-209.740238612, 92.739112501, -162.434629767)
+position = Vector3(-165.938843261, 186.883363071, -128.512367237)
 
 [node name="AIShip035" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.947490432, 0.310000000, -0.078497646)
-spawn_heading = Vector3(0.151659987, -0.219496850, 0.963753278)
+spawn_direction = Vector3(0.753048914, 0.655000000, -0.062388563)
+spawn_heading = Vector3(0.231038294, -0.174452278, 0.957176948)
 cruise_altitude = 43.956695
-position = Vector3(269.046252050, 88.026575548, -22.289932025)
+position = Vector3(213.833281087, 185.991635432, -17.715650242)
 
 [node name="AIShip036" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.649897029, 0.290000000, 0.702519645)
-spawn_heading = Vector3(0.509306769, -0.519917463, 0.685778716)
+spawn_direction = Vector3(-0.518940600, 0.645000000, 0.560959583)
+spawn_heading = Vector3(0.378340562, -0.415152352, 0.827349348)
 cruise_altitude = 48.893905
-position = Vector3(-187.751290551, 83.779232462, 202.953643657)
+position = Vector3(-149.918776440, 186.336568751, 162.057804459)
 
 [node name="AIShip037" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.004697100, 0.270000000, -0.962848865)
-spawn_heading = Vector3(0.987821500, -0.150998825, -0.037523840)
+spawn_direction = Vector3(0.003768528, 0.635000000, -0.772502944)
+spawn_heading = Vector3(0.988100735, -0.121147816, -0.094763623)
 cruise_altitude = 54.154403
-position = Vector3(1.381672506, 79.421688833, -283.226233212)
+position = Vector3(1.108529196, 186.788045960, -227.235142319)
 
 [node name="AIShip038" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.650550016, 0.250000000, 0.717136443)
-spawn_heading = Vector3(-0.072408651, -0.919548483, 0.386248074)
+spawn_direction = Vector3(0.524490190, 0.625000000, 0.578173884)
+spawn_heading = Vector3(0.166876261, -0.741363688, 0.650024765)
 cruise_altitude = 47.484125
-position = Vector3(187.022801995, 71.871031255, 206.165342720)
+position = Vector3(150.782603450, 179.677578138, 166.215813177)
 
 [node name="AIShip039" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.969037733, 0.230000000, -0.089810199)
-spawn_heading = Vector3(-0.126270604, -0.774190829, -0.620229227)
+spawn_direction = Vector3(-0.785162227, 0.615000000, -0.072768659)
+spawn_heading = Vector3(-0.431238135, -0.627287643, -0.648493550)
 cruise_altitude = 35.252528
-position = Vector3(-266.730086160, 63.308081536, -24.720484434)
+position = Vector3(-216.117888132, 169.280304978, -20.029757296)
 
 [node name="AIShip040" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.778797270, 0.210000000, -0.591079362)
-spawn_heading = Vector3(-0.546302942, 0.690148605, -0.474602991)
+spawn_direction = Vector3(0.634240916, 0.605000000, -0.481366243)
+spawn_heading = Vector3(-0.768404533, 0.562046761, -0.306035802)
 cruise_altitude = 56.026029
-position = Vector3(230.544263037, 62.165466025, -174.974876130)
+position = Vector3(187.751819699, 179.095747357, -142.496937301)
 
 [node name="AIShip041" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.175723234, 0.190000000, 0.965930300)
-spawn_heading = Vector3(-0.971886549, -0.189676224, -0.139497193)
+spawn_direction = Vector3(-0.143853706, 0.595000000, 0.790747186)
+spawn_heading = Vector3(-0.985890969, -0.155276152, -0.062516516)
 cruise_altitude = 53.815005
-position = Vector3(-51.630122933, 55.824850905, 283.804815763)
+position = Vector3(-42.266377178, 174.819927833, 232.333388078)
 
 [node name="AIShip042" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.524853020, 0.170000000, -0.834043948)
-spawn_heading = Vector3(0.715648738, 0.618631996, -0.324255050)
+spawn_direction = Vector3(-0.431960868, 0.585000000, -0.686429027)
+spawn_heading = Vector3(0.854405521, 0.509142186, -0.103756643)
 cruise_altitude = 40.699379
-position = Vector3(-147.325916602, 47.718894357, -234.115617912)
+position = Vector3(-121.251147212, 164.209136465, -192.680201195)
 
 [node name="AIShip043" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.953525516, 0.150000000, 0.261321812)
-spawn_heading = Vector3(-0.143900406, -0.535281424, 0.832325940)
+spawn_direction = Vector3(0.789057551, 0.575000000, 0.216247961)
+spawn_heading = Vector3(0.078014592, -0.442953903, 0.893143641)
 cruise_altitude = 58.627983
-position = Vector3(284.749402031, 44.794197500, 78.038005752)
+position = Vector3(235.634665257, 171.711090415, 64.577692636)
 
 [node name="AIShip044" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.882136418, 0.130000000, 0.452697846)
-spawn_heading = Vector3(-0.050712195, 0.929350977, -0.365698010)
+spawn_direction = Vector3(-0.734072075, 0.565000000, 0.376713669)
+spawn_heading = Vector3(0.312037514, 0.773361791, -0.551855171)
 cruise_altitude = 58.083581
-position = Vector3(-262.950382317, 38.750865499, 134.941794793)
+position = Vector3(-218.814832691, 168.417223130, 112.292159420)
 
 [node name="AIShip045" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.345507336, 0.110000000, -0.931946715)
-spawn_heading = Vector3(0.932544718, 0.070671136, 0.354070529)
+spawn_direction = Vector3(0.289165171, 0.555000000, -0.779973399)
+spawn_heading = Vector3(0.921545891, 0.059146736, 0.383737977)
 cruise_altitude = 55.830896
-position = Vector3(102.211744933, 32.541398572, -275.698631971)
+position = Vector3(85.543991758, 164.186147342, -230.740229672)
 
 [node name="AIShip046" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.375512527, 0.090000000, 0.922437175)
-spawn_heading = Vector3(0.168525217, -0.985312815, 0.027530139)
+spawn_direction = Vector3(0.316126152, 0.545000000, 0.776556023)
+spawn_heading = Vector3(0.338248751, -0.829488036, 0.444451776)
 cruise_altitude = 42.631465
-position = Vector3(106.131655611, 25.436831844, 260.709770118)
+position = Vector3(89.347197372, 154.034148390, 219.479166263)
 
 [node name="AIShip047" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.901439181, 0.070000000, -0.427208851)
-spawn_heading = Vector3(-0.147028440, -0.977686098, 0.150041765)
+spawn_direction = Vector3(-0.763455511, 0.535000000, -0.361815814)
+spawn_heading = Vector3(-0.558862345, -0.828031280, -0.045134008)
 cruise_altitude = 46.814180
-position = Vector3(-258.545539264, 20.076992569, -122.529555997)
+position = Vector3(-218.969865918, 153.445586065, -103.773905843)
 
 [node name="AIShip048" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.954417493, 0.050000000, -0.294257114)
-spawn_heading = Vector3(-0.294956228, 0.308930572, -0.904191752)
+spawn_direction = Vector3(0.813324145, 0.525000000, -0.250756527)
+spawn_heading = Vector3(-0.435360391, 0.263260780, -0.860903648)
 cruise_altitude = 37.908397
-position = Vector3(265.240635891, 13.895419868, -81.776522897)
+position = Vector3(226.029609591, 145.901908609, -69.687344407)
 
 [node name="AIShip049" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.505394774, 0.030000000, 0.862366582)
-spawn_heading = Vector3(0.722454429, 0.561198883, 0.403875490)
+spawn_direction = Vector3(-0.433414516, 0.515000000, 0.739545034)
+spawn_heading = Vector3(0.860137430, 0.481270790, 0.168943858)
 cruise_altitude = 54.769189
-position = Vector3(-148.974807794, 8.843075681, 254.199098439)
+position = Vector3(-127.757245603, 151.806132517, 217.995090124)
 
 [node name="AIShip050" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.209941881, 0.010000000, -0.977662726)
-spawn_heading = Vector3(-0.183579336, -0.982566002, 0.029371408)
+spawn_direction = Vector3(-0.181213959, 0.505000000, -0.843881805)
+spawn_heading = Vector3(-0.285699017, -0.848114128, -0.446182134)
 cruise_altitude = 50.289808
-position = Vector3(-60.943988339, 2.902898079, -283.805525025)
+position = Vector3(-52.604565460, 146.596352986, -244.970287077)
 
 [node name="AIShip051" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.815206292, -0.010000000, 0.579084365)
-spawn_heading = Vector3(-0.033605346, -0.998983116, 0.030056861)
+spawn_direction = Vector3(0.708362438, 0.495000000, 0.503187496)
+spawn_heading = Vector3(0.377696332, -0.868052814, 0.322226307)
 cruise_altitude = 46.215393
-position = Vector3(233.324589439, -2.862153932, 165.742859130)
+position = Vector3(202.744233855, 141.676619643, 144.020006944)
 
 [node name="AIShip052" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.991876588, -0.030000000, 0.123615669)
-spawn_heading = Vector3(-0.127013797, 0.286686439, -0.949567471)
+spawn_direction = Vector3(-0.867800711, 0.485000000, 0.108152331)
+spawn_heading = Vector3(0.019562269, 0.250824244, -0.967834963)
 cruise_altitude = 56.851540
-position = Vector3(-294.440093022, -8.905546209, 36.695501733)
+position = Vector3(-257.607977604, 143.972997046, 32.105186123)
 
 [node name="AIShip053" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.647358766, -0.050000000, -0.760543640)
-spawn_heading = Vector3(0.158317098, 0.984903460, 0.070006224)
+spawn_direction = Vector3(0.570379939, 0.475000000, -0.670105756)
+spawn_heading = Vector3(-0.177254422, 0.867786466, 0.464249414)
 cruise_altitude = 46.520222
-position = Vector3(185.481377105, -14.326011091, -217.911132496)
+position = Vector3(163.425386722, 136.097105365, -191.998849993)
 
 [node name="AIShip054" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.036353828, -0.070000000, 0.996884346)
-spawn_heading = Vector3(-0.308179804, -0.949710807, -0.055449001)
+spawn_direction = Vector3(0.032263575, 0.465000000, 0.884722590)
+spawn_heading = Vector3(-0.289617641, -0.842856655, 0.453557363)
 cruise_altitude = 56.681526
-position = Vector3(10.785509072, -20.767706841, 295.757169302)
+position = Vector3(9.572006585, 137.956909729, 262.480848435)
 
 [node name="AIShip055" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.699065151, -0.090000000, -0.709371493)
-spawn_heading = Vector3(-0.644947153, -0.349044489, 0.679861100)
+spawn_direction = Vector3(-0.625048123, 0.455000000, -0.634263229)
+spawn_heading = Vector3(-0.779015745, -0.312087654, 0.543815929)
 cruise_altitude = 63.921693
-position = Vector3(-212.461064513, -27.352952401, -215.593385214)
+position = Vector3(-189.965684038, 138.284370473, -192.766354579)
 
 [node name="AIShip056" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.992634889, -0.110000000, 0.050754089)
-spawn_heading = Vector3(-0.082602735, -0.308106450, 0.947759043)
+spawn_direction = Vector3(0.894362246, 0.445000000, 0.045729343)
+spawn_heading = Vector3(0.089215923, -0.277603356, 0.956544247)
 cruise_altitude = 39.587039
-position = Vector3(277.527849032, -30.754574253, 14.190185501)
+position = Vector3(250.052091874, 124.416232207, 12.785331565)
 
 [node name="AIShip057" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.764358246, -0.130000000, 0.631550847)
-spawn_heading = Vector3(-0.167521388, -0.905792576, -0.389199683)
+spawn_direction = Vector3(-0.694141934, 0.435000000, 0.573534633)
+spawn_heading = Vector3(-0.565423701, -0.822583670, -0.060432977)
 cruise_altitude = 56.496397
-position = Vector3(-226.629466172, -38.544531648, 187.252550719)
+position = Vector3(-205.810582672, 128.975932823, 170.050952426)
 
 [node name="AIShip058" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.136616742, -0.150000000, -0.979201647)
-spawn_heading = Vector3(0.939748392, -0.293077256, 0.176007621)
+spawn_direction = Vector3(0.125079719, 0.425000000, -0.896509935)
+spawn_heading = Vector3(0.963300897, -0.268327440, 0.007194837)
 cruise_altitude = 39.219981
-position = Vector3(38.146124187, -41.882997205, -273.412665671)
+position = Vector3(34.924756738, 118.668492081, -250.323487409)
 
 [node name="AIShip059" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.558865707, -0.170000000, 0.811645934)
-spawn_heading = Vector3(0.090517398, 0.985418859, 0.144070378)
+spawn_direction = Vector3(0.515978537, 0.415000000, 0.749360493)
+spawn_heading = Vector3(-0.241239715, 0.909798141, -0.337743604)
 cruise_altitude = 59.956502
-position = Vector3(167.635402550, -50.992605345, 243.458475148)
+position = Vector3(154.771117223, 124.481948342, 224.775552318)
 
 [node name="AIShip060" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.956782361, -0.190000000, -0.220153386)
-spawn_heading = Vector3(-0.004771205, -0.746690087, 0.665154981)
+spawn_direction = Vector3(-0.891033054, 0.405000000, -0.205024624)
+spawn_heading = Vector3(-0.445771146, -0.695378151, 0.563681925)
 cruise_altitude = 56.912786
-position = Vector3(-284.080916255, -56.413429296, -65.366355004)
+position = Vector3(-264.559106336, 120.249678235, -60.874432159)
 
 [node name="AIShip061" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.850660806, -0.210000000, -0.481950406)
-spawn_heading = Vector3(0.106276845, -0.829131127, 0.548859551)
+spawn_direction = Vector3(0.799309516, 0.395000000, -0.452856818)
+spawn_heading = Vector3(0.552675170, -0.779079505, 0.295948106)
 cruise_altitude = 36.182288
-position = Vector3(234.937447891, -57.998280552, -133.106165990)
+position = Vector3(220.755131207, 109.092003895, -125.071032317)
 
 [node name="AIShip062" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.300306058, -0.230000000, 0.925697721)
-spawn_heading = Vector3(-0.716499102, -0.586235439, -0.378096611)
+spawn_direction = Vector3(-0.284792547, 0.385000000, 0.877877101)
+spawn_heading = Vector3(-0.830817318, -0.555951101, -0.025709073)
 cruise_altitude = 63.407067
-position = Vector3(-91.114980389, -69.783625510, 280.863231002)
+position = Vector3(-86.408071476, 116.811720962, 266.354116917)
 
 [node name="AIShip063" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.401811450, -0.250000000, -0.880935615)
-spawn_heading = Vector3(-0.854890735, 0.447191617, 0.263023742)
+spawn_direction = Vector3(-0.384705175, 0.375000000, -0.843431638)
+spawn_heading = Vector3(-0.735099594, 0.428153376, 0.525655090)
 cruise_altitude = 54.611959
-position = Vector3(-118.378458528, -73.652989734, -259.534167321)
+position = Vector3(-113.338745169, 110.479484600, -248.485047182)
 
 [node name="AIShip064" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.886388925, -0.270000000, 0.376051423)
-spawn_heading = Vector3(-0.393184625, -0.867871258, 0.303653305)
+spawn_direction = Vector3(0.857065906, 0.365000000, 0.363611102)
+spawn_heading = Vector3(0.133713643, -0.839160830, 0.527190443)
 cruise_altitude = 62.880241
-position = Vector3(268.469691562, -81.777665143, 113.898545857)
+position = Vector3(259.588328288, 110.551288064, 110.130618251)
 
 [node name="AIShip065" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.902115734, -0.290000000, 0.319510881)
-spawn_heading = Vector3(-0.392529582, 0.859044192, -0.328578156)
+spawn_direction = Vector3(-0.881226874, 0.355000000, 0.312112475)
+spawn_heading = Vector3(0.153214983, 0.839152671, -0.521869681)
 cruise_altitude = 46.304452
-position = Vector3(-258.279750615, -83.028291028, 91.477387603)
+position = Vector3(-252.299176976, 101.638080396, 89.359191145)
 
 [node name="AIShip066" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.446412098, -0.310000000, -0.839414224)
-spawn_heading = Vector3(-0.228952730, -0.946418218, 0.227756897)
+spawn_direction = Vector3(0.440714718, 0.345000000, -0.828701115)
+spawn_heading = Vector3(0.077201286, -0.934339459, -0.347922026)
 cruise_altitude = 45.530186
-position = Vector3(127.464129244, -88.514357635, -239.678099376)
+position = Vector3(125.837355367, 98.507914143, -236.619183325)
 
 [node name="AIShip067" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.236155719, -0.330000000, 0.913964155)
-spawn_heading = Vector3(-0.971147889, -0.112289010, 0.210387632)
+spawn_direction = Vector3(0.235714718, 0.335000000, 0.912257404)
+spawn_heading = Vector3(-0.951358567, -0.112079320, 0.286975789)
 cruise_altitude = 44.712330
-position = Vector3(67.236444853, -93.955068798, 260.216863806)
+position = Vector3(67.110886490, 95.378630447, 259.730930863)
 
 [node name="AIShip068" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.785444560, -0.350000000, -0.510467279)
-spawn_heading = Vector3(-0.031171296, -0.801339064, 0.597397736)
+spawn_direction = Vector3(-0.792960947, 0.325000000, -0.515352245)
+spawn_heading = Vector3(-0.515330841, -0.809007555, 0.282738219)
 cruise_altitude = 53.591027
-position = Vector3(-230.599474646, -102.756859286, -149.868612530)
+position = Vector3(-232.806218464, 95.417083622, -151.302794610)
 
 [node name="AIShip069" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.916365347, -0.370000000, -0.152887378)
-spawn_heading = Vector3(0.235327297, 0.188878385, 0.953386605)
+spawn_direction = Vector3(0.936151768, 0.315000000, -0.156188565)
+spawn_heading = Vector3(0.097960942, 0.192956701, 0.976304955)
 cruise_altitude = 38.015931
-position = Vector3(254.764165590, -102.865894640, -42.505126712)
+position = Vector3(260.265105672, 87.575018410, -43.422909457)
 
 [node name="AIShip070" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.567362485, -0.390000000, 0.725258444)
-spawn_heading = Vector3(-0.418599939, 0.895046809, 0.153835304)
+spawn_direction = Vector3(-0.586794395, 0.305000000, 0.750098219)
+spawn_heading = Vector3(-0.002357331, 0.925701759, -0.378246872)
 cruise_altitude = 36.742418
-position = Vector3(-157.013266053, -107.929542992, 200.709775332)
+position = Vector3(-162.390899719, 84.406437468, 207.583994766)
 
 [node name="AIShip071" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.070871309, -0.410000000, -0.909327915)
-spawn_heading = Vector3(0.636246335, 0.683512927, -0.357771828)
+spawn_direction = Vector3(-0.074244509, 0.295000000, -0.952608394)
+spawn_heading = Vector3(0.677298416, 0.716045489, 0.168954769)
 cruise_altitude = 60.378492
-position = Vector3(-21.288216992, -123.155181624, -273.142547715)
+position = Vector3(-22.301453487, 88.611655071, -286.143072734)
 
 [node name="AIShip072" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.659736254, -0.430000000, 0.616318161)
-spawn_heading = Vector3(-0.232054566, -0.896607963, -0.377153601)
+spawn_direction = Vector3(0.700437660, 0.285000000, 0.654340954)
+spawn_heading = Vector3(0.286826819, -0.951922802, 0.107579531)
 cruise_altitude = 45.286182
-position = Vector3(188.213637032, -122.673058256, 175.827054938)
+position = Vector3(199.825185698, 81.306561867, 186.674432617)
 
 [node name="AIShip073" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.892986051, -0.450000000, -0.008712778)
-spawn_heading = Vector3(0.104099354, -0.225331957, 0.968704720)
+spawn_direction = Vector3(-0.961398466, 0.275000000, -0.009380271)
+spawn_heading = Vector3(-0.078826368, -0.242594828, 0.966919931)
 cruise_altitude = 63.861940
-position = Vector3(-271.344473480, -136.737872795, -2.647481603)
+position = Vector3(-292.132402566, 83.562033375, -2.850307403)
 
 [node name="AIShip074" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.656636873, -0.470000000, -0.589854233)
-spawn_heading = Vector3(-0.588328680, -0.808551371, -0.010679181)
+spawn_direction = Vector3(0.717327692, 0.265000000, -0.644372549)
+spawn_heading = Vector3(-0.087456374, -0.883283155, -0.460610737)
 cruise_altitude = 46.887139
-position = Vector3(188.380674007, -134.836955392, -169.221593542)
+position = Vector3(205.792089391, 76.025091870, -184.862197190)
 
 [node name="AIShip075" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.084679679, -0.490000000, 0.867599765)
-spawn_heading = Vector3(-0.558053941, 0.744675065, 0.366107698)
+spawn_direction = Vector3(-0.093929277, 0.255000000, 0.962368064)
+spawn_heading = Vector3(-0.496231543, 0.826016246, -0.267303979)
 cruise_altitude = 53.587283
-position = Vector3(-24.860876991, -143.857768771, 254.716257864)
+position = Vector3(-27.576441388, 74.864757218, 282.539025389)
 
 [node name="AIShip076" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.516678536, -0.510000000, -0.687708725)
-spawn_heading = Vector3(0.758297015, 0.100359667, -0.644137854)
+spawn_direction = Vector3(-0.582360699, 0.245000000, -0.775132902)
+spawn_heading = Vector3(0.811208939, 0.113117774, -0.573711100)
 cruise_altitude = 45.215251
-position = Vector3(-147.364598531, -145.459778080, -196.145016613)
+position = Vector3(-166.098152998, 69.877736529, -221.079725416)
 
 [node name="AIShip077" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.833553886, -0.530000000, 0.155845818)
-spawn_heading = Vector3(-0.540606207, -0.840643166, 0.032618951)
+spawn_direction = Vector3(0.955439589, 0.235000000, 0.178634239)
+spawn_heading = Vector3(0.204842067, -0.963565493, 0.171992059)
 cruise_altitude = 62.494904
-position = Vector3(252.145802561, -160.322298986, 47.142565603)
+position = Vector3(289.015606587, 71.086302380, 54.035946883)
 
 [node name="AIShip078" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.709014445, -0.550000000, 0.441359850)
-spawn_heading = Vector3(0.272564698, 0.363498394, 0.890829615)
+spawn_direction = Vector3(-0.827183519, 0.225000000, 0.514919824)
+spawn_heading = Vector3(0.558926489, 0.424081459, 0.712570064)
 cruise_altitude = 39.035620
-position = Vector3(-197.840285180, -153.469590948, 123.155119221)
+position = Vector3(-230.813666043, 62.783014479, 143.680972424)
 
 [node name="AIShip079" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.221033834, -0.570000000, -0.791355827)
-spawn_heading = Vector3(-0.725134188, -0.638659212, 0.257477805)
+spawn_direction = Vector3(0.262722743, 0.215000000, -0.940612439)
+spawn_heading = Vector3(-0.560988497, -0.759115911, -0.330204391)
 cruise_altitude = 52.839876
-position = Vector3(64.727520385, -166.918729259, -231.740542073)
+position = Vector3(76.935695382, 62.960573317, -275.448829906)
 
 [node name="AIShip080" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.365129347, -0.590000000, 0.720125378)
-spawn_heading = Vector3(0.734295021, -0.292978408, -0.612351593)
+spawn_direction = Vector3(0.442622348, 0.205000000, 0.872960742)
+spawn_heading = Vector3(0.864752357, -0.355158500, -0.355057463)
 cruise_altitude = 56.503286
-position = Vector3(108.262051362, -174.936938995, 213.519541203)
+position = Vector3(131.238980847, 60.783173719, 258.835728918)
 
 [node name="AIShip081" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.741632060, -0.610000000, -0.279073266)
-spawn_heading = Vector3(-0.005058739, 0.421100278, -0.906999981)
+spawn_direction = Vector3(-0.917962937, 0.195000000, -0.345425891)
+spawn_heading = Vector3(0.395327757, 0.521221329, -0.756336096)
 cruise_altitude = 42.912296
-position = Vector3(-209.816829180, -172.576500830, -78.953258529)
+position = Vector3(-259.703002608, 55.167897806, -97.725231983)
 
 [node name="AIShip082" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.720699071, -0.630000000, -0.289297163)
-spawn_heading = Vector3(-0.045537107, -0.459426815, 0.887047560)
+spawn_direction = Vector3(0.912005123, 0.185000000, -0.366089683)
+spawn_heading = Vector3(0.401906783, -0.581379421, 0.707438271)
 cruise_altitude = 56.538005
-position = Vector3(213.714664768, -186.818943076, -85.787603478)
+position = Vector3(270.444179571, 54.859530903, -108.559504165)
 
 [node name="AIShip083" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.328795082, -0.650000000, 0.685123196)
-spawn_heading = Vector3(0.315273501, 0.608293235, 0.728410571)
+spawn_direction = Vector3(-0.425985901, 0.175000000, 0.887643516)
+spawn_heading = Vector3(0.600993249, 0.788102853, 0.133045135)
 cruise_altitude = 46.708940
-position = Vector3(-94.268489258, -186.360810854, 196.430945265)
+position = Vector3(-122.133966135, 50.174064461, 254.495331427)
 
 [node name="AIShip084" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.215255304, -0.670000000, -0.710468264)
-spawn_heading = Vector3(-0.924777654, -0.093901962, 0.368739355)
+spawn_direction = Vector3(-0.285986054, 0.165000000, -0.943921065)
+spawn_heading = Vector3(-0.955403253, -0.124757212, 0.267656985)
 cruise_altitude = 41.889634
-position = Vector3(-60.678238733, -188.866054701, -200.273638845)
+position = Vector3(-80.616504100, 46.511789591, -266.081563408)
 
 [node name="AIShip085" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.622677331, -0.690000000, 0.369016180)
-spawn_heading = Vector3(0.771949431, 0.464590921, -0.433877116)
+spawn_direction = Vector3(0.849881161, 0.155000000, 0.503663590)
+spawn_heading = Vector3(0.305352279, 0.634111845, -0.710395773)
 cruise_altitude = 39.452605
-position = Vector3(174.008802137, -192.822297335, 103.122532832)
+position = Vector3(237.501504309, 43.315153749, 140.750102150)
 
 [node name="AIShip086" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.689219211, -0.710000000, 0.144488334)
-spawn_heading = Vector3(0.045461091, -0.241399876, -0.969360299)
+spawn_direction = Vector3(-0.968380691, 0.145000000, 0.203011916)
+spawn_heading = Vector3(-0.241396551, -0.339176527, -0.909223289)
 cruise_altitude = 38.080947
-position = Vector3(-191.658730661, -197.437472030, 40.179452682)
+position = Vector3(-269.288219037, 40.321737246, 56.453745767)
 
 [node name="AIShip087" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.398506706, -0.730000000, -0.555240853)
-spawn_heading = Vector3(0.319093101, 0.677919657, -0.662272249)
+spawn_direction = Vector3(0.577745651, 0.135000000, -0.804975131)
+spawn_heading = Vector3(-0.181194917, 0.982831976, 0.034780877)
 cruise_altitude = 56.489622
-position = Vector3(118.153102895, -216.437424317, -164.623150844)
+position = Vector3(171.295590019, 40.026099017, -238.666772718)
 
 [node name="AIShip088" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.078598018, -0.750000000, 0.656751362)
-spawn_heading = Vector3(-0.905168320, 0.222355582, 0.362254479)
+spawn_direction = Vector3(0.117897027, 0.125000000, 0.985127043)
+spawn_heading = Vector3(-0.940121736, 0.333533373, 0.070189817)
 cruise_altitude = 61.433947
-position = Vector3(23.692110878, -226.075460226, 197.967155231)
+position = Vector3(35.538166317, 37.679243371, 296.950732847)
 
 [node name="AIShip089" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.483844690, -0.770000000, -0.415925854)
-spawn_heading = Vector3(-0.564199271, -0.088863395, 0.820842543)
+spawn_direction = Vector3(-0.753293980, 0.115000000, -0.647551681)
+spawn_heading = Vector3(-0.657669014, -0.138350718, 0.740493448)
 cruise_altitude = 54.533558
-position = Vector3(-142.508497948, -226.790839483, -122.504121531)
+position = Vector3(-221.870356122, 33.871359144, -190.725700305)
 
 [node name="AIShip090" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.612801279, -0.790000000, -0.019354405)
-spawn_heading = Vector3(-0.673997365, -0.509718294, -0.534710026)
+spawn_direction = Vector3(0.993976591, 0.105000000, -0.031393253)
+spawn_heading = Vector3(0.069707450, -0.826773818, -0.558198823)
 cruise_altitude = 62.719894
-position = Vector3(185.507138115, -239.148716297, -5.858963522)
+position = Vector3(300.896488341, 31.785588875, -9.503362334)
 
 [node name="AIShip091" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.419694770, -0.810000000, 0.409580640)
-spawn_heading = Vector3(0.800044252, -0.116997554, 0.588422269)
+spawn_direction = Vector3(-0.712440858, 0.095000000, 0.695271906)
+spawn_heading = Vector3(0.670825143, -0.198605853, 0.714527356)
 cruise_altitude = 64.013183
-position = Vector3(-127.592742974, -246.250678624, 124.517914178)
+position = Vector3(-216.591413333, 28.881252431, 211.371825610)
 
 [node name="AIShip092" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.031198647, -0.830000000, -0.556890155)
-spawn_heading = Vector3(-0.367303421, -0.527697626, 0.765913450)
+spawn_direction = Vector3(0.055732839, 0.085000000, -0.994821014)
+spawn_heading = Vector3(-0.318881504, -0.942671877, -0.098408940)
 cruise_altitude = 62.172943
-position = Vector3(9.427386918, -250.803542519, -168.277136868)
+position = Vector3(16.840956044, 25.684700138, -300.607993466)
 
 [node name="AIShip093" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.333552380, -0.850000000, 0.407728844)
-spawn_heading = Vector3(-0.786175822, -0.012119611, 0.617884045)
+spawn_direction = Vector3(0.631404464, 0.075000000, 0.771818245)
+spawn_heading = Vector3(-0.772700738, -0.022942053, 0.634355761)
 cruise_altitude = 58.294276
-position = Vector3(99.496765723, -253.550134974, 121.623180448)
+position = Vector3(188.344337748, 22.372070733, 230.228964829)
 
 [node name="AIShip094" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.487983767, -0.870000000, -0.070511301)
-spawn_heading = Vector3(-0.132079921, -0.006252080, 0.991219353)
+spawn_direction = Vector3(-0.987628252, 0.065000000, -0.142707520)
+spawn_heading = Vector3(-0.143814203, -0.012653557, 0.989523806)
 cruise_altitude = 48.749565
-position = Vector3(-140.905100114, -251.212121203, -20.360107561)
+position = Vector3(-285.177227680, 18.768721699, -41.206734353)
 
 [node name="AIShip095" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.376801893, -0.890000000, -0.256749554)
-spawn_heading = Vector3(-0.569064720, -0.003711822, -0.822284359)
+spawn_direction = Vector3(0.825140617, 0.055000000, -0.562243686)
+spawn_heading = Vector3(-0.562707349, -0.008128343, -0.826616216)
 cruise_altitude = 52.182222
-position = Vector3(110.094814470, -260.042177815, -75.017655197)
+position = Vector3(241.091419125, 16.070022225, -164.277609604)
 
 [node name="AIShip096" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.094940922, -0.910000000, 0.403591652)
-spawn_heading = Vector3(-0.988999376, 0.040027059, -0.142401083)
+spawn_direction = Vector3(-0.228757498, 0.045000000, 0.972442804)
+spawn_heading = Vector3(-0.967887121, 0.096444081, -0.232148789)
 cruise_altitude = 52.570364
-position = Vector3(-27.776900068, -266.239031122, 118.078956402)
+position = Vector3(-66.927664327, 13.165666374, 284.507945042)
 
 [node name="AIShip097" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.179623421, -0.930000000, -0.320679632)
-spawn_heading = Vector3(0.718975545, -0.346599451, 0.602447497)
+spawn_direction = Vector3(-0.488392652, 0.035000000, -0.871921795)
+spawn_heading = Vector3(0.274279979, -0.942397287, -0.191462391)
 cruise_altitude = 50.898868
-position = Vector3(-52.252249885, -270.535946837, -93.285341842)
+position = Vector3(-142.072869498, 10.181460365, -253.641062861)
 
 [node name="AIShip098" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.296538144, -0.950000000, 0.097801478)
-spawn_heading = Vector3(-0.767782747, -0.176244020, 0.615993262)
+spawn_direction = Vector3(0.949385289, 0.025000000, 0.313117508)
+spawn_heading = Vector3(-0.245152000, -0.564256179, 0.788362519)
 cruise_altitude = 62.021595
-position = Vector3(89.560923377, -286.920515686, 29.538158472)
+position = Vector3(286.734859601, 7.550539886, 94.568249221)
 
 [node name="AIShip099" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(-0.221672786, -0.970000000, 0.099805692)
-spawn_heading = Vector3(0.880297790, -0.243092543, -0.407408661)
+spawn_direction = Vector3(-0.911737409, 0.015000000, 0.410499569)
+spawn_heading = Vector3(-0.017818895, -0.999836604, -0.003041670)
 cruise_altitude = 40.440041
-position = Vector3(-62.165924994, -272.026839434, 27.989512305)
+position = Vector3(-255.687676139, 4.206600610, 115.120515912)
 
 [node name="AIShip100" parent="Ships" instance=ExtResource("2")]
-spawn_direction = Vector3(0.055727639, -0.990000000, -0.129593326)
-spawn_heading = Vector3(-0.797112070, -0.122275246, 0.591321496)
+spawn_direction = Vector3(0.395037822, 0.005000000, -0.918651250)
+spawn_heading = Vector3(-0.456406531, -0.866775402, -0.200981296)
 cruise_altitude = 63.519293
-position = Vector3(16.914413635, -300.484099599, -39.334074719)
+position = Vector3(119.901600401, 1.517596463, -278.828377424)
+
+[node name="AIShip101" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.329251407, -0.005000000, 0.944229056)
+spawn_heading = Vector3(0.201905986, -0.976484700, -0.075575151)
+cruise_altitude = 59.209149
+position = Vector3(98.515033348, -1.496045745, 282.521972480)
+
+[node name="AIShip102" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.880509237, -0.015000000, -0.473791603)
+spawn_heading = Vector3(-0.263678854, -0.815099985, 0.515834737)
+cruise_altitude = 62.525914
+position = Vector3(-266.376861875, -4.537888710, -143.334237643)
+
+[node name="AIShip103" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.969107814, -0.025000000, -0.245367162)
+spawn_heading = Vector3(0.231892115, -0.246469717, 0.940998792)
+cruise_altitude = 53.329042
+position = Vector3(284.267466897, -7.333226054, -71.973314673)
+
+[node name="AIShip104" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.548682023, -0.035000000, 0.835298173)
+spawn_heading = Vector3(-0.836031042, 0.023408467, -0.548182580)
+cruise_altitude = 56.465845
+position = Vector3(-162.665479563, -10.376304566, 247.637378375)
+
+[node name="AIShip105" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.159590807, -0.045000000, -0.986157074)
+spawn_heading = Vector3(0.934706870, -0.328251768, -0.136285890)
+cruise_altitude = 39.668960
+position = Vector3(-44.632595138, -12.585103202, -275.797523278)
+
+[node name="AIShip106" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.783424025, -0.055000000, 0.619049108)
+spawn_heading = Vector3(0.587595021, 0.389994429, -0.708968573)
+cruise_altitude = 63.310273
+position = Vector3(237.620554373, -16.682064989, 187.763953583)
+
+[node name="AIShip107" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.995234664, -0.065000000, 0.072683997)
+spawn_heading = Vector3(0.074226069, -0.988408767, 0.132433379)
+cruise_altitude = 51.878450
+position = Vector3(-290.487551056, -18.972099244, 21.214892239)
+
+[node name="AIShip108" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.684276200, -0.075000000, -0.725355831)
+spawn_heading = Vector3(0.534489493, 0.728250347, 0.428920055)
+cruise_altitude = 63.674108
+position = Vector3(207.796964960, -22.775558132, -220.271785387)
+
+[node name="AIShip109" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.014581405, -0.085000000, 0.996274251)
+spawn_heading = Vector3(-0.760892062, 0.647378376, 0.044096580)
+cruise_altitude = 39.932493
+position = Vector3(-4.081808953, -23.794261916, 278.889534841)
+
+[node name="AIShip110" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.661621103, -0.095000000, -0.743796017)
+spawn_heading = Vector3(0.282739709, -0.950329502, -0.130123385)
+cruise_altitude = 39.006336
+position = Vector3(-184.596480144, -26.505601955, -207.523801815)
+
+[node name="AIShip111" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.989285992, -0.105000000, 0.101430891)
+spawn_heading = Vector3(0.127885711, 0.958396978, -0.255187143)
+cruise_altitude = 61.177352
+position = Vector3(297.950535355, -31.623621945, 30.548687192)
+
+[node name="AIShip112" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.797096222, -0.115000000, 0.592800651)
+spawn_heading = Vector3(-0.346499958, -0.716888993, -0.604985910)
+cruise_altitude = 56.084591
+position = Vector3(-236.007908686, -34.049727922, 175.519138196)
+
+[node name="AIShip113" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.187094922, -0.125000000, -0.974356449)
+spawn_heading = Vector3(0.921439598, 0.366140693, 0.129961764)
+cruise_altitude = 42.691444
+position = Vector3(52.890133738, -35.336430554, -275.442232029)
+
+[node name="AIShip114" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.519522890, -0.135000000, 0.843724462)
+spawn_heading = Vector3(0.588115934, 0.772818335, -0.238477398)
+cruise_altitude = 51.345392
+position = Vector3(151.360600162, -39.331627974, 245.815234338)
+
+[node name="AIShip115" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.951647747, -0.145000000, -0.270816481)
+spawn_heading = Vector3(0.172837902, -0.981546506, -0.081813916)
+cruise_altitude = 37.496994
+position = Vector3(-264.079389075, -40.237064134, -75.150759348)
+
+[node name="AIShip116" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.883292823, -0.155000000, -0.442457670)
+spawn_heading = Vector3(0.391994088, -0.273515778, 0.878367665)
+cruise_altitude = 57.079856
+position = Vector3(262.408504894, -46.047377735, -131.445260906)
+
+[node name="AIShip117" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.351858522, -0.165000000, 0.921395996)
+spawn_heading = Vector3(0.239268757, -0.967494408, -0.081884257)
+cruise_altitude = 50.998910
+position = Vector3(-102.390446359, -48.014820151, 268.125230379)
+
+[node name="AIShip118" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.362309700, -0.175000000, -0.915481666)
+spawn_heading = Vector3(0.853054518, -0.458008466, -0.250052462)
+cruise_altitude = 60.338752
+position = Vector3(-108.815642882, -52.559281538, -274.954620852)
+
+[node name="AIShip119" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.883908990, -0.185000000, 0.429511230)
+spawn_heading = Vector3(0.311289935, 0.918150709, -0.245148633)
+cruise_altitude = 63.437233
+position = Vector3(268.210898001, -56.135888060, 130.329699180)
+
+[node name="AIShip120" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.940042796, -0.195000000, 0.279811618)
+spawn_heading = Vector3(-0.217946271, 0.974517117, -0.053064217)
+cruise_altitude = 45.128993
+position = Vector3(-268.033455845, -55.600153635, 79.782404784)
+
+[node name="AIShip121" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.503099026, -0.205000000, -0.839563202)
+spawn_heading = Vector3(0.028066181, 0.974822582, -0.221208553)
+cruise_altitude = 51.284469
+position = Vector3(146.544932721, -59.713316227, -244.551721877)
+
+[node name="AIShip122" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.195716779, -0.215000000, 0.956801935)
+spawn_heading = Vector3(-0.814604356, 0.507577672, 0.280686034)
+cruise_altitude = 59.585583
+position = Vector3(58.633925267, -64.410900242, 286.644064985)
+
+[node name="AIShip123" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.788800098, -0.225000000, -0.571987243)
+spawn_heading = Vector3(-0.566744700, 0.626424714, 0.535156541)
+cruise_altitude = 55.711026
+position = Vector3(-233.256885980, -66.534980782, -169.142934214)
+
+[node name="AIShip124" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.965660484, -0.235000000, -0.110791830)
+spawn_heading = Vector3(0.259426328, 0.895260085, 0.362225566)
+cruise_altitude = 45.755680
+position = Vector3(275.942968495, -67.152584857, -31.659394738)
+
+[node name="AIShip125" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.635588426, -0.245000000, 0.732121815)
+spawn_heading = Vector3(0.337916655, 0.764360671, 0.549149433)
+cruise_altitude = 36.445569
+position = Vector3(-175.705604135, -67.729164403, 202.391831802)
+
+[node name="AIShip126" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.025809137, -0.255000000, -0.966596549)
+spawn_heading = Vector3(-0.940362804, 0.334273992, -0.063076901)
+cruise_altitude = 46.449804
+position = Vector3(-7.393022360, -73.044699940, -276.881391688)
+
+[node name="AIShip127" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.670086242, -0.265000000, 0.693368177)
+spawn_heading = Vector3(0.649540169, 0.661459535, -0.374925130)
+cruise_altitude = 35.115441
+position = Vector3(184.351071690, -72.905591760, 190.756291419)
+
+[node name="AIShip128" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.959665217, -0.275000000, -0.058460853)
+spawn_heading = Vector3(0.251858648, -0.748499788, -0.613445425)
+cruise_altitude = 62.814903
+position = Vector3(-290.600929408, -83.274098270, -17.702817386)
+
+[node name="AIShip129" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.744850492, -0.285000000, -0.603301536)
+spawn_heading = Vector3(0.520530793, -0.317465510, 0.792630648)
+cruise_altitude = 59.162282
+position = Vector3(222.831172876, -85.261250290, -180.485064196)
+
+[node name="AIShip130" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.141257256, -0.295000000, 0.944998089)
+spawn_heading = Vector3(-0.740554622, 0.664974877, 0.096887894)
+cruise_altitude = 64.936854
+position = Vector3(-43.074543401, -89.956371993, 288.164744384)
+
+[node name="AIShip131" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.532420150, -0.305000000, -0.789622558)
+spawn_heading = Vector3(0.364775552, -0.924441311, 0.111117324)
+cruise_altitude = 46.030723
+position = Vector3(-152.288520621, -87.239370641, -225.856311476)
+
+[node name="AIShip132" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.922802063, -0.315000000, 0.221836320)
+spawn_heading = Vector3(0.384071187, 0.706656256, -0.594244276)
+cruise_altitude = 50.709341
+position = Vector3(268.267179293, -91.573442319, 64.489890241)
+
+[node name="AIShip133" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.827338929, -0.325000000, 0.458132401)
+spawn_heading = Vector3(-0.500902790, 0.795957265, -0.339924149)
+cruise_altitude = 53.871080
+position = Vector3(-243.130984622, -95.508101021, 134.631863442)
+
+[node name="AIShip134" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.299478839, -0.335000000, -0.893357389)
+spawn_heading = Vector3(0.798470750, 0.600533291, 0.042476215)
+cruise_altitude = 36.109577
+position = Vector3(82.688975410, -92.496708217, -246.664530684)
+
+[node name="AIShip135" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.381159666, -0.345000000, 0.857725078)
+spawn_heading = Vector3(-0.130954585, 0.898260447, 0.419498589)
+cruise_altitude = 56.129325
+position = Vector3(112.872554463, -102.164617066, 253.997548200)
+
+[node name="AIShip136" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.857015005, -0.355000000, -0.373497365)
+spawn_heading = Vector3(-0.457139581, 0.189295509, 0.869017039)
+cruise_altitude = 38.476166
+position = Vector3(-238.658252635, -98.859038896, -104.010114196)
+
+[node name="AIShip137" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.880580263, -0.365000000, -0.302247249)
+spawn_heading = Vector3(-0.016599507, 0.613642726, -0.789409312)
+cruise_altitude = 35.466989
+position = Vector3(242.570793869, -100.545451036, -83.259139701)
+
+[node name="AIShip138" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.443243125, -0.375000000, 0.814193179)
+spawn_heading = Vector3(-0.581700643, -0.570744044, -0.579547753)
+cruise_altitude = 60.881848
+position = Vector3(-133.363810375, -112.830692813, 244.975947793)
+
+[node name="AIShip139" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.222157002, -0.385000000, -0.895779697)
+spawn_heading = Vector3(0.973448429, -0.139573766, -0.181431311)
+cruise_altitude = 57.997798
+position = Vector3(-66.202297317, -114.729152044, -266.940376912)
+
+[node name="AIShip140" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.765373502, -0.395000000, 0.508112589)
+spawn_heading = Vector3(-0.278819954, 0.508057799, 0.814945830)
+cruise_altitude = 35.881203
+position = Vector3(211.152162036, -108.973074997, 140.178712004)
+
+[node name="AIShip141" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.903275989, -0.405000000, 0.141659758)
+spawn_heading = Vector3(-0.422624456, 0.896804672, -0.130881429)
+cruise_altitude = 51.301314
+position = Vector3(-263.125482488, -117.977032120, 41.265673672)
+
+[node name="AIShip142" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.567553625, -0.415000000, -0.711096254)
+spawn_heading = Vector3(-0.821754104, -0.232003605, -0.520475283)
+cruise_altitude = 55.768188
+position = Vector3(167.864307051, -122.743797937, -210.319650533)
+
+[node name="AIShip143" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.061527661, -0.425000000, 0.903099854)
+spawn_heading = Vector3(-0.590378150, 0.714060330, 0.376259862)
+cruise_altitude = 52.079202
+position = Vector3(17.970950072, -124.133660843, 263.776684774)
+
+[node name="AIShip144" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.651955201, -0.435000000, -0.621071184)
+spawn_heading = Vector3(0.752102676, -0.266831083, -0.602613258)
+cruise_altitude = 63.832684
+position = Vector3(-198.085298541, -132.167217549, -188.701724915)
+
+[node name="AIShip145" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.895360081, -0.445000000, 0.017473546)
+spawn_heading = Vector3(0.136427537, 0.311425513, 0.940426327)
+cruise_altitude = 63.914786
+position = Vector3(272.113167081, -135.242079560, 5.310468885)
+
+[node name="AIShip146" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.668232461, -0.455000000, 0.588591860)
+spawn_heading = Vector3(0.716632843, -0.181247123, 0.673488566)
+cruise_altitude = 56.957727
+position = Vector3(-198.436792984, -135.115765908, 174.786901051)
+
+[node name="AIShip147" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.094592187, -0.465000000, -0.880242761)
+spawn_heading = Vector3(0.560072777, 0.755860351, -0.339107083)
+cruise_altitude = 60.340956
+position = Vector3(28.409907744, -139.658544417, -264.372952106)
+
+[node name="AIShip148" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.521689311, -0.475000000, 0.708671477)
+spawn_heading = Vector3(-0.601040042, -0.794153463, -0.089839554)
+cruise_altitude = 37.471160
+position = Vector3(144.753738620, -131.798801212, 196.635897115)
+
+[node name="AIShip149" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.858009787, -0.485000000, -0.169098215)
+spawn_heading = Vector3(-0.021931399, -0.294326002, 0.955453410)
+cruise_altitude = 59.085173
+position = Vector3(-256.618005766, -145.056309093, -50.574768899)
+
+[node name="AIShip150" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.742093053, -0.495000000, -0.451965596)
+spawn_heading = Vector3(0.605498551, 0.205812232, 0.768773588)
+cruise_altitude = 60.561809
+position = Vector3(223.044830857, -148.778095673, -135.843597457)
+
+[node name="AIShip151" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.240290582, -0.505000000, 0.828996644)
+spawn_heading = Vector3(-0.608201605, 0.743925503, 0.276885634)
+cruise_altitude = 61.034255
+position = Vector3(-72.335696321, -152.022298834, 249.556387313)
+
+[node name="AIShip152" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.380166785, -0.515000000, -0.768276132)
+spawn_heading = Vector3(0.740040480, 0.328890738, -0.586660865)
+cruise_altitude = 62.048036
+position = Vector3(-114.828630901, -155.554738663, -232.056297049)
+
+[node name="AIShip153" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.793609522, -0.525000000, 0.307504352)
+spawn_heading = Vector3(0.600244383, 0.758192290, -0.254658854)
+cruise_altitude = 43.192549
+position = Vector3(224.744303410, -148.676088158, 87.082941107)
+
+[node name="AIShip154" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.787076420, -0.535000000, 0.307059780)
+spawn_heading = Vector3(-0.616528694, 0.698472601, -0.363357116)
+cruise_altitude = 59.970559
+position = Vector3(-236.099754197, -160.484249325, 92.108893954)
+
+[node name="AIShip155" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.370117484, -0.545000000, -0.752321772)
+spawn_heading = Vector3(0.278552810, 0.837676413, -0.469794167)
+cruise_altitude = 56.234220
+position = Vector3(109.641464058, -161.447649704, -222.863452927)
+
+[node name="AIShip156" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.233424933, -0.555000000, 0.798428332)
+spawn_heading = Vector3(0.722376330, -0.450677549, -0.524463712)
+cruise_altitude = 50.074355
+position = Vector3(67.710586961, -160.991267088, 231.603583370)
+
+[node name="AIShip157" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.705669768, -0.565000000, -0.427557223)
+spawn_heading = Vector3(0.082180523, 0.534094447, -0.841421110)
+cruise_altitude = 44.993945
+position = Vector3(-201.111611146, -161.021579049, -121.851219750)
+
+[node name="AIShip158" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.802346220, -0.575000000, -0.160048565)
+spawn_heading = Vector3(-0.563368096, -0.641028440, -0.521247472)
+cruise_altitude = 35.863133
+position = Vector3(221.337742287, -158.621301656, -44.151498533)
+
+[node name="AIShip159" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.479306020, -0.585000000, 0.654248225)
+spawn_heading = Vector3(-0.738561799, -0.133857095, -0.660763760)
+cruise_altitude = 58.386750
+position = Vector3(-143.018565567, -174.556248899, 195.219001639)
+
+[node name="AIShip160" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.087715462, -0.595000000, -0.798924901)
+spawn_heading = Vector3(0.853167228, 0.369127657, -0.368578966)
+cruise_altitude = 60.442963
+position = Vector3(-26.353493339, -178.763563109, -240.031364689)
+
+[node name="AIShip161" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.598705029, -0.605000000, 0.524906933)
+spawn_heading = Vector3(-0.070942496, -0.692817547, -0.717614805)
+cruise_altitude = 55.367022
+position = Vector3(176.837721194, -178.697048102, 155.040197513)
+
+[node name="AIShip162" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.788339463, -0.615000000, 0.017201462)
+spawn_heading = Vector3(0.039892922, -0.078996966, -0.996076319)
+cruise_altitude = 43.650216
+position = Vector3(-223.612658718, -174.444882542, 4.879198496)
+
+[node name="AIShip163" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.563968445, -0.625000000, -0.539735670)
+spawn_heading = Vector3(-0.165736510, 0.554629728, -0.815424598)
+cruise_altitude = 42.516872
+position = Vector3(159.330601032, -176.573045192, -152.484433386)
+
+[node name="AIShip164" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.050733787, -0.635000000, 0.770844396)
+spawn_heading = Vector3(-0.745224461, 0.537912360, 0.394069531)
+cruise_altitude = 49.896102
+position = Vector3(-14.707526996, -184.084024868, 223.464785777)
+
+[node name="AIShip165" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.478077364, -0.645000000, -0.596168629)
+spawn_heading = Vector3(0.376622461, -0.763736296, 0.524273204)
+cruise_altitude = 35.287099
+position = Vector3(-131.608530761, -177.560178914, -164.117532339)
+
+[node name="AIShip166" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.746772058, -0.655000000, 0.115353773)
+spawn_heading = Vector3(0.260223216, 0.128141972, -0.957007583)
+cruise_altitude = 42.505624
+position = Vector3(210.967306227, -185.041183629, 32.588089501)
+
+[node name="AIShip167" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.621258629, -0.665000000, 0.414502974)
+spawn_heading = Vector3(0.651557025, -0.144514295, 0.744707366)
+cruise_altitude = 60.047016
+position = Vector3(-186.406797997, -199.531265768, 124.370380587)
+
+[node name="AIShip168" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.175951649, -0.675000000, -0.716530542)
+spawn_heading = Vector3(0.385866311, 0.716928332, -0.580621182)
+cruise_altitude = 64.589298
+position = Vector3(53.592989091, -205.597775855, -218.247534405)
+
+[node name="AIShip169" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.349814865, -0.685000000, 0.639065380)
+spawn_heading = Vector3(-0.530470661, -0.707101903, -0.467555105)
+cruise_altitude = 58.634282
+position = Vector3(104.466711214, -204.564483243, 190.846830974)
+
+[node name="AIShip170" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.680600986, -0.695000000, -0.231856201)
+spawn_heading = Vector3(-0.114548725, 0.413510210, -0.903265130)
+cruise_altitude = 36.535165
+position = Vector3(-188.210106074, -192.191939774, -64.116392738)
+
+[node name="AIShip171" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.649493512, -0.705000000, -0.284838864)
+spawn_heading = Vector3(0.358029096, 0.614034469, -0.703403752)
+cruise_altitude = 54.836687
+position = Vector3(191.494514934, -207.859864079, -83.980946901)
+
+[node name="AIShip172" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.282437075, -0.715000000, 0.639534439)
+spawn_heading = Vector3(-0.757306008, 0.575407937, 0.308858084)
+cruise_altitude = 64.057294
+position = Vector3(-85.877052624, -217.400965231, 194.455111020)
+
+[node name="AIShip173" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.220418525, -0.725000000, -0.652526378)
+spawn_heading = Vector3(0.898723705, 0.109046912, -0.424740477)
+cruise_altitude = 59.392168
+position = Vector3(-65.991580173, -217.059321726, -195.361286843)
+
+[node name="AIShip174" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.593948379, -0.735000000, 0.327109038)
+spawn_heading = Vector3(0.707614311, 0.283835209, -0.647085435)
+cruise_altitude = 52.820962
+position = Vector3(173.920536034, -215.223407433, 95.784383458)
+
+[node name="AIShip175" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.648226111, -0.745000000, 0.157410001)
+spawn_heading = Vector3(-0.243144484, 0.006617471, -0.969967509)
+cruise_altitude = 55.476584
+position = Vector3(-191.535636746, -220.130054727, 46.510969400)
+
+[node name="AIShip176" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.365334969, -0.755000000, -0.544523058)
+spawn_heading = Vector3(-0.795735535, 0.050251767, -0.603555895)
+cruise_altitude = 35.374164
+position = Vector3(100.603811765, -207.907494108, -149.947582044)
+
+[node name="AIShip177" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.096677896, -0.765000000, 0.636732585)
+spawn_heading = Vector3(-0.926749408, 0.164144513, 0.337923236)
+cruise_altitude = 63.376888
+position = Vector3(29.329839224, -232.083319674, 193.169950338)
+
+[node name="AIShip178" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.491997893, -0.775000000, -0.396627121)
+spawn_heading = Vector3(0.379560081, 0.219057081, -0.898859355)
+cruise_altitude = 64.528816
+position = Vector3(-149.827536138, -236.009832651, -120.784387561)
+
+[node name="AIShip179" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.618261079, -0.785000000, -0.039092685)
+spawn_heading = Vector3(-0.600086404, -0.503576533, 0.621535987)
+cruise_altitude = 52.162460
+position = Vector3(180.632677825, -229.347531135, -11.421415129)
+
+[node name="AIShip180" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.420546001, -0.795000000, 0.437168230)
+spawn_heading = Vector3(0.217414553, -0.556116816, -0.802162701)
+cruise_altitude = 37.868904
+position = Vector3(-116.856656313, -220.905778783, 121.475457019)
+
+[node name="AIShip181" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.014469417, -0.805000000, -0.593098336)
+spawn_heading = Vector3(-0.038004909, 0.592289046, -0.804828748)
+cruise_altitude = 53.120598
+position = Vector3(4.241284257, -235.962081227, -173.849338751)
+
+[node name="AIShip182" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.380882948, -0.815000000, 0.436695752)
+spawn_heading = Vector3(-0.554687301, 0.176466061, 0.813130818)
+cruise_altitude = 63.280153
+position = Vector3(115.514238731, -247.173324820, 132.441154648)
+
+[node name="AIShip183" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.561596405, -0.825000000, -0.063122725)
+spawn_heading = Vector3(-0.266965938, 0.252881428, -0.929935574)
+cruise_altitude = 55.773913
+position = Vector3(-166.105565875, -244.013477913, -18.670055433)
+
+[node name="AIShip184" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.444714174, -0.835000000, -0.324043675)
+spawn_heading = Vector3(-0.860390566, -0.297715121, -0.413634839)
+cruise_altitude = 47.512767
+position = Vector3(127.861002587, -240.073160343, -93.166693717)
+
+[node name="AIShip185" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.105962007, -0.845000000, 0.524163193)
+spawn_heading = Vector3(-0.977292574, 0.185773130, 0.101919428)
+cruise_altitude = 41.227497
+position = Vector3(-29.799429958, -237.637235214, 147.409103005)
+
+[node name="AIShip186" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.267606859, -0.855000000, -0.444253947)
+spawn_heading = Vector3(0.867966871, -0.414105081, 0.274135903)
+cruise_altitude = 36.831831
+position = Vector3(-74.082096835, -236.691215774, -122.983633598)
+
+[node name="AIShip187" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.481247539, -0.865000000, 0.142041563)
+spawn_heading = Vector3(-0.862261437, -0.437954960, 0.254363259)
+cruise_altitude = 53.117964
+position = Vector3(141.062299127, -253.547039175, 41.634933933)
+
+[node name="AIShip188" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.434948395, -0.875000000, 0.212590906)
+spawn_heading = Vector3(-0.854970450, 0.327215521, -0.402436992)
+cruise_altitude = 61.508608
+position = Vector3(-131.140685249, -263.820032086, 64.097988266)
+
+[node name="AIShip189" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.170334501, -0.885000000, -0.433314156)
+spawn_heading = Vector3(-0.974634580, -0.086529740, -0.206397768)
+cruise_altitude = 53.129839
+position = Vector3(49.930124835, -259.419907739, -127.017308912)
+
+[node name="AIShip190" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.160092686, -0.895000000, 0.416347609)
+spawn_heading = Vector3(-0.091075054, 0.406595935, 0.909057248)
+cruise_altitude = 62.446698
+position = Vector3(48.419504279, -270.689794776, 125.922959723)
+
+[node name="AIShip191" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.380797654, -0.905000000, -0.189652700)
+spawn_heading = Vector3(0.239846450, -0.294760360, 0.924981087)
+cruise_altitude = 50.450470
+position = Vector3(-110.602857628, -262.857675463, -55.084715943)
+
+[node name="AIShip192" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.387791579, -0.915000000, -0.111322464)
+spawn_heading = Vector3(0.286866973, 0.005029987, 0.957957222)
+cruise_altitude = 46.258255
+position = Vector3(111.008540911, -261.926303576, -31.866974324)
+
+[node name="AIShip193" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.198479664, -0.925000000, 0.324007443)
+spawn_heading = Vector3(0.833271868, 0.014789457, 0.552665600)
+cruise_altitude = 44.850075
+position = Vector3(-56.536947162, -263.486319292, 92.293544346)
+
+[node name="AIShip194" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.067679321, -0.935000000, -0.348130018)
+spawn_heading = Vector3(-0.614476390, 0.313961823, -0.723772574)
+cruise_altitude = 63.894964
+position = Vector3(-20.567404772, -284.141791713, -105.794959474)
+
+[node name="AIShip195" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.262896587, -0.945000000, 0.194577452)
+spawn_heading = Vector3(-0.687545131, -0.324978249, -0.649361864)
+cruise_altitude = 55.070752
+position = Vector3(77.573093458, -278.841860386, 57.414114946)
+
+[node name="AIShip196" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.294988523, -0.955000000, 0.030931723)
+spawn_heading = Vector3(-0.796019948, 0.227717517, -0.560800299)
+cruise_altitude = 58.122804
+position = Vector3(-87.942805563, -284.707277902, 9.221451915)
+
+[node name="AIShip197" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.173846590, -0.965000000, -0.196347557)
+spawn_heading = Vector3(0.976415613, 0.194830716, -0.093024417)
+cruise_altitude = 64.350551
+position = Vector3(52.910305334, -293.698281741, -59.758487282)
+
+[node name="AIShip198" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.003763550, -0.975000000, 0.222172986)
+spawn_heading = Vector3(-0.776668093, 0.137098487, 0.614809465)
+cruise_altitude = 54.458721
+position = Vector3(1.108210153, -287.097252791, 65.420773245)
+
+[node name="AIShip199" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(-0.118697099, -0.985000000, -0.125243757)
+spawn_heading = Vector3(-0.987812828, 0.129932135, -0.085693976)
+cruise_altitude = 50.686965
+position = Vector3(-34.503699432, -286.326660251, -36.406727595)
+
+[node name="AIShip200" parent="Ships" instance=ExtResource("2")]
+spawn_direction = Vector3(0.099626123, -0.995000000, 0.007045251)
+spawn_heading = Vector3(0.903589280, 0.087504065, -0.419367918)
+cruise_altitude = 60.168859
+position = Vector3(29.904659711, -298.668014245, 2.114764835)
 
 [node name="Missiles" type="Node3D" parent="."]
 
