@@ -1,5 +1,6 @@
 [gd_scene format=3]
 
+
 [ext_resource type="Script" path="res://planets/surface_collider.gd" id="surface_script"]
 [ext_resource type="ConcavePolygonShape3D" path="res://planets/planet2_collision.res" id="surface_shape"]
 

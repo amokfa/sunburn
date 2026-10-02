@@ -8,7 +8,7 @@
 [node name="Ship" type="Node3D" unique_id=1857046056]
 process_priority = -10
 script = ExtResource("1_controller")
-surface_clearance = 2.0
+surface_clearance = 0.0
 
 [node name="Gun" parent="." unique_id=1836922093 instance=ExtResource("3_gun")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.15, 0)

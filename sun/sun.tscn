@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bsdcbcqnf7syv"]
 
-[ext_resource type="ArrayMesh" path="res://sun/icosphere.res" id="1_mesh"]
+[ext_resource type="ArrayMesh" uid="uid://barhtnr3l0s63" path="res://sun/icosphere.res" id="1_mesh"]
 [ext_resource type="Shader" uid="uid://dmsenlqju6x6r" path="res://sun/sun.gdshader" id="2_shader"]
 [ext_resource type="Shader" uid="uid://dtk5lvgdcrny0" path="res://sun/halo.gdshader" id="3_halo"]
 
@@ -27,10 +27,10 @@ render_priority = 0
 shader = ExtResource("2_shader")
 shader_parameter/noise_texture = SubResource("SpotTexture")
 shader_parameter/noise_texture_b = SubResource("SpotTextureB")
-shader_parameter/surface_color = Color(2.4877853, 0.74864405, 0.100030415, 1)
-shader_parameter/spot_color = Color(0.00034471275, 2.2977942e-05, 7.659314e-06, 1)
-shader_parameter/spot_strength = 0.466000022135
-shader_parameter/wave_amplitude = 0.0250000011875
+shader_parameter/surface_color = Color(4.7188716, 1.4537759, 0.23605692, 1)
+shader_parameter/spot_color = Color(0, 0, 0, 1)
+shader_parameter/spot_strength = 0.4510000214225
+shader_parameter/wave_amplitude = 0.01600000076
 shader_parameter/wave_frequency = 18.0
 shader_parameter/wave_speed = 0.65
 shader_parameter/spot_scale = 0.40000001574012
@@ -48,6 +48,7 @@ shader_parameter/glow_color = Color(1, 0.35, 0.04, 1)
 shader_parameter/glow_intensity = 1.2
 shader_parameter/surface_radius_ratio = 0.80000003474012
 shader_parameter/fade_power = 1.0
+shader_parameter/glow_density = 12.0
 
 [node name="Sun" type="MeshInstance3D" unique_id=210235326]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.003855586, -0.007962167, -0.009593964)

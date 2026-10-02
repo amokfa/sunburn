@@ -17,7 +17,7 @@ const SurfaceCollider = preload("res://planets/surface_collider.gd")
 @export var combat_speed_multiplier: float = 2.0
 
 @export_group("Planet boundaries")
-@export_range(0.0, 100.0, 0.1, "or_greater") var surface_clearance: float = 0.0
+@export_range(0.0, 100.0, 0.1, "or_greater") var surface_clearance: float = 5.0
 @export var boundary_spring_stiffness: float = 5000.0
 @export var boundary_spring_damping: float = 9000.0
 @export var maximum_altitude_ratio: float = 0.5
@@ -240,7 +240,7 @@ func _step_thrust(delta: float, horizontal: Vector2, vertical: float) -> void:
 	if is_instance_valid(_surface_collider):
 		var penetration := _surface_collider.surface_radius(_local_up) + surface_clearance - (radius + _altitude)
 		if penetration > 0.0:
-			boundary_force += maxf(0.0, boundary_spring_stiffness * penetration * penetration - boundary_spring_damping * radial_speed)
+			boundary_force += maxf(0.0, boundary_spring_stiffness * penetration - boundary_spring_damping * radial_speed)
 	var ceiling_penetration := _altitude - radius * maximum_altitude_ratio
 	if ceiling_penetration > 0.0:
 		boundary_force -= maxf(0.0, boundary_spring_stiffness * ceiling_penetration + boundary_spring_damping * radial_speed)
