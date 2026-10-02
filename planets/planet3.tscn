@@ -1,0 +1,17 @@
+[gd_scene format=3]
+
+[ext_resource type="ArrayMesh" path="res://planets/planet3_terrain.res" id="1_43ufh"]
+
+[sub_resource type="SphereOccluder3D" id="SphereOccluder3D_0h4pa"]
+radius = 0.995
+
+[node name="Planet3" type="Node3D" unique_id=1716493062]
+metadata/maximum_surface_radius = 1.0
+metadata/generation_seed = 73129
+
+[node name="Terrain" type="MeshInstance3D" parent="." unique_id=743555573]
+mesh = ExtResource("1_43ufh")
+
+[node name="CoreOccluder" type="OccluderInstance3D" parent="." unique_id=1188471260]
+visible = false
+occluder = SubResource("SphereOccluder3D_0h4pa")

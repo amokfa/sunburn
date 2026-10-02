@@ -1,0 +1,10 @@
+[gd_resource type="MultiMesh" format=3 uid="uid://3a0jkiy5sopj"]
+
+[ext_resource type="ArrayMesh" uid="uid://cu342tjdfwd7d" path="res://planets/tree.res" id="1_tree"]
+
+[resource]
+transform_format = 1
+use_colors = true
+instance_count = 2
+mesh = ExtResource("1_tree")
+buffer = PackedFloat32Array(0.5506469, -0.9176354, 0.41344666, -0.8100009, -0.49441537, 0.16387652, 1.0222048, 0.14465454, -0.87666774, -0.66880095, -0.31680268, -0.5903534, 0.9458008, 0.9458008, 0.9458008, 1, -0.2167348, -0.5232262, -0.47176516, -0.7203971, 0.5550994, 0.17710441, -0.45144287, 0.24384396, 0.43381184, -0.488027, 0.34196338, -0.6719336, 0.9326172, 0.9326172, 0.9326172, 1)

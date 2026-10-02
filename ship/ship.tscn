@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://ship/ship.gd" id="1_controller"]
+[ext_resource type="PackedScene" path="res://assets/spaceship.glb" id="2_model"]
+
+[node name="Ship" type="Node3D"]
+process_priority = -10
+script = ExtResource("1_controller")
+
+[node name="Model" parent="." instance=ExtResource("2_model")]
+transform = Transform3D(-0.1190484, 0, 0, 0, 0.1190484, 0, 0, 0, -0.1190484, 0, -0.289366, 0.129818)
