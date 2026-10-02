@@ -166,6 +166,11 @@ func bake_planet(kind: int) -> void:
 	terrain.name = "Terrain"
 	terrain.mesh = mesh
 	add_owned(root, terrain)
+	if kind < 2:
+		var atmosphere := load("res://planets/atmosphere.tscn").instantiate() as MeshInstance3D
+		atmosphere.scale = Vector3.ONE * (1.4 if kind == 0 else 1.3)
+		atmosphere.material_override = load("res://planets/atmosphere_blue.tres" if kind == 0 else "res://planets/atmosphere_green.tres")
+		add_owned(root, atmosphere)
 	if kind == 0:
 		var ocean := MeshInstance3D.new()
 		ocean.name = "Ocean"

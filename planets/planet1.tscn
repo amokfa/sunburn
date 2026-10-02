@@ -1,5 +1,8 @@
 [gd_scene format=3]
 
+[ext_resource type="PackedScene" path="res://planets/atmosphere.tscn" id="atmosphere_scene"]
+[ext_resource type="Material" path="res://planets/atmosphere_blue.tres" id="atmosphere_material"]
+
 
 [ext_resource type="Script" path="res://planets/surface_collider.gd" id="surface_script"]
 [ext_resource type="ConcavePolygonShape3D" path="res://planets/planet1_collision.res" id="surface_shape"]
@@ -290,3 +293,7 @@ script = ExtResource("surface_script")
 
 [node name="Shape" type="CollisionShape3D" parent="SurfaceCollider"]
 shape = ExtResource("surface_shape")
+
+[node name="Atmosphere" parent="." instance=ExtResource("atmosphere_scene")]
+transform = Transform3D(1.4, 0, 0, 0, 1.4, 0, 0, 0, 1.4, 0, 0, 0)
+material_override = ExtResource("atmosphere_material")
