@@ -9,6 +9,7 @@ extends Node3D
 @export var sun_scroll_step: float = 100.0
 
 @export_group("Sun lighting")
+@export var sunlight_ship_offset: float = 200.0
 @export var sunlight_reference_distance: float = 1300.0
 @export var sunlight_reference_energy: float = 1.5
 @export var sunlight_falloff: float = 1.0
@@ -76,8 +77,6 @@ func _set_frame_origin(origin: Vector3) -> void:
 	for index in range(3):
 		planets[index].position = solar_positions[index] - frame_origin
 	sun.position = -frame_origin
-	# Keep the light at the sun's center as the reference frame moves.
-	sunlight.position = sun.position
 
 
 func _process(delta: float) -> void:
@@ -148,6 +147,7 @@ func _update_sun() -> void:
 
 func _update_sunlight() -> void:
 	var sun_to_ship := ship.global_position - sun.global_position
+	sunlight.global_position = ship.global_position - sun_to_ship.normalized() * sunlight_ship_offset
 	if sun_to_ship.length_squared() > 0.000001:
 		# Choose a different up axis when looking parallel to world up.
 		var up := Vector3.FORWARD if absf(sun_to_ship.normalized().dot(Vector3.UP)) > 0.99 else Vector3.UP
