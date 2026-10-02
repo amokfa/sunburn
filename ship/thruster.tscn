@@ -1,32 +1,34 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene format=3 uid="uid://7twv45k1xq05"]
 
-[ext_resource type="Script" path="res://ship/thruster.gd" id="1"]
-[ext_resource type="Shader" path="res://ship/thruster.gdshader" id="2"]
+[ext_resource type="Script" uid="uid://bfwsljofp5kit" path="res://ship/thruster.gd" id="1"]
+[ext_resource type="Shader" uid="uid://bk4r7c6l60kpp" path="res://ship/thruster.gdshader" id="2"]
 
 [sub_resource type="ShaderMaterial" id="Exhaust"]
+render_priority = 0
 shader = ExtResource("2")
+shader_parameter/power = 0.0
+shader_parameter/exhaust_color = Color(1, 0.8, 0.05, 1)
+shader_parameter/brightness = 12.0
 
 [sub_resource type="CylinderMesh" id="Plume"]
 top_radius = 0.0
-bottom_radius = 0.5
 height = 1.0
 radial_segments = 16
-rings = 4
 cap_top = false
 cap_bottom = false
 
-[node name="Exhaust" type="Node3D"]
+[node name="Exhaust" type="Node3D" unique_id=352261002]
 visible = false
 script = ExtResource("1")
 
-[node name="Plume" type="MeshInstance3D" parent="."]
+[node name="Plume" type="MeshInstance3D" parent="." unique_id=1017777160]
 transform = Transform3D(0.08, 0, 0, 0, 0.48, 0, 0, 0, 0.08, 0, 0.24, 0)
-cast_shadow = 0
 material_override = SubResource("Exhaust")
+cast_shadow = 0
 mesh = SubResource("Plume")
 
-[node name="Light" type="OmniLight3D" parent="."]
-position = Vector3(0, 0.1, 0)
+[node name="Light" type="OmniLight3D" parent="." unique_id=1766635841]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
 light_color = Color(1, 0.8, 0.05, 1)
 light_energy = 2.0
 omni_range = 1.2

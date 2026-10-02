@@ -1,5 +1,5 @@
 extends Node3D
-## A scale sandbox. All movement is geometric; there are no physics bodies.
+## Ship movement uses forces and radial geometry; planets have static mesh colliders.
 const ShipController = preload("res://ship/ship.gd")
 
 @export_group("Solar system scale")
@@ -56,7 +56,7 @@ func _reset() -> void:
 	ship.bind_to_planet(null)
 	current_planet = 0
 	_update_occluders()
-	var altitude := maxf(starting_altitude, ship.minimum_altitude_for_planet(planets[0]))
+	var altitude := starting_altitude
 	sun_radius = maxf(initial_sun_radius, 1.0)
 	frame_origin = solar_positions[0]
 	_set_frame_origin(frame_origin)
@@ -158,7 +158,7 @@ func _travel_to_next_planet() -> void:
 	_update_occluders()
 	var destination := current_planet + 1
 	var fixed_ship_position := ship.position
-	var altitude := maxf(ship.altitude, ship.minimum_altitude_for_planet(planets[destination]))
+	var altitude := ship.altitude
 	var radial_up := ship.basis.y.normalized()
 	# Move the destination under the stationary ship with its current radial orientation.
 	var destination_center := fixed_ship_position - radial_up * (planet_radii[destination] + altitude)

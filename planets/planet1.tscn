@@ -1,5 +1,8 @@
 [gd_scene format=3]
 
+[ext_resource type="Script" path="res://planets/surface_collider.gd" id="surface_script"]
+[ext_resource type="ConcavePolygonShape3D" path="res://planets/planet1_collision.res" id="surface_shape"]
+
 [ext_resource type="ArrayMesh" path="res://planets/planet1_terrain.res" id="1_0ia28"]
 [ext_resource type="Material" path="res://planets/ocean_material.tres" id="2_ml253"]
 [ext_resource type="MultiMesh" path="res://planets/forest_patch_00.tres" id="3_bm7g1"]
@@ -280,3 +283,9 @@ multimesh = ExtResource("65_nmv14")
 [node name="CoreOccluder" type="OccluderInstance3D" parent="." unique_id=465332553]
 visible = false
 occluder = SubResource("SphereOccluder3D_p22sr")
+
+[node name="SurfaceCollider" type="StaticBody3D" parent="."]
+script = ExtResource("surface_script")
+
+[node name="Shape" type="CollisionShape3D" parent="SurfaceCollider"]
+shape = ExtResource("surface_shape")

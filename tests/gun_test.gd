@@ -47,7 +47,7 @@ func run_checks() -> void:
 		ship.set_combat_enabled(true)
 		assert(ship.speed_multiplier == 2.0)
 
-	# Same force input produces exactly twice the terminal velocity after unlock.
+	# Same force input produces twice the velocity while clear of the boundaries.
 	prototype._reset()
 	var pose: Transform3D = ship.global_transform
 	for axis in [Vector2(0, 1), Vector2(1, 0), Vector2.ZERO]:
@@ -57,7 +57,8 @@ func run_checks() -> void:
 		ship.set_process(false)
 		ship.set_combat_enabled(false)
 		var vertical := 1.0 if axis == Vector2.ZERO else 0.0
-		for step in range(600):
+		var steps := 120 if vertical > 0.0 else 600
+		for step in range(steps):
 			ship._step_thrust(1.0 / 120.0, axis, vertical)
 		var normal_speed: float = ship.velocity.length()
 		ship.bind_to_planet(null)
@@ -65,7 +66,7 @@ func run_checks() -> void:
 		ship.bind_to_planet(prototype.planets[0])
 		ship.set_process(false)
 		ship.set_combat_enabled(true)
-		for step in range(600):
+		for step in range(steps):
 			ship._step_thrust(1.0 / 120.0, axis, vertical)
 		assert(absf(ship.velocity.length() - 2.0 * normal_speed) < 0.01)
 

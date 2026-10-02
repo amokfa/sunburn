@@ -38,7 +38,6 @@ func run_checks() -> void:
 	assert(ship.bound_planet == planet and ship.is_processing())
 	assert(ship.global_position.distance_to(placed.origin) < 0.001)
 	assert(absf(ship.altitude - 45.0) < 0.001)
-	assert(absf(ship.minimum_altitude_for_planet(planet) - 22.0) < 0.001)
 	# Headless cannot capture the mouse; step flight directly with real key events.
 	ship.set_process(false)
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -81,8 +80,9 @@ func run_checks() -> void:
 	for step in range(300):
 		ship._move(1.0 / 60.0)
 	key(KEY_E, false)
-	assert(absf(ship.altitude - 22.0) < 0.001)
-	assert(ship.velocity.dot(ship.radial_up) > -0.001)
+	# An uncollided mock planet has no artificial altitude floor.
+	assert(ship.altitude < 0.0)
+	assert(ship.velocity.dot(ship.radial_up) < -1.0)
 
 	# View heading stays still while torque gradually aligns the ship with it.
 	ship.global_transform = placed
@@ -132,10 +132,11 @@ func run_checks() -> void:
 	key(KEY_W, false)
 	key(KEY_A, false)
 	key(KEY_Q, false)
+	var rebound_pose: Transform3D = ship.global_transform
 	ship.bind_to_planet(planet)
 	assert(ship.bound_planet == planet and ship.is_processing())
 	assert(ship.radial_up.dot((ship.global_position - planet.global_position).normalized()) > 0.99999)
-	assert(ship.altitude >= ship.minimum_altitude_for_planet(planet) - 0.001)
+	assert(ship.global_position.distance_to(rebound_pose.origin) < 0.001)
 	planet.free()
 	ship._process(0.0)
 	assert(ship.bound_planet == null and not ship.is_processing())

@@ -121,6 +121,9 @@ func land_color(p: Vector3, height: float, kind: int) -> Color:
 func bake_planet(kind: int) -> void:
 	var root := Node3D.new()
 	root.name = "Planet%d" % (kind + 1)
+	var collider := make_collider(kind)
+	add_owned(root, collider)
+	collider.get_node("Shape").owner = root
 	var mesh_directions := directions
 	var mesh_indices := indices
 	var vertices := PackedVector3Array()
@@ -189,6 +192,35 @@ func bake_planet(kind: int) -> void:
 	check_error(ResourceSaver.save(scene, "res://planets/planet%d.tscn" % (kind + 1)), "saving planet")
 	print("Planet %d: %d terrain triangles; radial extent %.4f" % [kind + 1, mesh_indices.size() / 3, maximum_radius])
 	root.free()
+
+func make_collider(kind: int) -> StaticBody3D:
+	var sphere := SphereMesh.new()
+	sphere.radius = 1.0
+	sphere.height = 2.0
+	sphere.radial_segments = 32
+	sphere.rings = 16
+	var arrays := sphere.get_mesh_arrays()
+	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	for index in range(vertices.size()):
+		var p := vertices[index].normalized()
+		var ground := 1.0 + elevation(p, kind)
+		var surface := maxf(1.0, ground) if kind == 0 else ground
+		vertices[index] = p * surface
+	var faces := PackedVector3Array()
+	var mesh_indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+	for index in mesh_indices:
+		faces.append(vertices[index])
+	var shape := ConcavePolygonShape3D.new()
+	shape.set_faces(faces)
+	save_resource(shape, "res://planets/planet%d_collision.res" % (kind + 1))
+	var body := StaticBody3D.new()
+	body.name = "SurfaceCollider"
+	body.set_script(load("res://planets/surface_collider.gd"))
+	var collision := CollisionShape3D.new()
+	collision.name = "Shape"
+	collision.shape = shape
+	body.add_child(collision)
+	return body
 
 func add_owned(root: Node, child: Node) -> void:
 	root.add_child(child)

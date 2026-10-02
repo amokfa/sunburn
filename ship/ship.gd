@@ -4,6 +4,7 @@ extends Node3D
 ## Bind after placing the ship in the scene. Unbinding preserves its transform.
 const GunController = preload("res://ship/gun.gd")
 const ThrusterController = preload("res://ship/thruster.gd")
+const SurfaceCollider = preload("res://planets/surface_collider.gd")
 
 @export var mass: float = 1000.0
 @export var horizontal_thrust_force: float = 32000.0
@@ -13,8 +14,13 @@ const ThrusterController = preload("res://ship/thruster.gd")
 @export var yaw_inertia: float = 100.0
 @export var view_turn_torque: float = 1200.0
 @export var yaw_damping: float = 700.0
-@export var surface_clearance: float = 4.0
 @export var combat_speed_multiplier: float = 2.0
+
+@export_group("Planet boundaries")
+@export_range(0.0, 100.0, 0.1, "or_greater") var surface_clearance: float = 0.0
+@export var boundary_spring_stiffness: float = 5000.0
+@export var boundary_spring_damping: float = 9000.0
+@export var maximum_altitude_ratio: float = 0.5
 
 @export_group("Visual tilt")
 @export var pitch_tilt_degrees: float = 12.0
@@ -61,6 +67,7 @@ var yaw_velocity: float:
 		return _yaw_velocity
 
 var _planet: Node3D
+var _surface_collider: SurfaceCollider
 var _altitude: float = 0.0
 var _local_up := Vector3.UP
 var _local_forward := Vector3.FORWARD
@@ -90,6 +97,7 @@ func _ready() -> void:
 func bind_to_planet(planet: Node3D) -> void:
 	_unbound_view_forward = view_forward
 	_planet = planet
+	_surface_collider = _planet.get_node_or_null("SurfaceCollider") as SurfaceCollider if is_instance_valid(_planet) else null
 	set_process(is_instance_valid(_planet))
 	_update_gun_state()
 	if not is_instance_valid(_planet):
@@ -108,14 +116,9 @@ func bind_to_planet(planet: Node3D) -> void:
 	_visual_time = 0.0
 	_update_visual_tilt(0.0, Vector2.ZERO)
 	var radius := _planet_radius(_planet)
-	_altitude = maxf(minimum_altitude_for_planet(_planet), relative_position.length() * radius - radius)
+	_altitude = relative_position.length() * radius - radius
 	_update_transform()
 	_update_thrusters(Vector2.ZERO, 0.0, 0.0)
-
-
-func minimum_altitude_for_planet(planet: Node3D) -> float:
-	var extent: float = planet.get_meta("maximum_surface_radius", 1.0)
-	return maxf(surface_clearance, (extent - 1.0) * _planet_radius(planet) + surface_clearance)
 
 
 func set_combat_enabled(value: bool) -> void:
@@ -232,17 +235,23 @@ func _step_thrust(delta: float, horizontal: Vector2, vertical: float) -> void:
 	var right := _local_forward.cross(_local_up).normalized()
 	var acceleration := (right * horizontal.x + _local_forward * horizontal.y) * horizontal_thrust_force * speed_multiplier / maxf(mass, 0.001)
 	acceleration += _local_up * vertical * vertical_thrust_force * speed_multiplier / maxf(mass, 0.001)
+	var radius := _planet_radius(_planet)
+	var boundary_force := 0.0
+	if is_instance_valid(_surface_collider):
+		var penetration := _surface_collider.surface_radius(_local_up) + surface_clearance - (radius + _altitude)
+		if penetration > 0.0:
+			boundary_force += maxf(0.0, boundary_spring_stiffness * penetration * penetration - boundary_spring_damping * radial_speed)
+	var ceiling_penetration := _altitude - radius * maximum_altitude_ratio
+	if ceiling_penetration > 0.0:
+		boundary_force -= maxf(0.0, boundary_spring_stiffness * ceiling_penetration + boundary_spring_damping * radial_speed)
+	acceleration += _local_up * boundary_force / maxf(mass, 0.001)
 	_velocity = tangent_velocity + _local_up * radial_speed + acceleration * delta
 	_altitude += _velocity.dot(_local_up) * delta
-	var floor_altitude := minimum_altitude_for_planet(_planet)
-	if _altitude < floor_altitude:
-		_altitude = floor_altitude
-		_velocity -= _local_up * minf(_velocity.dot(_local_up), 0.0)
 	tangent_velocity = _velocity - _local_up * _velocity.dot(_local_up)
 	if tangent_velocity.length_squared() > 0.000001:
 		# Transport momentum, ship heading, and view together across the sphere.
 		var axis := _local_up.cross(tangent_velocity.normalized()).normalized()
-		var angle := tangent_velocity.length() * delta / (_planet_radius(_planet) + _altitude)
+		var angle := tangent_velocity.length() * delta / maxf(_planet_radius(_planet) + _altitude, 0.001)
 		_local_up = _local_up.rotated(axis, angle).normalized()
 		_local_forward = _local_forward.rotated(axis, angle).normalized()
 		_local_view_forward = _local_view_forward.rotated(axis, angle).normalized()

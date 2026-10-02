@@ -3,12 +3,12 @@
 [ext_resource type="Script" uid="uid://b5t1exp25aole" path="res://ship/ship.gd" id="1_controller"]
 [ext_resource type="PackedScene" uid="uid://ccsqdtevxwxvb" path="res://assets/ship3.glb" id="2_model"]
 [ext_resource type="PackedScene" path="res://ship/gun.tscn" id="3_gun"]
-
-[ext_resource type="PackedScene" path="res://ship/thruster.tscn" id="4_thruster"]
+[ext_resource type="PackedScene" uid="uid://7twv45k1xq05" path="res://ship/thruster.tscn" id="4_thruster"]
 
 [node name="Ship" type="Node3D" unique_id=1857046056]
 process_priority = -10
 script = ExtResource("1_controller")
+surface_clearance = 2.0
 
 [node name="Gun" parent="." unique_id=1836922093 instance=ExtResource("3_gun")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.15, 0)
@@ -21,83 +21,79 @@ transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
 [node name="back" type="Marker3D" parent="Model/markers" unique_id=718379953]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.753)
 
+[node name="Exhaust" parent="Model/markers/back" unique_id=1864580528 instance=ExtResource("4_thruster")]
+transform = Transform3D(2, 0, 0, 0, 0, 2, 0, -2, 0, 0, 0, 0)
+
 [node name="front" type="Marker3D" parent="Model/markers" unique_id=1527638891]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.75)
+
+[node name="Exhaust" parent="Model/markers/front" unique_id=362952677 instance=ExtResource("4_thruster")]
+transform = Transform3D(2, 0, 0, 0, 0, -2, 0, 2, 0, 0, 0, 0)
 
 [node name="side_front_left" type="Marker3D" parent="Model/markers" unique_id=1504254717]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.46838522, 0, 0.50129986)
 
+[node name="Exhaust" parent="Model/markers/side_front_left" unique_id=304368514 instance=ExtResource("4_thruster")]
+transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0)
+
 [node name="side_front_right" type="Marker3D" parent="Model/markers" unique_id=293397007]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.468, 0, 0.501)
+
+[node name="Exhaust" parent="Model/markers/side_front_right" unique_id=1735539341 instance=ExtResource("4_thruster")]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0)
 
 [node name="side_back_left" type="Marker3D" parent="Model/markers" unique_id=998737877]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.468, 0, -0.5)
 
+[node name="Exhaust" parent="Model/markers/side_back_left" unique_id=274413443 instance=ExtResource("4_thruster")]
+transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0)
+
 [node name="side_back_right" type="Marker3D" parent="Model/markers" unique_id=1930773767]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.468, 0, -0.5)
+
+[node name="Exhaust" parent="Model/markers/side_back_right" unique_id=534169510 instance=ExtResource("4_thruster")]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0)
 
 [node name="up_front_right" type="Marker3D" parent="Model/markers" unique_id=955376717]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.401, 0.2, 0.499)
 
+[node name="Exhaust" parent="Model/markers/up_front_right" unique_id=1299202136 instance=ExtResource("4_thruster")]
+
 [node name="down_front_right" type="Marker3D" parent="Model/markers" unique_id=543157800]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.401, -0.2, 0.499)
+
+[node name="Exhaust" parent="Model/markers/down_front_right" unique_id=114716823 instance=ExtResource("4_thruster")]
+transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, -1, 0, 0, 0)
 
 [node name="up_front_left" type="Marker3D" parent="Model/markers" unique_id=1529191130]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.401, 0.2, 0.499)
 
+[node name="Exhaust" parent="Model/markers/up_front_left" unique_id=913169858 instance=ExtResource("4_thruster")]
+
 [node name="down_front_left" type="Marker3D" parent="Model/markers" unique_id=1791757255]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.401, -0.2, 0.499)
+
+[node name="Exhaust" parent="Model/markers/down_front_left" unique_id=1603047672 instance=ExtResource("4_thruster")]
+transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, -1, 0, 0, 0)
 
 [node name="up_back_right" type="Marker3D" parent="Model/markers" unique_id=590744096]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.401, 0.2, -0.4999457)
 
+[node name="Exhaust" parent="Model/markers/up_back_right" unique_id=1239963493 instance=ExtResource("4_thruster")]
+
 [node name="down_back_right" type="Marker3D" parent="Model/markers" unique_id=257511257]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.401, -0.2, -0.5)
+
+[node name="Exhaust" parent="Model/markers/down_back_right" unique_id=225212388 instance=ExtResource("4_thruster")]
+transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, -1, 0, 0, 0)
 
 [node name="up_back_left" type="Marker3D" parent="Model/markers" unique_id=713378733]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.401, 0.2, -0.5)
 
+[node name="Exhaust" parent="Model/markers/up_back_left" unique_id=1638796071 instance=ExtResource("4_thruster")]
+
 [node name="down_back_left" type="Marker3D" parent="Model/markers" unique_id=605938601]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.401, -0.2, -0.5)
 
-[node name="Exhaust" parent="Model/markers/back" instance=ExtResource("4_thruster")]
-transform = Transform3D(2, 0, 0, 0, 0, 2, 0, -2, 0, 0, 0, 0)
-
-[node name="Exhaust" parent="Model/markers/front" instance=ExtResource("4_thruster")]
-transform = Transform3D(2, 0, 0, 0, 0, -2, 0, 2, 0, 0, 0, 0)
-
-[node name="Exhaust" parent="Model/markers/side_front_left" instance=ExtResource("4_thruster")]
-transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0)
-
-[node name="Exhaust" parent="Model/markers/side_front_right" instance=ExtResource("4_thruster")]
-transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0)
-
-[node name="Exhaust" parent="Model/markers/side_back_left" instance=ExtResource("4_thruster")]
-transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0)
-
-[node name="Exhaust" parent="Model/markers/side_back_right" instance=ExtResource("4_thruster")]
-transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0)
-
-[node name="Exhaust" parent="Model/markers/up_front_right" instance=ExtResource("4_thruster")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
-
-[node name="Exhaust" parent="Model/markers/down_front_right" instance=ExtResource("4_thruster")]
-transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, -1, 0, 0, 0)
-
-[node name="Exhaust" parent="Model/markers/up_front_left" instance=ExtResource("4_thruster")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
-
-[node name="Exhaust" parent="Model/markers/down_front_left" instance=ExtResource("4_thruster")]
-transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, -1, 0, 0, 0)
-
-[node name="Exhaust" parent="Model/markers/up_back_right" instance=ExtResource("4_thruster")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
-
-[node name="Exhaust" parent="Model/markers/down_back_right" instance=ExtResource("4_thruster")]
-transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, -1, 0, 0, 0)
-
-[node name="Exhaust" parent="Model/markers/up_back_left" instance=ExtResource("4_thruster")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
-
-[node name="Exhaust" parent="Model/markers/down_back_left" instance=ExtResource("4_thruster")]
+[node name="Exhaust" parent="Model/markers/down_back_left" unique_id=1929761471 instance=ExtResource("4_thruster")]
 transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, -1, 0, 0, 0)
