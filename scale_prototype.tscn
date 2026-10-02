@@ -3,6 +3,10 @@
 [ext_resource type="Script" uid="uid://bnryxn23l37r4" path="res://scale_prototype.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://dvaqrjr7d1sw8" path="res://sky/Milkyway.jpg" id="2_sky"]
 [ext_resource type="PackedScene" uid="uid://bsdcbcqnf7syv" path="res://sun/sun.tscn" id="3_sun"]
+[ext_resource type="PackedScene" path="res://planets/planet1.tscn" id="4_planet1"]
+[ext_resource type="PackedScene" path="res://planets/planet2.tscn" id="5_planet2"]
+[ext_resource type="PackedScene" path="res://planets/planet3.tscn" id="6_planet3"]
+[ext_resource type="PackedScene" uid="uid://c4jb0lyhjdp8w" path="res://assets/spaceship.glb" id="7_ship"]
 
 [sub_resource type="PanoramaSkyMaterial" id="Panorama"]
 panorama = ExtResource("2_sky")
@@ -19,44 +23,10 @@ ambient_light_color = Color(1, 1, 1, 1)
 ambient_light_energy = 0.02
 reflected_light_source = 1
 
-[sub_resource type="StandardMaterial3D" id="Blue"]
-albedo_color = Color(0.05, 0.3, 0.8, 1)
-roughness = 0.85
-disable_receive_shadows = true
-
-[sub_resource type="SphereMesh" id="Sphere"]
-radius = 1.0
-height = 2.0
-radial_segments = 256
-rings = 128
-
-[sub_resource type="StandardMaterial3D" id="MarsRed"]
-albedo_color = Color(0.65, 0.19, 0.09, 1)
-roughness = 0.85
-disable_receive_shadows = true
-
-[sub_resource type="StandardMaterial3D" id="Grey"]
-albedo_color = Color(0.48, 0.48, 0.48, 1)
-roughness = 0.85
-disable_receive_shadows = true
-
-[sub_resource type="StandardMaterial3D" id="ShipWhite"]
-albedo_color = Color(0.85, 0.87, 0.9, 1)
-roughness = 0.85
-
-[sub_resource type="BoxMesh" id="ShipCube"]
-size = Vector3(3, 3, 3)
-
-[sub_resource type="StandardMaterial3D" id="NoseYellow"]
-albedo_color = Color(1, 0.8, 0.1, 1)
-roughness = 0.85
-
-[sub_resource type="BoxMesh" id="NoseCube"]
-size = Vector3(1.3, 1.3, 1.3)
-
 [node name="ScalePrototype" type="Node3D" unique_id=1293193467]
 script = ExtResource("1")
 sunlight_ship_offset = 10000.0
+flight_speed = 40.0
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=198271429]
 environment = SubResource("Environment")
@@ -70,20 +40,14 @@ directional_shadow_max_distance = 400.0
 directional_shadow_pancake_size = 0.0
 sky_mode = 1
 
-[node name="Planet1" type="MeshInstance3D" parent="." unique_id=1096592047]
+[node name="Planet1" parent="." unique_id=556088182 instance=ExtResource("4_planet1")]
 transform = Transform3D(300, 0, 0, 0, 300, 0, 0, 0, 300, 0, 0, 0)
-material_override = SubResource("Blue")
-mesh = SubResource("Sphere")
 
-[node name="Planet2" type="MeshInstance3D" parent="." unique_id=1618616848]
+[node name="Planet2" parent="." unique_id=666832383 instance=ExtResource("5_planet2")]
 transform = Transform3D(240, 0, 0, 0, 240, 0, 0, 0, 240, 1745.3079, 0, 902.3607)
-material_override = SubResource("MarsRed")
-mesh = SubResource("Sphere")
 
-[node name="Planet3" type="MeshInstance3D" parent="." unique_id=1379925957]
+[node name="Planet3" parent="." unique_id=1260089492 instance=ExtResource("6_planet3")]
 transform = Transform3D(180, 0, 0, 0, 180, 0, 0, 0, 180, 3476.2993, 0, 2474.1167)
-material_override = SubResource("Grey")
-mesh = SubResource("Sphere")
 
 [node name="Sun" parent="." unique_id=1329415801 instance=ExtResource("3_sun")]
 transform = Transform3D(500, 0, 0, 0, 500, 0, 0, 0, 500, -1800, 0, 0)
@@ -91,17 +55,11 @@ transform = Transform3D(500, 0, 0, 0, 500, 0, 0, 0, 500, -1800, 0, 0)
 [node name="Ship" type="Node3D" parent="." unique_id=1306759738]
 transform = Transform3D(0, 0, -1, -0.8, 0.6, 0, 0.6, 0.8, 0, -276, 207, 0)
 
-[node name="Body" type="MeshInstance3D" parent="Ship" unique_id=669317073]
-material_override = SubResource("ShipWhite")
-mesh = SubResource("ShipCube")
-
-[node name="FrontTop" type="MeshInstance3D" parent="Ship" unique_id=873503722]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7, -1.3)
-material_override = SubResource("NoseYellow")
-mesh = SubResource("NoseCube")
+[node name="Model" parent="Ship" unique_id=1258905896 instance=ExtResource("7_ship")]
+transform = Transform3D(-0.1190484, 0, 0, 0, 0.1190484, 0, 0, 0, -0.1190484, 0, -0.289366, 0.129818)
 
 [node name="Camera" type="Camera3D" parent="." unique_id=1243361966]
-transform = Transform3D(0, 0, -1, -0.880679, 0.473711, 0, 0.473711, 0.880679, 0, -270.568, 220.23, 0)
+transform = Transform3D(0, 0, -1, -0.880679, 0.473711, 0, 0.473711, 0.880679, 0, -271.9892, 217.5875, 0)
 current = true
 near = 0.1
 far = 30000.0

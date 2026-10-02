@@ -23,10 +23,10 @@ extends Node3D
 @export var travel_duration: float = 3.0
 
 @export_group("Camera")
-@export var camera_distance: float = 14.0
+@export var camera_distance: float = 11.0
 @export var mouse_sensitivity: float = 0.003
 
-@onready var planets: Array[MeshInstance3D] = [$Planet1, $Planet2, $Planet3]
+@onready var planets: Array[Node3D] = [$Planet1, $Planet2, $Planet3]
 var solar_positions: Array[Vector3] = []
 @onready var sun: MeshInstance3D = $Sun
 @onready var ship: Node3D = $Ship
@@ -53,9 +53,20 @@ func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
+func _minimum_altitude(index: int) -> float:
+	var extent: float = planets[index].get_meta("maximum_surface_radius", 1.0)
+	return maxf(4.0, (extent - 1.0) * planet_radii[index] + 4.0)
+
+
+func _update_occluders() -> void:
+	for index in range(planets.size()):
+		planets[index].get_node("CoreOccluder").visible = not travelling and index == current_planet
+
+
 func _reset() -> void:
 	current_planet = 0
-	altitude = starting_altitude
+	_update_occluders()
+	altitude = maxf(starting_altitude, _minimum_altitude(0))
 	sun_radius = maxf(initial_sun_radius, 1.0)
 	frame_origin = solar_positions[0]
 	_set_frame_origin(frame_origin)
@@ -92,7 +103,7 @@ func _move_ship(delta: float) -> void:
 	forward = forward.rotated(radial_up, turn * deg_to_rad(turn_speed_degrees) * delta)
 	var thrust := float(Input.is_physical_key_pressed(KEY_W)) - float(Input.is_physical_key_pressed(KEY_S))
 	var climb := float(Input.is_physical_key_pressed(KEY_Q)) - float(Input.is_physical_key_pressed(KEY_E))
-	altitude = maxf(4.0, altitude + climb * altitude_speed * delta)
+	altitude = maxf(_minimum_altitude(current_planet), altitude + climb * altitude_speed * delta)
 	var radius := planet_radii[current_planet] + altitude
 	if thrust != 0.0:
 		# Rotate the local frame along a great circle, preserving altitude and heading.
@@ -160,8 +171,10 @@ func _update_sunlight() -> void:
 
 func _travel_to_next_planet() -> void:
 	travelling = true
+	_update_occluders()
 	var destination := current_planet + 1
 	var fixed_ship_position := ship.position
+	altitude = maxf(altitude, _minimum_altitude(destination))
 	# Move the destination under the stationary ship with its current radial orientation.
 	var destination_center := fixed_ship_position - radial_up * (planet_radii[destination] + altitude)
 	var target_origin := solar_positions[destination] - destination_center
@@ -173,6 +186,7 @@ func _travel_to_next_planet() -> void:
 	_set_frame_origin(solar_positions[destination])
 	ship.position = fixed_ship_position - destination_center
 	travelling = false
+	_update_occluders()
 	_update_camera()
 	_update_sunlight()
 	_update_hud()
