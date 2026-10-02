@@ -30,7 +30,6 @@ var solar_positions: Array[Vector3] = []
 @onready var ship: ShipController = $Ship
 @onready var camera: Camera3D = $Camera
 @onready var sunlight: DirectionalLight3D = $Sunlight
-@onready var combat_hud: CanvasLayer = $CombatHUD
 var current_planet: int = 0
 var sun_radius: float
 var camera_pitch: float = -0.15
@@ -66,12 +65,10 @@ func _reset() -> void:
 	ship.position = radial_up * (planet_radii[0] + altitude)
 	ship.basis = Basis(forward.cross(radial_up).normalized(), radial_up, -forward)
 	ship.bind_to_planet(planets[0])
-	ship.set_combat_enabled(false)
 	camera_pitch = -0.15
 	_update_sun()
 	_update_camera()
 	_update_sunlight()
-	_update_combat_hud()
 
 
 func _set_frame_origin(origin: Vector3) -> void:
@@ -84,7 +81,21 @@ func _set_frame_origin(origin: Vector3) -> void:
 func _process(_delta: float) -> void:
 	_update_camera()
 	_update_sunlight()
-	_update_combat_hud()
+	_update_ocean_sun()
+
+
+func _update_ocean_sun() -> void:
+	var ocean := planets[0].get_node_or_null("Ocean") as MeshInstance3D
+	if ocean == null or not ocean.material_override is ShaderMaterial:
+		return
+	var material := ocean.material_override as ShaderMaterial
+	material.set_shader_parameter("sun_position", sun.global_position)
+	material.set_shader_parameter("sun_radius", sun_radius)
+	var glow_shell := sun.get_node("GlowShell") as MeshInstance3D
+	material.set_shader_parameter("sun_halo_radius", glow_shell.global_basis.x.length())
+	var halo_material := glow_shell.material_override as ShaderMaterial
+	if halo_material != null:
+		material.set_shader_parameter("sun_halo_color", halo_material.get_shader_parameter("glow_color"))
 
 
 func _update_camera() -> void:
@@ -94,21 +105,6 @@ func _update_camera() -> void:
 	var target := ship.global_position + radial_up * 1.5
 	camera.global_position = target + offset * camera_distance
 	camera.look_at(target, radial_up)
-	if ship.gun.enabled:
-		var center := get_viewport().get_visible_rect().size * 0.5
-		var ray_origin := camera.project_ray_origin(center)
-		var aim_target := ray_origin + camera.project_ray_normal(center) * ship.gun.aim_distance
-		var query := PhysicsRayQueryParameters3D.create(ray_origin, aim_target)
-		var hit := get_world_3d().direct_space_state.intersect_ray(query)
-		if not hit.is_empty():
-			aim_target = hit.position
-		ship.gun.aim_at(aim_target, radial_up)
-
-
-func _update_combat_hud() -> void:
-	combat_hud.visible = ship.gun.enabled and not travelling
-
-
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED and ship.bound_planet != null:
 		ship.rotate_view(-event.relative.x * mouse_sensitivity)
@@ -135,6 +131,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func _update_sun() -> void:
 	sun.scale = Vector3.ONE * sun_radius
 	_update_sunlight()
+	_update_ocean_sun()
 
 
 func _update_sunlight() -> void:
@@ -154,7 +151,6 @@ func _travel_to_next_planet() -> void:
 	travelling = true
 	var view_direction := ship.view_forward
 	ship.bind_to_planet(null)
-	_update_combat_hud()
 	_update_occluders()
 	var destination := current_planet + 1
 	var fixed_ship_position := ship.position
@@ -172,9 +168,7 @@ func _travel_to_next_planet() -> void:
 	ship.position = fixed_ship_position - destination_center
 	ship.bind_to_planet(planets[destination])
 	ship.set_view_direction(view_direction)
-	ship.set_combat_enabled(current_planet >= 1)
 	travelling = false
 	_update_occluders()
 	_update_camera()
 	_update_sunlight()
-	_update_combat_hud()

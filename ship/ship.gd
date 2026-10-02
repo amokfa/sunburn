@@ -2,7 +2,6 @@ class_name PlanetShip
 extends Node3D
 ## Thrust and damped yaw around uniformly scaled unit-sphere planets; no physics bodies.
 ## Bind after placing the ship in the scene. Unbinding preserves its transform.
-const GunController = preload("res://ship/gun.gd")
 const ThrusterController = preload("res://ship/thruster.gd")
 const SurfaceCollider = preload("res://planets/surface_collider.gd")
 
@@ -14,7 +13,6 @@ const SurfaceCollider = preload("res://planets/surface_collider.gd")
 @export var yaw_inertia: float = 100.0
 @export var view_turn_torque: float = 1200.0
 @export var yaw_damping: float = 700.0
-@export var combat_speed_multiplier: float = 2.0
 
 @export_group("Planet boundaries")
 @export_range(0.0, 100.0, 0.1, "or_greater") var surface_clearance: float = 5.0
@@ -36,12 +34,6 @@ const SurfaceCollider = preload("res://planets/surface_collider.gd")
 @export var full_yaw_thrust_torque: float = 1200.0
 
 @onready var model: Node3D = $Model
-@onready var gun: GunController = $Gun
-
-var combat_enabled: bool = false
-var speed_multiplier: float:
-	get:
-		return combat_speed_multiplier if combat_enabled else 1.0
 
 var bound_planet: Node3D:
 	get:
@@ -99,7 +91,6 @@ func bind_to_planet(planet: Node3D) -> void:
 	_planet = planet
 	_surface_collider = _planet.get_node_or_null("SurfaceCollider") as SurfaceCollider if is_instance_valid(_planet) else null
 	set_process(is_instance_valid(_planet))
-	_update_gun_state()
 	if not is_instance_valid(_planet):
 		_update_thrusters(Vector2.ZERO, 0.0, 0.0)
 		# The owner now has complete control of position and orientation.
@@ -119,16 +110,6 @@ func bind_to_planet(planet: Node3D) -> void:
 	_altitude = relative_position.length() * radius - radius
 	_update_transform()
 	_update_thrusters(Vector2.ZERO, 0.0, 0.0)
-
-
-func set_combat_enabled(value: bool) -> void:
-	combat_enabled = value
-	_update_gun_state()
-
-
-func _update_gun_state() -> void:
-	if is_instance_valid(gun):
-		gun.enabled = combat_enabled and is_instance_valid(_planet)
 
 
 func _planet_radius(planet: Node3D) -> float:
@@ -233,8 +214,8 @@ func _step_thrust(delta: float, horizontal: Vector2, vertical: float) -> void:
 	tangent_velocity *= exp(-maxf(horizontal_damping, 0.0) * delta)
 	radial_speed *= exp(-maxf(vertical_damping, 0.0) * delta)
 	var right := _local_forward.cross(_local_up).normalized()
-	var acceleration := (right * horizontal.x + _local_forward * horizontal.y) * horizontal_thrust_force * speed_multiplier / maxf(mass, 0.001)
-	acceleration += _local_up * vertical * vertical_thrust_force * speed_multiplier / maxf(mass, 0.001)
+	var acceleration := (right * horizontal.x + _local_forward * horizontal.y) * horizontal_thrust_force / maxf(mass, 0.001)
+	acceleration += _local_up * vertical * vertical_thrust_force / maxf(mass, 0.001)
 	var radius := _planet_radius(_planet)
 	var boundary_force := 0.0
 	if is_instance_valid(_surface_collider):

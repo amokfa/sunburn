@@ -2,16 +2,12 @@
 
 [ext_resource type="Script" uid="uid://b5t1exp25aole" path="res://ship/ship.gd" id="1_controller"]
 [ext_resource type="PackedScene" uid="uid://ccsqdtevxwxvb" path="res://assets/ship3.glb" id="2_model"]
-[ext_resource type="PackedScene" path="res://ship/gun.tscn" id="3_gun"]
 [ext_resource type="PackedScene" uid="uid://7twv45k1xq05" path="res://ship/thruster.tscn" id="4_thruster"]
 
 [node name="Ship" type="Node3D" unique_id=1857046056]
 process_priority = -10
 script = ExtResource("1_controller")
 surface_clearance = 0.0
-
-[node name="Gun" parent="." unique_id=1836922093 instance=ExtResource("3_gun")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.15, 0)
 
 [node name="Model" parent="." unique_id=136460692 instance=ExtResource("2_model")]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
