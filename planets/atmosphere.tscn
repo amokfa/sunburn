@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="ArrayMesh" path="res://sun/icosphere.res" id="1"]
+[ext_resource type="Material" path="res://planets/atmosphere_blue.tres" id="2"]
+
+[node name="Atmosphere" type="MeshInstance3D"]
+cast_shadow = 0
+mesh = ExtResource("1")
+material_override = ExtResource("2")

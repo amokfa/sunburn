@@ -1,0 +1,12 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://deunm5t7qp0kw"]
+
+[ext_resource type="Shader" uid="uid://dtk5lvgdcrny0" path="res://sun/halo.gdshader" id="1"]
+
+[resource]
+render_priority = 1
+shader = ExtResource("1")
+shader_parameter/glow_color = Color(0.40278322, 0.13518181, 0.08236576, 1)
+shader_parameter/glow_intensity = 0.70000003325
+shader_parameter/surface_radius_ratio = 0.50000002049012
+shader_parameter/fade_power = 1.0
+shader_parameter/glow_density = 12.0
