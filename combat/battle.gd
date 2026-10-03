@@ -28,7 +28,7 @@ var player: Node3D
 var ships: Array[AIShip] = []
 var active: bool = false
 var ai_speed: float = 40.0
-var missile_speed: float = 80.0
+var missile_speed: float = 100.0
 var _player_previous := Vector3.ZERO
 var _rng := RandomNumberGenerator.new()
 var _player_position := Vector3.ZERO

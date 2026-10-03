@@ -19,6 +19,14 @@ func _ready() -> void:
 func set_power(value: float) -> void:
 	target_power = clampf(value, 0.0, 1.0)
 
+func set_static_power(value: float) -> void:
+	target_power = clampf(value, 0.0, 1.0)
+	_power = target_power
+	visible = _power > 0.002
+	_material.set_shader_parameter("power", _power)
+	light.light_energy = _light_energy * _power if light_enabled else 0.0
+	set_process(false)
+
 func _process(delta: float) -> void:
 	_power = lerpf(_power, target_power, 1.0 - exp(-response * delta))
 	visible = _power > 0.002

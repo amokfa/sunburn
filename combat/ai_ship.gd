@@ -32,8 +32,35 @@ func _ready() -> void:
 	for exhaust: ThrusterController in _thrusters.values():
 		exhaust.light_enabled = false
 		exhaust.light.visible = false
-	_wobble_noise.seed = 73129 + get_index() * 173
+	_set_static_exhausts(false)
 	set_process(false)
+
+
+func bind_to_planet(planet_node: Node3D) -> void:
+	super.bind_to_planet(planet_node)
+	_set_static_exhausts(bound_planet != null)
+
+
+func _set_static_exhausts(active: bool) -> void:
+	for marker_name: StringName in _thrusters:
+		var power := 0.0
+		if active:
+			if marker_name == &"back":
+				power = 1.0
+			elif String(marker_name).begins_with("down_"):
+				power = hover_thrust_power
+		var exhaust: ThrusterController = _thrusters[marker_name]
+		exhaust.set_static_power(power)
+
+
+func _update_thrusters(_horizontal: Vector2, _vertical: float, _yaw_torque: float) -> void:
+	# AI exhaust is set once on binding; control signals do not animate it.
+	pass
+
+
+func _update_visual_tilt(_delta: float, _horizontal: Vector2) -> void:
+	# Keep the model's authored transform; impact rotation lives on the ship itself.
+	pass
 
 
 func _process(_delta: float) -> void:
