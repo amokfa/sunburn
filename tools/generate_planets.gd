@@ -165,6 +165,8 @@ func bake_planet(kind: int) -> void:
 	var terrain := MeshInstance3D.new()
 	terrain.name = "Terrain"
 	terrain.mesh = mesh
+	if kind == 0:
+		terrain.material_override = load("res://planets/terrain1_material.tres")
 	add_owned(root, terrain)
 	if kind < 2:
 		var atmosphere := load("res://planets/atmosphere.tscn").instantiate() as MeshInstance3D
@@ -172,6 +174,20 @@ func bake_planet(kind: int) -> void:
 		atmosphere.material_override = load("res://planets/atmosphere_blue.tres" if kind == 0 else "res://planets/atmosphere_green.tres")
 		add_owned(root, atmosphere)
 	if kind == 0:
+		# Keep the hand-placed story marker when regenerating the terrain scene.
+		var marker := Marker3D.new()
+		marker.name = "platform"
+		marker.position = Vector3(-0.23449643, 0.9104481, -0.37026796)
+		if ResourceLoader.exists("res://planets/planet1.tscn"):
+			var previous := load("res://planets/planet1.tscn").instantiate() as Node3D
+			var previous_marker := previous.get_node_or_null("platform") as Marker3D
+			if previous_marker != null:
+				marker.transform = previous_marker.transform
+			previous.free()
+		add_owned(root, marker)
+		var platform := load("res://planets/launch_platform.tscn").instantiate() as Node3D
+		marker.add_child(platform)
+		platform.owner = root
 		var ocean := MeshInstance3D.new()
 		ocean.name = "Ocean"
 		var ocean_mesh := SphereMesh.new()

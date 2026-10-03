@@ -6,7 +6,7 @@ const ShipController = preload("res://ship/ship.gd")
 @export var planet_radii := Vector3(300.0, 240.0, 180.0)
 @export var orbit_radii := Vector3(1800.0, 3600.0, 6000.0)
 @export var orbit_angles_degrees := Vector3(0.0, 10.0, -10.0)
-@export var initial_sun_radius: float = 500.0
+@export var initial_sun_radius: float = 250.0
 @export var sun_scroll_step: float = 100.0
 
 @export_group("Sun lighting")
@@ -19,9 +19,11 @@ const ShipController = preload("res://ship/ship.gd")
 @export_group("Planet travel")
 @export var starting_altitude: float = 45.0
 @export var travel_duration: float = 3.0
+@export var platform_repulsion_delay: float = 3.0
 
 @export_group("Camera")
 @export var camera_distance: float = 5.5
+@export var opening_camera_angle_degrees: float = 20.0
 @export var mouse_sensitivity: float = 0.003
 
 @onready var planets: Array[Node3D] = [$Planet1, $Planet2, $Planet3]
@@ -36,6 +38,13 @@ var sun_radius: float
 var camera_pitch: float = -0.15
 var travelling: bool = false
 var frame_origin := Vector3.ZERO
+var _left_platform := false
+var _repulsion_countdown := -1.0
+var _opening_camera_blend := 1.0
+var _opening_framing_weight := 1.0
+var _opening_camera_moved := false
+var _platform_clearance := 0.5
+@onready var launch_platform = $Planet1/platform/LaunchPlatform
 
 
 func _ready() -> void:
@@ -56,20 +65,31 @@ func _update_occluders() -> void:
 func _reset() -> void:
 	battle.set_active(false)
 	ship.reset_health()
-	ship.set_agility_boost(false)
+	ship.set_movement_profile(0)
 	ship.bind_to_planet(null)
 	current_planet = 0
 	_update_occluders()
-	var altitude := starting_altitude
 	sun_radius = maxf(initial_sun_radius, 1.0)
 	frame_origin = solar_positions[0]
 	_set_frame_origin(frame_origin)
-	var radial_up := Vector3(-0.8, 0.6, 0.0).normalized()
-	# Start looking toward the sun along the local tangent plane.
-	var forward := (Vector3.LEFT - radial_up * Vector3.LEFT.dot(radial_up)).normalized()
-	ship.position = radial_up * (planet_radii[0] + altitude)
-	ship.basis = Basis(forward.cross(radial_up).normalized(), radial_up, -forward)
+	launch_platform.align_to_planet()
+	launch_platform.visible = true
+	var radial_up: Vector3 = launch_platform.global_basis.y.normalized()
+	var sun_direction: Vector3 = sun.global_position - launch_platform.global_position
+	var forward: Vector3 = (sun_direction - radial_up * sun_direction.dot(radial_up)).normalized()
+	var ship_forward := forward.rotated(radial_up, deg_to_rad(45.0))
+	_platform_clearance = _ship_platform_clearance()
+	ship.global_position = launch_platform.global_position + radial_up * _platform_clearance
+	ship.basis = Basis(ship_forward.cross(radial_up).normalized(), radial_up, -ship_forward)
+	ship.surface_repulsion_enabled = false
+	_left_platform = false
+	_repulsion_countdown = -1.0
+	_opening_camera_blend = 1.0
+	_opening_framing_weight = 1.0
+	_opening_camera_moved = false
 	ship.bind_to_planet(planets[0])
+	ship.set_view_direction(forward)
+	ship.set_parked(true)
 	camera_pitch = -0.15
 	_update_sun()
 	_update_camera()
@@ -84,10 +104,44 @@ func _set_frame_origin(origin: Vector3) -> void:
 	battle.follow_planet()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	_update_platform_departure(delta)
+	if _opening_camera_moved:
+		_opening_framing_weight = maxf(0.0, _opening_framing_weight - delta * 5.0)
 	_update_camera()
 	_update_sunlight()
 	_update_ocean_sun()
+
+func _ship_platform_clearance() -> float:
+	var minimum_y := 0.0
+	var pending: Array[Node] = [ship.model]
+	while not pending.is_empty():
+		var node := pending.pop_back() as Node
+		if node.name == &"markers":
+			continue
+		if node is MeshInstance3D and node.mesh != null:
+			var bounds: AABB = node.mesh.get_aabb()
+			var local_transform: Transform3D = ship.global_transform.affine_inverse() * node.global_transform
+			for index in range(8):
+				minimum_y = minf(minimum_y, (local_transform * bounds.get_endpoint(index)).y)
+		pending.append_array(node.get_children())
+	return -minimum_y + 0.05
+
+func _update_platform_departure(delta: float) -> void:
+	if travelling or current_planet != 0:
+		return
+	if not _left_platform:
+		if ship.is_parked:
+			return
+		_left_platform = true
+		_repulsion_countdown = platform_repulsion_delay
+		return
+	_opening_camera_blend = maxf(0.0, _opening_camera_blend - delta / maxf(platform_repulsion_delay, 0.001))
+	if _repulsion_countdown >= 0.0:
+		_repulsion_countdown -= delta
+		if _repulsion_countdown <= 0.0:
+			ship.surface_repulsion_enabled = true
+			_repulsion_countdown = -1.0
 
 
 func _update_ocean_sun() -> void:
@@ -107,12 +161,23 @@ func _update_ocean_sun() -> void:
 func _update_camera() -> void:
 	var radial_up := ship.radial_up
 	var direction := ship.view_forward
-	var offset := -direction * cos(camera_pitch) + radial_up * -sin(camera_pitch)
-	var target := ship.global_position + radial_up * 1.5
-	camera.global_position = target + offset * camera_distance
-	camera.look_at(target, radial_up)
+	var orbit_direction := direction.rotated(radial_up, deg_to_rad(opening_camera_angle_degrees) * _opening_camera_blend)
+	var offset := -orbit_direction * cos(camera_pitch) + radial_up * -sin(camera_pitch)
+	var target := ship.global_position + radial_up * lerpf(1.5, 0.35, _opening_camera_blend)
+	camera.global_position = target + offset * lerpf(camera_distance, 8.0, _opening_camera_blend)
+	var look_direction := (target - camera.global_position).normalized()
+	if _opening_camera_blend * _opening_framing_weight > 0.0:
+		var ship_direction := (ship.global_position - camera.global_position).normalized()
+		var sun_direction := (sun.global_position - camera.global_position).normalized()
+		var opening_direction := (ship_direction + sun_direction).normalized()
+		look_direction = look_direction.slerp(opening_direction, _opening_camera_blend * _opening_framing_weight)
+	camera.look_at(camera.global_position + look_direction, radial_up)
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED and ship.bound_planet != null:
+		if ship.is_parked:
+			return
+		if not event.relative.is_zero_approx():
+			_opening_camera_moved = true
 		ship.rotate_view(-event.relative.x * mouse_sensitivity)
 		camera_pitch = clampf(camera_pitch - event.relative.y * mouse_sensitivity, -1.4, 1.4)
 	elif event is InputEventMouseButton and event.pressed:
@@ -156,6 +221,10 @@ func _update_sunlight() -> void:
 
 
 func _travel_to_next_planet() -> void:
+	ship.surface_repulsion_enabled = true
+	_left_platform = true
+	_repulsion_countdown = -1.0
+	_opening_camera_blend = 0.0
 	battle.set_active(false)
 	travelling = true
 	var view_direction := ship.view_forward
@@ -177,7 +246,7 @@ func _travel_to_next_planet() -> void:
 	ship.position = fixed_ship_position - destination_center
 	ship.bind_to_planet(planets[destination])
 	ship.set_view_direction(view_direction)
-	ship.set_agility_boost(current_planet >= 1)
+	ship.set_movement_profile(current_planet)
 	battle.set_active(current_planet == 1)
 	travelling = false
 	_update_occluders()

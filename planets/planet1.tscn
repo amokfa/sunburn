@@ -66,7 +66,9 @@
 [ext_resource type="MultiMesh" uid="uid://vj55y1iykcr5" path="res://planets/forest_patch_62.tres" id="64_xt4kj"]
 [ext_resource type="MultiMesh" uid="uid://cruv8o10v7cb5" path="res://planets/forest_patch_63.tres" id="65_nmv14"]
 [ext_resource type="PackedScene" path="res://planets/atmosphere.tscn" id="atmosphere_scene"]
+[ext_resource type="PackedScene" path="res://planets/launch_platform.tscn" id="launch_platform"]
 [ext_resource type="Script" uid="uid://hosuk27hxit" path="res://planets/surface_collider.gd" id="surface_script"]
+[ext_resource type="Material" path="res://planets/terrain1_material.tres" id="terrain_material"]
 
 [sub_resource type="SphereMesh" id="SphereMesh_axsso"]
 radius = 1.0
@@ -82,6 +84,7 @@ metadata/maximum_surface_radius = 1.0614862093999982
 metadata/generation_seed = 73129
 
 [node name="Terrain" type="MeshInstance3D" parent="." unique_id=280161796]
+material_override = ExtResource("terrain_material")
 mesh = ExtResource("1_0ia28")
 
 [node name="Ocean" type="MeshInstance3D" parent="." unique_id=998582050]
@@ -290,3 +293,10 @@ script = ExtResource("surface_script")
 
 [node name="Atmosphere" parent="." unique_id=2114200768 instance=ExtResource("atmosphere_scene")]
 transform = Transform3D(1.1, 0, 0, 0, 1.1, 0, 0, 0, 1.1, 0, 0, 0)
+
+[node name="platform" type="Marker3D" parent="." unique_id=156854825]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.23449643, 0.9104481, -0.37026796)
+
+[node name="LaunchPlatform" parent="platform" unique_id=15179876 instance=ExtResource("launch_platform")]
+transform = Transform3D(0, -0.23207203, 0.9726986, -0.376725, 0.90103525, 0.21497415, -0.9263252, -0.36643988, -0.087427326, 0, 0, 0)
+visible = false

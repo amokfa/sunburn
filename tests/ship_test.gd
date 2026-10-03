@@ -148,6 +148,7 @@ func run_checks() -> void:
 	assert(prototype.ship.bound_planet == prototype.planets[0])
 	assert(prototype.ship.horizontal_thrust_force == 32000.0)
 	prototype.ship.set_process(false)
+	var parked_heading: Vector3 = prototype.ship.forward
 	prototype.ship.rotate_view(0.8)
 	prototype._update_camera()
 	var camera_basis: Basis = prototype.camera.global_basis
@@ -155,9 +156,10 @@ func run_checks() -> void:
 		prototype.ship._move(1.0 / 60.0)
 		prototype._update_camera()
 		assert(prototype.camera.global_basis.is_equal_approx(camera_basis))
-	assert(prototype.ship.forward.dot(prototype.ship.view_forward) > 0.99999)
+	assert(prototype.ship.forward.is_equal_approx(parked_heading))
 	for destination in [1, 2]:
 		prototype.travel_duration = 0.05
+		var departure_altitude: float = prototype.ship.altitude
 		var initial_ship: Transform3D = prototype.ship.transform
 		prototype._travel_to_next_planet()
 		assert(prototype.ship.bound_planet == null and not prototype.ship.is_processing())
@@ -170,7 +172,7 @@ func run_checks() -> void:
 			await process_frame
 		assert(prototype.ship.bound_planet == prototype.planets[destination])
 		assert(prototype.planets[destination].position.is_zero_approx())
-		assert(absf(prototype.ship.altitude - 45.0) < 0.001)
+		assert(absf(prototype.ship.altitude - departure_altitude) < 0.001)
 	prototype._reset()
 	assert(prototype.ship.bound_planet == prototype.planets[0])
 	prototype.free()

@@ -58,7 +58,8 @@ func configure(planet_node: Node3D, player_ship: Node3D) -> void:
 	player = player_ship
 	if not player.destroyed.is_connected(_on_ship_destroyed):
 		player.destroyed.connect(_on_ship_destroyed)
-	var base_speed: float = player.horizontal_thrust_force / player.mass / maxf(player.horizontal_damping, 0.001)
+	var enemy := ships[0] if not ships.is_empty() else null
+	var base_speed: float = enemy.horizontal_thrust_force / enemy.mass / maxf(enemy.horizontal_damping, 0.001) if enemy != null else 40.0
 	ai_speed = base_speed
 	follow_planet()
 

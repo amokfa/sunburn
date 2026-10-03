@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" load_steps=4 format=3]
+
+[ext_resource type="Shader" path="res://planets/terrain1.gdshader" id="1"]
+[ext_resource type="Texture2D" path="res://planets/grass_texture.tres" id="2"]
+[ext_resource type="Texture2D" path="res://planets/sand_texture.tres" id="3"]
+
+[resource]
+shader = ExtResource("1")
+shader_parameter/grass_texture = ExtResource("2")
+shader_parameter/sand_texture = ExtResource("3")

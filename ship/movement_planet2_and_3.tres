@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ShipMovementSettings" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://ship/movement_settings.gd" id="1"]
+
+[resource]
+resource_local_to_scene = true
+script = ExtResource("1")
+mass = 1000.0
+horizontal_thrust_force = 96000.0
+vertical_thrust_force = 120000.0
+horizontal_damping = 1.2
+vertical_damping = 1.8
+yaw_inertia = 100.0
+view_turn_torque = 4800.0
+yaw_damping = 1400.0
+impact_angular_inertia = 10000.0
+attitude_stabilization_frequency = 4.0
+surface_clearance = 10.0
+boundary_spring_stiffness = 50000.0
+boundary_spring_damping = 1000.0
+maximum_altitude_ratio = 0.5

@@ -79,7 +79,7 @@ func reset(planet_node: Node3D) -> void:
 	position = spawn_up * (_planet_radius(planet_node) + cruise_altitude)
 	basis = Basis(spawn_forward.cross(spawn_up), spawn_up, -spawn_forward)
 	bind_to_planet(planet_node)
-	set_agility_boost(false)
+	set_movement_profile(0)
 	set_process(false)
 	previous_position = position
 	target = null

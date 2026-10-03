@@ -15,29 +15,90 @@ var _wreck_spin := Vector3.ZERO
 var can_fight: bool:
 	get:
 		return lives_remaining > 0 and not is_destroyed
+var is_parked := false
 
-@export var mass: float = 1000.0
-@export var horizontal_thrust_force: float = 32000.0
-@export var vertical_thrust_force: float = 40000.0
-@export var horizontal_damping: float = 0.8
-@export var vertical_damping: float = 1.2
-@export var yaw_inertia: float = 100.0
-@export var view_turn_torque: float = 1200.0
-@export var yaw_damping: float = 700.0
-@export var impact_angular_inertia: float = 10000.0
-@export var attitude_stabilization_frequency: float = 4.0
+const MovementSettings = preload("res://ship/movement_settings.gd")
+@export_group("Movement profiles")
+@export var planet_1_movement: MovementSettings = preload("res://ship/movement_planet1.tres").duplicate() as MovementSettings
+@export var planet_2_and_3_movement: MovementSettings = preload("res://ship/movement_planet2_and_3.tres").duplicate() as MovementSettings
+var _use_planet_2_movement := false
+var movement_settings: MovementSettings:
+	get:
+		return planet_2_and_3_movement if _use_planet_2_movement else planet_1_movement
 
-@export_group("Planet two agility")
-@export var upgraded_speed_multiplier: float = 1.5
-@export var upgraded_acceleration_multiplier: float = 3.0
-@export var upgraded_turn_multiplier: float = 2.0
-var agility_boost: bool = false
+# Existing callers read and modify the active profile through these properties.
+var mass: float:
+	get:
+		return movement_settings.mass
+	set(value):
+		movement_settings.mass = value
+var horizontal_thrust_force: float:
+	get:
+		return movement_settings.horizontal_thrust_force
+	set(value):
+		movement_settings.horizontal_thrust_force = value
+var vertical_thrust_force: float:
+	get:
+		return movement_settings.vertical_thrust_force
+	set(value):
+		movement_settings.vertical_thrust_force = value
+var horizontal_damping: float:
+	get:
+		return movement_settings.horizontal_damping
+	set(value):
+		movement_settings.horizontal_damping = value
+var vertical_damping: float:
+	get:
+		return movement_settings.vertical_damping
+	set(value):
+		movement_settings.vertical_damping = value
+var yaw_inertia: float:
+	get:
+		return movement_settings.yaw_inertia
+	set(value):
+		movement_settings.yaw_inertia = value
+var view_turn_torque: float:
+	get:
+		return movement_settings.view_turn_torque
+	set(value):
+		movement_settings.view_turn_torque = value
+var yaw_damping: float:
+	get:
+		return movement_settings.yaw_damping
+	set(value):
+		movement_settings.yaw_damping = value
+var impact_angular_inertia: float:
+	get:
+		return movement_settings.impact_angular_inertia
+	set(value):
+		movement_settings.impact_angular_inertia = value
+var attitude_stabilization_frequency: float:
+	get:
+		return movement_settings.attitude_stabilization_frequency
+	set(value):
+		movement_settings.attitude_stabilization_frequency = value
+var surface_clearance: float:
+	get:
+		return movement_settings.surface_clearance
+	set(value):
+		movement_settings.surface_clearance = value
+var boundary_spring_stiffness: float:
+	get:
+		return movement_settings.boundary_spring_stiffness
+	set(value):
+		movement_settings.boundary_spring_stiffness = value
+var boundary_spring_damping: float:
+	get:
+		return movement_settings.boundary_spring_damping
+	set(value):
+		movement_settings.boundary_spring_damping = value
+var maximum_altitude_ratio: float:
+	get:
+		return movement_settings.maximum_altitude_ratio
+	set(value):
+		movement_settings.maximum_altitude_ratio = value
 
-@export_group("Planet boundaries")
-@export_range(0.0, 100.0, 0.1, "or_greater") var surface_clearance: float = 5.0
-@export var boundary_spring_stiffness: float = 5000.0
-@export var boundary_spring_damping: float = 9000.0
-@export var maximum_altitude_ratio: float = 0.5
+@export var surface_repulsion_enabled := true
 
 @export_group("Visual tilt")
 @export var pitch_tilt_degrees: float = 12.0
@@ -114,6 +175,7 @@ func _ready() -> void:
 
 
 func bind_to_planet(planet: Node3D) -> void:
+	set_parked(false)
 	_unbound_view_forward = view_forward
 	_planet = planet
 	_surface_collider = _planet.get_node_or_null("SurfaceCollider") as SurfaceCollider if is_instance_valid(_planet) else null
@@ -148,8 +210,20 @@ func _planet_radius(planet: Node3D) -> float:
 	return maxf(planet.global_basis.x.length(), 0.0001)
 
 
-func set_agility_boost(enabled: bool) -> void:
-	agility_boost = enabled
+func set_movement_profile(planet_index: int) -> void:
+	_use_planet_2_movement = planet_index >= 1
+
+func set_parked(value: bool) -> void:
+	if is_parked == value:
+		return
+	is_parked = value
+	for exhaust: ThrusterController in _thrusters.values():
+		if value:
+			exhaust.set_static_power(0.0)
+		else:
+			exhaust.set_process(true)
+	if value:
+		model.transform = _model_rest_transform
 
 func maximum_lives() -> int:
 	return MAX_LIVES
@@ -218,6 +292,7 @@ func _flight_basis() -> Basis:
 
 
 func _step_attitude(delta: float) -> void:
+	var settings := movement_settings
 	# Critically damped torque restores the actual ship attitude, independently of view yaw.
 	var rotation := _impact_rotation
 	if rotation.w < 0.0:
@@ -226,9 +301,9 @@ func _step_attitude(delta: float) -> void:
 	var sine := imaginary.length()
 	var angle := 2.0 * atan2(sine, rotation.w)
 	var error := imaginary * (angle / sine) if sine > 0.000001 else Vector3.ZERO
-	var frequency := maxf(attitude_stabilization_frequency, 0.0)
+	var frequency := maxf(settings.attitude_stabilization_frequency, 0.0)
 	var acceleration := -error * frequency * frequency - _impact_angular_velocity * 2.0 * frequency
-	_last_stabilization_torque = Basis(_impact_rotation).inverse() * acceleration * impact_angular_inertia
+	_last_stabilization_torque = Basis(_impact_rotation).inverse() * acceleration * settings.impact_angular_inertia
 	_impact_angular_velocity += acceleration * delta
 	var speed := _impact_angular_velocity.length()
 	if speed < 0.00001 and angle < 0.00001:
@@ -270,7 +345,7 @@ func set_view_direction(direction: Vector3) -> void:
 
 
 func rotate_view(angle: float) -> void:
-	if can_fight and is_instance_valid(_planet):
+	if can_fight and not is_parked and is_instance_valid(_planet):
 		_local_view_forward = _local_view_forward.rotated(_local_up, angle).normalized()
 
 
@@ -281,6 +356,10 @@ func _move(delta: float) -> void:
 		float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A)),
 		float(Input.is_physical_key_pressed(KEY_W)) - float(Input.is_physical_key_pressed(KEY_S))).limit_length()
 	var vertical := float(Input.is_physical_key_pressed(KEY_Q)) - float(Input.is_physical_key_pressed(KEY_E))
+	if is_parked:
+		if horizontal.is_zero_approx() and is_zero_approx(vertical):
+			return
+		set_parked(false)
 	apply_flight_controls(delta, horizontal, vertical)
 
 
@@ -300,7 +379,7 @@ func apply_flight_controls(delta: float, horizontal: Vector2, vertical: float) -
 
 
 func _update_thrusters(horizontal: Vector2, vertical: float, yaw_torque: float) -> void:
-	var active := is_instance_valid(_planet)
+	var active := is_instance_valid(_planet) and not is_parked
 	var torque_scale := maxf(full_yaw_thrust_torque, 0.001)
 	var turn := clampf((yaw_torque + _last_stabilization_torque.y) / torque_scale, -1.0, 1.0)
 	for marker_name: StringName in _thrusters:
@@ -335,6 +414,9 @@ func _update_thrusters(horizontal: Vector2, vertical: float, yaw_torque: float) 
 func _update_visual_tilt(delta: float, horizontal: Vector2) -> void:
 	if not is_instance_valid(model):
 		return
+	if is_parked:
+		model.transform = _model_rest_transform
+		return
 	var pitch_amplitude := backward_pitch_tilt_degrees if horizontal.y < 0.0 else pitch_tilt_degrees
 	var target := Vector2(-horizontal.y * deg_to_rad(pitch_amplitude), -horizontal.x * deg_to_rad(roll_tilt_degrees))
 	_visual_tilt = _visual_tilt.lerp(target, 1.0 - exp(-maxf(tilt_response, 0.0) * delta))
@@ -350,33 +432,31 @@ func _update_visual_tilt(delta: float, horizontal: Vector2) -> void:
 
 
 func _step_thrust(delta: float, horizontal: Vector2, vertical: float) -> void:
+	var settings := movement_settings
 	# The view target is independent of ship yaw, so turning cannot chase the camera.
 	var error := atan2(_local_forward.cross(_local_view_forward).dot(_local_up), _local_forward.dot(_local_view_forward))
-	var turn_multiplier := upgraded_turn_multiplier if agility_boost else 1.0
-	var torque := view_turn_torque * turn_multiplier * turn_multiplier * error - yaw_damping * turn_multiplier * _yaw_velocity
+	var torque := settings.view_turn_torque * error - settings.yaw_damping * _yaw_velocity
 	_last_yaw_torque = torque
-	_yaw_velocity += torque / maxf(yaw_inertia, 0.001) * delta
+	_yaw_velocity += torque / maxf(settings.yaw_inertia, 0.001) * delta
 	_local_forward = _local_forward.rotated(_local_up, _yaw_velocity * delta).normalized()
 	_step_attitude(delta)
 	var radial_speed := _velocity.dot(_local_up)
 	var tangent_velocity := _velocity - _local_up * radial_speed
-	var thrust_multiplier := upgraded_acceleration_multiplier if agility_boost else 1.0
-	var drag_multiplier := thrust_multiplier / maxf(upgraded_speed_multiplier, 0.001) if agility_boost else 1.0
-	tangent_velocity *= exp(-maxf(horizontal_damping, 0.0) * drag_multiplier * delta)
-	radial_speed *= exp(-maxf(vertical_damping, 0.0) * drag_multiplier * delta)
+	tangent_velocity *= exp(-maxf(settings.horizontal_damping, 0.0) * delta)
+	radial_speed *= exp(-maxf(settings.vertical_damping, 0.0) * delta)
 	var body := _flight_basis()
-	var acceleration := (body.x * horizontal.x - body.z * horizontal.y) * horizontal_thrust_force * thrust_multiplier / maxf(mass, 0.001)
-	acceleration += body.y * vertical * vertical_thrust_force * thrust_multiplier / maxf(mass, 0.001)
+	var acceleration := (body.x * horizontal.x - body.z * horizontal.y) * settings.horizontal_thrust_force / maxf(settings.mass, 0.001)
+	acceleration += body.y * vertical * settings.vertical_thrust_force / maxf(settings.mass, 0.001)
 	var radius := _planet_radius(_planet)
 	var boundary_force := 0.0
-	if is_instance_valid(_surface_collider):
-		var penetration := _surface_collider.surface_radius(_local_up) + surface_clearance - (radius + _altitude)
+	if surface_repulsion_enabled and is_instance_valid(_surface_collider):
+		var penetration := _surface_collider.surface_radius(_local_up) + settings.surface_clearance - (radius + _altitude)
 		if penetration > 0.0:
-			boundary_force += maxf(0.0, boundary_spring_stiffness * penetration - boundary_spring_damping * radial_speed)
-	var ceiling_penetration := _altitude - radius * maximum_altitude_ratio
+			boundary_force += maxf(0.0, settings.boundary_spring_stiffness * penetration - settings.boundary_spring_damping * radial_speed)
+	var ceiling_penetration := _altitude - radius * settings.maximum_altitude_ratio
 	if ceiling_penetration > 0.0:
-		boundary_force -= maxf(0.0, boundary_spring_stiffness * ceiling_penetration + boundary_spring_damping * radial_speed)
-	acceleration += _local_up * boundary_force / maxf(mass, 0.001)
+		boundary_force -= maxf(0.0, settings.boundary_spring_stiffness * ceiling_penetration + settings.boundary_spring_damping * radial_speed)
+	acceleration += _local_up * boundary_force / maxf(settings.mass, 0.001)
 	_velocity = tangent_velocity + _local_up * radial_speed + acceleration * delta
 	_altitude += _velocity.dot(_local_up) * delta
 	tangent_velocity = _velocity - _local_up * _velocity.dot(_local_up)

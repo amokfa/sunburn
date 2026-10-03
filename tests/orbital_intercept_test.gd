@@ -44,7 +44,7 @@ func run_checks() -> void:
 	var planet: Node3D = game.planets[1]
 	ship.global_position = planet.global_position + Vector3.UP * 285.0
 	ship.bind_to_planet(planet)
-	ship.set_agility_boost(true)
+	ship.set_movement_profile(1)
 	var history := History.new()
 	var delta := 1.0 / 240.0
 	for step in range(1440):
