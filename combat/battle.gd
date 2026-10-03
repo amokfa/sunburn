@@ -22,7 +22,7 @@ var player: Node3D
 var ships: Array[AIShip] = []
 var active: bool = false
 var ai_speed: float = 40.0
-var missile_speed: float = 120.0
+var missile_speed: float = 80.0
 var _player_previous := Vector3.ZERO
 var _rng := RandomNumberGenerator.new()
 var _player_position := Vector3.ZERO
@@ -46,7 +46,6 @@ func configure(planet_node: Node3D, player_ship: Node3D) -> void:
 	_surface_collider = planet.get_node("SurfaceCollider")
 	var base_speed: float = player.horizontal_thrust_force / player.mass / maxf(player.horizontal_damping, 0.001)
 	ai_speed = base_speed
-	missile_speed = base_speed
 	follow_planet()
 
 func follow_planet() -> void:
@@ -86,6 +85,7 @@ func _process(delta: float) -> void:
 	var radius := planet.global_basis.x.length()
 	_player_position = to_local(player.global_position)
 	_frame_missiles = _missiles.get_children()
+	var camera := get_viewport().get_camera_3d()
 	for ship in ships:
 		ship.previous_position = ship.position
 	for ship in ships:
@@ -115,6 +115,8 @@ func _process(delta: float) -> void:
 		ship.position = ship.up * (radius + ship.altitude)
 		ship.velocity = (ship.position - ship.previous_position) / maxf(delta, 0.0001)
 		if ship.reload_remaining <= 0.0 and is_instance_valid(ship.target):
+			if ship.target == player and (camera == null or not camera.is_position_in_frustum(ship.global_position)):
+				continue
 			var offset: Vector3 = _target_position(ship.target) - ship.position
 			if offset.length() <= firing_range and _visible(ship, offset, radius):
 				var target_velocity: Vector3 = ship.target.velocity
