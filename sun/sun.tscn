@@ -46,7 +46,7 @@ render_priority = 1
 shader = ExtResource("3_halo")
 shader_parameter/glow_color = Color(1, 0.35, 0.04, 1)
 shader_parameter/glow_intensity = 1.2
-shader_parameter/surface_radius_ratio = 0.80000003474012
+shader_parameter/surface_radius_ratio = 0.70000002999012
 shader_parameter/fade_power = 1.0
 shader_parameter/glow_density = 12.0
 

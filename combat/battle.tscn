@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://combat/battle.gd" id="1"]
 [ext_resource type="PackedScene" path="res://combat/ai_ship.tscn" id="2"]
+[ext_resource type="Script" path="res://combat/target_indicators.gd" id="3_indicators"]
 
 [node name="Battlefield" type="Node3D"]
 process_priority = -5
@@ -1213,3 +1214,17 @@ position = Vector3(29.904659711, -298.668014245, 2.114764835)
 [node name="Missiles" type="Node3D" parent="."]
 
 [node name="Explosions" type="Node3D" parent="."]
+
+[node name="TargetIndicators" type="CanvasLayer" parent="."]
+layer = 2
+visible = false
+
+[node name="Crosshairs" type="Control" parent="TargetIndicators"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_indicators")

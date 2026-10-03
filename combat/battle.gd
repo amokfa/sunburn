@@ -9,7 +9,7 @@ const CollisionGrid = preload("res://combat/ship_collision_grid.gd")
 @export var missile_spread_degrees: float = 2.0
 @export var firing_range: float = 100.0
 @export var minimum_target_distance: float = 25.0
-@export var reload_seconds: float = 5.0
+@export var reload_seconds: float = 3.0
 @export var target_duration_min: float = 15.0
 @export var target_duration_max: float = 30.0
 @export var ship_hit_radius: float = 1.0
@@ -28,7 +28,7 @@ var player: Node3D
 var ships: Array[AIShip] = []
 var active: bool = false
 var ai_speed: float = 40.0
-var missile_speed: float = 100.0
+var missile_speed: float = 80.0
 var _player_previous := Vector3.ZERO
 var _rng := RandomNumberGenerator.new()
 var _player_position := Vector3.ZERO
@@ -60,6 +60,8 @@ func set_active(value: bool) -> void:
 	active = value
 	visible = value
 	set_process(value)
+	$TargetIndicators.visible = value
+	$TargetIndicators/Crosshairs.set_process(value)
 	_spacing_grid.clear()
 	for container in [_missiles, _explosions]:
 		for child in container.get_children():
@@ -142,7 +144,7 @@ func _choose_target(ship: AIShip) -> void:
 	var weights: Array[float] = []
 	var total_weight := 0.0
 	for candidate in candidates:
-		var weight := 6.0 if candidate == player else (3.0 if candidate.get("target") == ship else 1.0)
+		var weight := 10.0 if candidate == player else (3.0 if candidate.get("target") == ship else 1.0)
 		weights.append(weight)
 		total_weight += weight
 	ship.target = null
