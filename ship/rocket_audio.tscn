@@ -1,0 +1,77 @@
+[gd_scene format=3 uid="uid://b6fw4htq2r7ks"]
+
+[ext_resource type="Script" path="res://ship/rocket_audio.gd" id="1"]
+[ext_resource type="AudioStream" uid="uid://opysrr0w5rxy" path="res://assets/sfx/rocket_layer.mp3" id="2"]
+
+[node name="RocketAudio" type="Node"]
+script = ExtResource("1")
+
+[node name="Layer01" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2")
+bus = &"rocket_layer"
+volume_db = -80.0
+
+[node name="Layer02" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2")
+bus = &"rocket_layer"
+volume_db = -80.0
+
+[node name="Layer03" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2")
+bus = &"rocket_layer"
+volume_db = -80.0
+
+[node name="Layer04" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2")
+bus = &"rocket_layer"
+volume_db = -80.0
+
+[node name="Layer05" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2")
+bus = &"rocket_layer"
+volume_db = -80.0
+
+[node name="Layer06" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2")
+bus = &"rocket_layer"
+volume_db = -80.0
+
+[node name="Layer07" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2")
+bus = &"rocket_layer"
+volume_db = -80.0
+
+[node name="Layer08" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2")
+bus = &"rocket_layer"
+volume_db = -80.0
+
+[node name="Layer09" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2")
+bus = &"rocket_layer"
+volume_db = -80.0
+
+[node name="Layer10" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2")
+bus = &"rocket_layer"
+volume_db = -80.0
+
+[node name="Layer11" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2")
+bus = &"rocket_layer"
+volume_db = -80.0
+
+[node name="Layer12" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2")
+bus = &"rocket_layer"
+volume_db = -80.0
+
+[node name="Layer13" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2")
+bus = &"rocket_layer"
+volume_db = -80.0
+
+[node name="Layer14" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2")
+bus = &"rocket_layer"
+volume_db = -80.0

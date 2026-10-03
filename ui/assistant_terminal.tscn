@@ -1,0 +1,144 @@
+[gd_scene load_steps=12 format=3 uid="uid://b8hm3w6p2n4sa"]
+
+[ext_resource type="Script" path="res://ui/assistant_terminal.gd" id="1"]
+[ext_resource type="FontFile" path="res://assets/ScienceGothic_Condensed-Medium.ttf" id="2_font"]
+[ext_resource type="Shader" path="res://ui/terminal_background.gdshader" id="3_background"]
+[ext_resource type="Texture2D" path="res://ui/left_click.svg" id="4_mouse"]
+
+[sub_resource type="StyleBoxFlat" id="TerminalBorder"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 6
+border_width_top = 6
+border_width_right = 6
+border_width_bottom = 6
+border_color = Color(0.025, 0.12, 0.045, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_left = 6
+corner_radius_bottom_right = 6
+
+[sub_resource type="Theme" id="TerminalTheme"]
+default_font = ExtResource("2_font")
+default_font_size = 12
+Label/colors/font_color = Color(0.65, 1, 0.7, 1)
+RichTextLabel/colors/default_color = Color(0.65, 1, 0.7, 1)
+VBoxContainer/constants/separation = 12
+
+[sub_resource type="FastNoiseLite" id="CellularA"]
+noise_type = 2
+seed = 57231
+frequency = 0.035
+fractal_type = 0
+cellular_distance_function = 0
+cellular_return_type = 1
+
+[sub_resource type="NoiseTexture2D" id="TextureA"]
+width = 512
+height = 512
+seamless = true
+normalize = true
+noise = SubResource("CellularA")
+
+[sub_resource type="FastNoiseLite" id="CellularB"]
+noise_type = 2
+seed = 98317
+frequency = 0.027
+fractal_type = 0
+cellular_distance_function = 0
+cellular_return_type = 1
+
+[sub_resource type="NoiseTexture2D" id="TextureB"]
+width = 512
+height = 512
+seamless = true
+normalize = true
+noise = SubResource("CellularB")
+
+[sub_resource type="ShaderMaterial" id="BackgroundMaterial"]
+shader = ExtResource("3_background")
+shader_parameter/noise_texture_a = SubResource("TextureA")
+shader_parameter/noise_texture_b = SubResource("TextureB")
+shader_parameter/velocity_a = Vector2(0.022, -0.012)
+shader_parameter/velocity_b = Vector2(-0.009, 0.032)
+shader_parameter/blend_period = 12.0
+
+[node name="AssistantTerminal" type="CanvasLayer"]
+layer = 20
+script = ExtResource("1")
+
+[node name="Screen" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = SubResource("TerminalTheme")
+
+[node name="Window" type="Panel" parent="Screen"]
+clip_contents = true
+layout_mode = 0
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -480.0
+offset_top = -270.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("TerminalBorder")
+
+[node name="AnimatedBackground" type="ColorRect" parent="Screen/Window"]
+material = SubResource("BackgroundMaterial")
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = 6.0
+offset_right = -6.0
+offset_bottom = -6.0
+mouse_filter = 2
+
+[node name="Content" type="MarginContainer" parent="Screen/Window"]
+layout_mode = 0
+offset_right = 480.0
+offset_bottom = 270.0
+mouse_filter = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 16
+
+[node name="Rows" type="VBoxContainer" parent="Screen/Window/Content"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Scroll" type="ScrollContainer" parent="Screen/Window/Content/Rows"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 2
+
+[node name="Messages" type="VBoxContainer" parent="Screen/Window/Content/Rows/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="ContinueHint" type="TextureRect" parent="Screen"]
+custom_minimum_size = Vector2(24, 32)
+layout_mode = 0
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -520.0
+offset_top = -48.0
+offset_right = -496.0
+offset_bottom = -16.0
+mouse_filter = 2
+texture = ExtResource("4_mouse")
+expand_mode = 1
+stretch_mode = 5

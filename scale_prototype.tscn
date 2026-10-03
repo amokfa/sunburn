@@ -9,15 +9,12 @@
 [ext_resource type="PackedScene" uid="uid://c680tv21n08d7" path="res://ship/ship.tscn" id="7_ship"]
 [ext_resource type="PackedScene" path="res://combat/battle.tscn" id="8_battle"]
 [ext_resource type="Script" uid="uid://dt1mrn3kr866n" path="res://perf_label.gd" id="9_perf"]
-
-[ext_resource type="Script" path="res://ship/movement_settings.gd" id="movement_settings"]
-
-[sub_resource type="Resource" id="PlayerPlanet1Movement"]
-resource_local_to_scene = true
-script = ExtResource("movement_settings")
-surface_clearance = 10.0
-boundary_spring_stiffness = 50000.0
-boundary_spring_damping = 1000.0
+[ext_resource type="PackedScene" uid="uid://b8hm3w6p2n4sa" path="res://ui/assistant_terminal.tscn" id="10_terminal"]
+[ext_resource type="AudioStream" uid="uid://2b4n4htac7n1" path="res://assets/sfx/forest.wav" id="11_forest"]
+[ext_resource type="AudioStream" uid="uid://cktksa758p1o1" path="res://assets/sfx/launch.mp3" id="12_launch"]
+[ext_resource type="PackedScene" uid="uid://b6fw4htq2r7ks" path="res://ship/rocket_audio.tscn" id="13_rocket"]
+[ext_resource type="AudioStream" uid="uid://bqy5jwwxjdmay" path="res://assets/sfx/mus/mus1.mp3" id="14_music"]
+[ext_resource type="Script" uid="uid://2ka8k7whcsv" path="res://ship/movement_settings.gd" id="movement_settings"]
 
 [sub_resource type="Sky" id="Sky"]
 sky_material = ExtResource("2_sky")
@@ -29,6 +26,15 @@ ambient_light_source = 2
 ambient_light_color = Color(1, 1, 1, 1)
 ambient_light_energy = 0.02
 reflected_light_source = 1
+
+[sub_resource type="Resource" id="Resource_4v1ah"]
+resource_local_to_scene = true
+script = ExtResource("movement_settings")
+horizontal_damping = 1.6
+vertical_damping = 2.4
+surface_clearance = 10.0
+boundary_spring_stiffness = 50000.0
+boundary_spring_damping = 1000.0
 
 [node name="ScalePrototype" type="Node3D" unique_id=1293193467]
 script = ExtResource("1")
@@ -61,7 +67,7 @@ transform = Transform3D(250, 0, 0, 0, 250, 0, 0, 0, 250, -1800, 0, 0)
 
 [node name="Ship" parent="." unique_id=1306759738 instance=ExtResource("7_ship")]
 transform = Transform3D(0, 0, -1, -0.8, 0.6, 0, 0.6, 0.8, 0, -276, 207, 0)
-planet_1_movement = SubResource("PlayerPlanet1Movement")
+planet_1_movement = SubResource("Resource_4v1ah")
 
 [node name="Camera" type="Camera3D" parent="." unique_id=1243361966]
 transform = Transform3D(0, 0, -1, -0.880679, 0.473711, 0, 0.473711, 0.880679, 0, -274.5946, 212.74374, 0)
@@ -70,6 +76,24 @@ near = 0.1
 far = 30000.0
 
 [node name="Battlefield" parent="." unique_id=401511412 instance=ExtResource("8_battle")]
+
+[node name="ForestAmbience" type="AudioStreamPlayer" parent="." unique_id=1645548749]
+stream = ExtResource("11_forest")
+bus = &"forest"
+
+[node name="LaunchAudio" type="AudioStreamPlayer" parent="." unique_id=527783396]
+stream = ExtResource("12_launch")
+bus = &"launch"
+
+[node name="LaunchAudioDuration" type="Timer" parent="." unique_id=1226480825]
+wait_time = 3.0
+one_shot = true
+
+[node name="RocketAudio" parent="." unique_id=1022419446 instance=ExtResource("13_rocket")]
+
+[node name="IntroMusic" type="AudioStreamPlayer" parent="." unique_id=608247438]
+stream = ExtResource("14_music")
+bus = &"mus1"
 
 [node name="PerformanceOverlay" type="CanvasLayer" parent="." unique_id=1044000258]
 layer = 10
@@ -82,3 +106,5 @@ theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 16
 script = ExtResource("9_perf")
+
+[node name="AssistantTerminal" parent="." unique_id=449289178 instance=ExtResource("10_terminal")]

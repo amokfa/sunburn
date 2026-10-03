@@ -1,6 +1,18 @@
 extends Node3D
 ## Ship movement uses forces and radial geometry; planets have static mesh colliders.
 const ShipController = preload("res://ship/ship.gd")
+const IntroDialogue = preload("res://ui/intro_dialogue.gd")
+@onready var terminal = $AssistantTerminal
+@onready var forest_ambience: AudioStreamPlayer = $ForestAmbience
+@onready var launch_audio: AudioStreamPlayer = $LaunchAudio
+@onready var launch_audio_duration: Timer = $LaunchAudioDuration
+@onready var rocket_audio = $RocketAudio
+@onready var intro_music: AudioStreamPlayer = $IntroMusic
+var _intro_music_fade: Tween
+var _launch_started := false
+var _rocket_audio_enabled := false
+var _intro_in_progress := false
+var _intro_wait_altitude := -1.0
 
 @export_group("Solar system scale")
 @export var planet_radii := Vector3(300.0, 240.0, 180.0)
@@ -20,6 +32,10 @@ const ShipController = preload("res://ship/ship.gd")
 @export var starting_altitude: float = 45.0
 @export var travel_duration: float = 3.0
 @export var platform_repulsion_delay: float = 3.0
+
+@export_group("Forest ambience")
+@export var forest_silence_altitude: float = 50.0
+@export var forest_volume_db: float = 0.0
 
 @export_group("Camera")
 @export var camera_distance: float = 5.5
@@ -48,6 +64,9 @@ var _platform_clearance := 0.5
 
 
 func _ready() -> void:
+	terminal.message_finished.connect(_on_intro_message_finished)
+	terminal.dialogue_finished.connect(_on_intro_finished)
+	launch_audio_duration.timeout.connect(launch_audio.stop)
 	for index in range(3):
 		var angle := deg_to_rad(orbit_angles_degrees[index])
 		solar_positions.append(Vector3(cos(angle), 0.0, sin(angle)) * orbit_radii[index])
@@ -63,6 +82,17 @@ func _update_occluders() -> void:
 
 
 func _reset() -> void:
+	launch_audio_duration.stop()
+	launch_audio.stop()
+	rocket_audio.stop()
+	_launch_started = false
+	_rocket_audio_enabled = false
+	_intro_in_progress = true
+	_intro_wait_altitude = -1.0
+	if _intro_music_fade != null:
+		_intro_music_fade.kill()
+	intro_music.volume_db = 0.0
+	intro_music.play()
 	battle.set_active(false)
 	ship.reset_health()
 	ship.set_movement_profile(0)
@@ -90,10 +120,47 @@ func _reset() -> void:
 	ship.bind_to_planet(planets[0])
 	ship.set_view_direction(forward)
 	ship.set_parked(true)
+	ship.takeoff_enabled = false
+	ship.set_launch_boosters(false)
 	camera_pitch = -0.15
 	_update_sun()
 	_update_camera()
 	_update_sunlight()
+	ship.controls_enabled = false
+	ship.mouse_look_enabled = false
+	ship.ascend_input_enabled = false
+	ship.descend_input_enabled = false
+	ship.horizontal_input_enabled = false
+	ship.allow_parked_view = false
+	terminal.play_dialogue(IntroDialogue.MESSAGES)
+	_update_forest_ambience()
+	forest_ambience.play()
+
+
+func _on_intro_message_finished(index: int) -> void:
+	if not _intro_in_progress or index < 0 or index >= IntroDialogue.MESSAGES.size():
+		return
+	var message: Dictionary = IntroDialogue.MESSAGES[index]
+	match message.get("unlock", ""):
+		"mouse":
+			ship.controls_enabled = true
+			ship.mouse_look_enabled = true
+			ship.allow_parked_view = true
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		"ascend":
+			ship.ascend_input_enabled = true
+		"descend":
+			ship.descend_input_enabled = true
+		"horizontal":
+			ship.horizontal_input_enabled = true
+	if message.has("wait_altitude"):
+		_intro_wait_altitude = float(message["wait_altitude"])
+		terminal.set_progress_blocked(true)
+
+
+func _on_intro_finished() -> void:
+	_intro_in_progress = false
+	_intro_wait_altitude = -1.0
 
 
 func _set_frame_origin(origin: Vector3) -> void:
@@ -104,13 +171,46 @@ func _set_frame_origin(origin: Vector3) -> void:
 	battle.follow_planet()
 
 
+func _fade_out_planet_1_music() -> void:
+	if _intro_music_fade != null:
+		_intro_music_fade.kill()
+	_intro_music_fade = create_tween()
+	_intro_music_fade.tween_property(intro_music, "volume_db", -80.0, 1.0)
+	_intro_music_fade.tween_callback(intro_music.stop)
+
+
 func _process(delta: float) -> void:
+	if _intro_wait_altitude >= 0.0 and current_planet == 0 and not travelling and ship.altitude >= _intro_wait_altitude:
+		_intro_wait_altitude = -1.0
+		terminal.resume_dialogue()
 	_update_platform_departure(delta)
+	_update_forest_ambience()
+	rocket_audio.update_layers(ship.active_booster_count(), _rocket_audio_enabled and ship.can_fight, delta)
 	if _opening_camera_moved:
 		_opening_framing_weight = maxf(0.0, _opening_framing_weight - delta * 5.0)
 	_update_camera()
 	_update_sunlight()
 	_update_ocean_sun()
+
+
+func _update_forest_ambience() -> void:
+	var gain := 0.0
+	if current_planet == 0 and not travelling:
+		gain = clampf(1.0 - ship.altitude / maxf(forest_silence_altitude, 0.001), 0.0, 1.0)
+	forest_ambience.volume_linear = db_to_linear(forest_volume_db) * gain
+
+
+func _begin_launch_sequence() -> void:
+	if _launch_started or not ship.controls_enabled or not ship.ascend_input_enabled or not ship.is_parked:
+		return
+	_launch_started = true
+	ship.set_launch_boosters(true)
+	launch_audio.play()
+	launch_audio_duration.start()
+	_rocket_audio_enabled = true
+	rocket_audio.update_layers(ship.active_booster_count(), true, 0.0)
+	ship.takeoff_enabled = true
+	ship.set_parked(false)
 
 func _ship_platform_clearance() -> float:
 	var minimum_y := 0.0
@@ -173,8 +273,14 @@ func _update_camera() -> void:
 		look_direction = look_direction.slerp(opening_direction, _opening_camera_blend * _opening_framing_weight)
 	camera.look_at(camera.global_position + look_direction, radial_up)
 func _unhandled_input(event: InputEvent) -> void:
+	if not ship.controls_enabled:
+		if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED and ship.bound_planet != null:
-		if ship.is_parked:
+		if not ship.mouse_look_enabled:
+			return
+		if ship.is_parked and not ship.allow_parked_view:
 			return
 		if not event.relative.is_zero_approx():
 			_opening_camera_moved = true
@@ -190,9 +296,15 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.button_index == MOUSE_BUTTON_LEFT:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	elif event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_ESCAPE:
+		if event.physical_keycode == KEY_Q:
+			_begin_launch_sequence()
+		elif event.keycode == KEY_ESCAPE:
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		elif event.keycode == KEY_P and not travelling:
+			if _intro_in_progress:
+				return
+			if ship.is_parked and not ship.takeoff_enabled:
+				return
 			if ship.is_dying:
 				return
 			if current_planet == 2 or ship.is_destroyed:
@@ -221,6 +333,9 @@ func _update_sunlight() -> void:
 
 
 func _travel_to_next_planet() -> void:
+	if current_planet == 0:
+		_fade_out_planet_1_music()
+	forest_ambience.stop()
 	ship.surface_repulsion_enabled = true
 	_left_platform = true
 	_repulsion_countdown = -1.0

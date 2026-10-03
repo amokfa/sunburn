@@ -16,6 +16,13 @@ var can_fight: bool:
 	get:
 		return lives_remaining > 0 and not is_destroyed
 var is_parked := false
+var controls_enabled := true
+var mouse_look_enabled := true
+var ascend_input_enabled := true
+var descend_input_enabled := true
+var horizontal_input_enabled := true
+var allow_parked_view := false
+var takeoff_enabled := true
 
 const MovementSettings = preload("res://ship/movement_settings.gd")
 @export_group("Movement profiles")
@@ -228,6 +235,23 @@ func set_parked(value: bool) -> void:
 func maximum_lives() -> int:
 	return MAX_LIVES
 
+
+func set_launch_boosters(enabled: bool) -> void:
+	if not is_parked:
+		return
+	for marker_name: StringName in _thrusters:
+		var exhaust: ThrusterController = _thrusters[marker_name]
+		exhaust.set_static_power(1.0 if enabled and String(marker_name).begins_with("down_") else 0.0)
+
+
+func active_booster_count() -> int:
+	var count := 0
+	for exhaust: ThrusterController in _thrusters.values():
+		if exhaust.target_power > 0.05:
+			count += 1
+	return count
+
+
 func reset_health() -> void:
 	lives_remaining = maximum_lives()
 	is_dying = false
@@ -345,17 +369,25 @@ func set_view_direction(direction: Vector3) -> void:
 
 
 func rotate_view(angle: float) -> void:
-	if can_fight and not is_parked and is_instance_valid(_planet):
+	if controls_enabled and mouse_look_enabled and can_fight and (not is_parked or allow_parked_view) and is_instance_valid(_planet):
 		_local_view_forward = _local_view_forward.rotated(_local_up, angle).normalized()
 
 
 func _move(delta: float) -> void:
-	if not is_instance_valid(_planet):
+	if not controls_enabled or not is_instance_valid(_planet):
 		return
-	var horizontal := Vector2(
-		float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A)),
-		float(Input.is_physical_key_pressed(KEY_W)) - float(Input.is_physical_key_pressed(KEY_S))).limit_length()
-	var vertical := float(Input.is_physical_key_pressed(KEY_Q)) - float(Input.is_physical_key_pressed(KEY_E))
+	if is_parked and not takeoff_enabled:
+		return
+	var horizontal := Vector2.ZERO
+	if horizontal_input_enabled:
+		horizontal = Vector2(
+			float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A)),
+			float(Input.is_physical_key_pressed(KEY_W)) - float(Input.is_physical_key_pressed(KEY_S))).limit_length()
+	var vertical := 0.0
+	if ascend_input_enabled and Input.is_physical_key_pressed(KEY_Q):
+		vertical += 1.0
+	if descend_input_enabled and Input.is_physical_key_pressed(KEY_E):
+		vertical -= 1.0
 	if is_parked:
 		if horizontal.is_zero_approx() and is_zero_approx(vertical):
 			return

@@ -1,41 +1,12 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene format=3 uid="uid://bfl8ugc12mq6m"]
 
-[ext_resource type="Script" path="res://pickups/fuel_cell.gd" id="1"]
-[ext_resource type="Shader" path="res://pickups/atom_glow.gdshader" id="2"]
-[ext_resource type="Shader" path="res://pickups/fuel_shell.gdshader" id="3"]
+[ext_resource type="Script" uid="uid://oge6gd5jyjkm" path="res://pickups/fuel_cell.gd" id="1"]
+[ext_resource type="Shader" uid="uid://d3380h4ovuxtn" path="res://pickups/atom_glow.gdshader" id="2"]
+[ext_resource type="Shader" uid="uid://bkt65q8qksnhi" path="res://pickups/fuel_shell.gdshader" id="3"]
 
 [sub_resource type="StandardMaterial3D" id="NucleusMaterial"]
 shading_mode = 0
 albedo_color = Color(1, 0.8, 0.18, 1)
-emission_enabled = true
-emission = Color(1, 0.65, 0.1, 1)
-emission_energy_multiplier = 3.0
-
-[sub_resource type="StandardMaterial3D" id="ElectronMaterial"]
-shading_mode = 0
-albedo_color = Color(0.15, 0.9, 1, 1)
-emission_enabled = true
-emission = Color(0.05, 0.7, 1, 1)
-emission_energy_multiplier = 3.0
-
-[sub_resource type="StandardMaterial3D" id="OrbitMaterial"]
-shading_mode = 0
-albedo_color = Color(0.08, 0.38, 0.5, 1)
-emission_enabled = true
-emission = Color(0.05, 0.3, 0.4, 1)
-emission_energy_multiplier = 1.0
-
-[sub_resource type="ShaderMaterial" id="NucleusGlow"]
-shader = ExtResource("2")
-shader_parameter/glow_color = Color(1, 0.65, 0.1, 1)
-
-[sub_resource type="ShaderMaterial" id="ElectronGlow"]
-shader = ExtResource("2")
-shader_parameter/glow_color = Color(0.1, 0.8, 1, 1)
-
-[sub_resource type="ShaderMaterial" id="ShellMaterial"]
-render_priority = 1
-shader = ExtResource("3")
 
 [sub_resource type="SphereMesh" id="NucleusMesh"]
 material = SubResource("NucleusMaterial")
@@ -44,6 +15,30 @@ height = 0.44
 radial_segments = 16
 rings = 8
 
+[sub_resource type="ShaderMaterial" id="NucleusGlow"]
+render_priority = 0
+shader = ExtResource("2")
+shader_parameter/glow_color = Color(1, 0.65, 0.1, 1)
+shader_parameter/brightness = 2.0
+
+[sub_resource type="QuadMesh" id="NucleusHalo"]
+material = SubResource("NucleusGlow")
+size = Vector2(1.2, 1.2)
+
+[sub_resource type="StandardMaterial3D" id="OrbitMaterial"]
+shading_mode = 0
+albedo_color = Color(0.08, 0.38, 0.5, 1)
+
+[sub_resource type="TorusMesh" id="OrbitMesh"]
+material = SubResource("OrbitMaterial")
+inner_radius = 1.085
+outer_radius = 1.115
+ring_segments = 8
+
+[sub_resource type="StandardMaterial3D" id="ElectronMaterial"]
+shading_mode = 0
+albedo_color = Color(0.15, 0.9, 1, 1)
+
 [sub_resource type="SphereMesh" id="ElectronMesh"]
 material = SubResource("ElectronMaterial")
 radius = 0.12
@@ -51,12 +46,20 @@ height = 0.24
 radial_segments = 16
 rings = 8
 
-[sub_resource type="TorusMesh" id="OrbitMesh"]
-material = SubResource("OrbitMaterial")
-inner_radius = 1.085
-outer_radius = 1.115
-rings = 64
-ring_segments = 8
+[sub_resource type="ShaderMaterial" id="ElectronGlow"]
+render_priority = 0
+shader = ExtResource("2")
+shader_parameter/glow_color = Color(0.1, 0.8, 1, 1)
+shader_parameter/brightness = 2.0
+
+[sub_resource type="QuadMesh" id="ElectronHalo"]
+material = SubResource("ElectronGlow")
+size = Vector2(0.8, 0.8)
+
+[sub_resource type="ShaderMaterial" id="ShellMaterial"]
+render_priority = 1
+shader = ExtResource("3")
+shader_parameter/shell_color = Color(0.15, 0.6, 0.8, 1)
 
 [sub_resource type="SphereMesh" id="ShellMesh"]
 material = SubResource("ShellMaterial")
@@ -65,78 +68,70 @@ height = 2.9
 radial_segments = 32
 rings = 16
 
-[sub_resource type="QuadMesh" id="NucleusHalo"]
-material = SubResource("NucleusGlow")
-size = Vector2(1.2, 1.2)
-
-[sub_resource type="QuadMesh" id="ElectronHalo"]
-material = SubResource("ElectronGlow")
-size = Vector2(0.8, 0.8)
-
-[node name="FuelCell" type="Node3D"]
+[node name="FuelCell" type="Node3D" unique_id=1044369739]
 script = ExtResource("1")
 
-[node name="Atom" type="Node3D" parent="."]
+[node name="Atom" type="Node3D" parent="." unique_id=832243145]
 
-[node name="Nucleus" type="MeshInstance3D" parent="Atom"]
-mesh = SubResource("NucleusMesh")
+[node name="Nucleus" type="MeshInstance3D" parent="Atom" unique_id=818971070]
 cast_shadow = 0
+mesh = SubResource("NucleusMesh")
 
-[node name="Glow" type="MeshInstance3D" parent="Atom/Nucleus"]
-mesh = SubResource("NucleusHalo")
+[node name="Glow" type="MeshInstance3D" parent="Atom/Nucleus" unique_id=1797256477]
 cast_shadow = 0
 extra_cull_margin = 0.6
+mesh = SubResource("NucleusHalo")
 
-[node name="Orbit1" type="Node3D" parent="Atom"]
+[node name="Orbit1" type="Node3D" parent="Atom" unique_id=1226838173]
 
-[node name="Ring" type="MeshInstance3D" parent="Atom/Orbit1"]
+[node name="Ring" type="MeshInstance3D" parent="Atom/Orbit1" unique_id=695847176]
+cast_shadow = 0
 mesh = SubResource("OrbitMesh")
-cast_shadow = 0
 
-[node name="Electron" type="MeshInstance3D" parent="Atom/Orbit1"]
-position = Vector3(1.1, 0, 0)
+[node name="Electron" type="MeshInstance3D" parent="Atom/Orbit1" unique_id=1609954811]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1, 0, 0)
+cast_shadow = 0
 mesh = SubResource("ElectronMesh")
-cast_shadow = 0
 
-[node name="Glow" type="MeshInstance3D" parent="Atom/Orbit1/Electron"]
-mesh = SubResource("ElectronHalo")
+[node name="Glow" type="MeshInstance3D" parent="Atom/Orbit1/Electron" unique_id=2127225225]
 cast_shadow = 0
 extra_cull_margin = 0.4
-
-[node name="Orbit2" type="Node3D" parent="Atom"]
-rotation_degrees = Vector3(0, 0, 60)
-
-[node name="Ring" type="MeshInstance3D" parent="Atom/Orbit2"]
-mesh = SubResource("OrbitMesh")
-cast_shadow = 0
-
-[node name="Electron" type="MeshInstance3D" parent="Atom/Orbit2"]
-position = Vector3(-0.55, 0, 0.952628)
-mesh = SubResource("ElectronMesh")
-cast_shadow = 0
-
-[node name="Glow" type="MeshInstance3D" parent="Atom/Orbit2/Electron"]
 mesh = SubResource("ElectronHalo")
+
+[node name="Orbit2" type="Node3D" parent="Atom" unique_id=514394521]
+transform = Transform3D(0.49999997, -0.86602545, 0, 0.86602545, 0.49999997, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="Ring" type="MeshInstance3D" parent="Atom/Orbit2" unique_id=164445885]
+cast_shadow = 0
+mesh = SubResource("OrbitMesh")
+
+[node name="Electron" type="MeshInstance3D" parent="Atom/Orbit2" unique_id=173207227]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.55, 0, 0.952628)
+cast_shadow = 0
+mesh = SubResource("ElectronMesh")
+
+[node name="Glow" type="MeshInstance3D" parent="Atom/Orbit2/Electron" unique_id=1914041771]
 cast_shadow = 0
 extra_cull_margin = 0.4
-
-[node name="Orbit3" type="Node3D" parent="Atom"]
-rotation_degrees = Vector3(0, 0, 120)
-
-[node name="Ring" type="MeshInstance3D" parent="Atom/Orbit3"]
-mesh = SubResource("OrbitMesh")
-cast_shadow = 0
-
-[node name="Electron" type="MeshInstance3D" parent="Atom/Orbit3"]
-position = Vector3(-0.55, 0, -0.952628)
-mesh = SubResource("ElectronMesh")
-cast_shadow = 0
-
-[node name="Glow" type="MeshInstance3D" parent="Atom/Orbit3/Electron"]
 mesh = SubResource("ElectronHalo")
+
+[node name="Orbit3" type="Node3D" parent="Atom" unique_id=7255862]
+transform = Transform3D(-0.50000006, -0.8660254, 0, 0.8660254, -0.50000006, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="Ring" type="MeshInstance3D" parent="Atom/Orbit3" unique_id=1883987185]
+cast_shadow = 0
+mesh = SubResource("OrbitMesh")
+
+[node name="Electron" type="MeshInstance3D" parent="Atom/Orbit3" unique_id=271511868]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.55, 0, -0.952628)
+cast_shadow = 0
+mesh = SubResource("ElectronMesh")
+
+[node name="Glow" type="MeshInstance3D" parent="Atom/Orbit3/Electron" unique_id=1748201986]
 cast_shadow = 0
 extra_cull_margin = 0.4
+mesh = SubResource("ElectronHalo")
 
-[node name="Shell" type="MeshInstance3D" parent="Atom"]
+[node name="Shell" type="MeshInstance3D" parent="Atom" unique_id=1545168260]
+cast_shadow = 0
 mesh = SubResource("ShellMesh")
-cast_shadow = 0
