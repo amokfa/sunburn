@@ -12,8 +12,6 @@ const CollisionGrid = preload("res://combat/ship_collision_grid.gd")
 @export var reload_seconds: float = 5.0
 @export var target_duration_min: float = 15.0
 @export var target_duration_max: float = 30.0
-@export var dodge_detection_time: float = 1.5
-@export var dodge_clearance: float = 8.0
 @export var ship_hit_radius: float = 1.0
 ## Momentum in N·s; velocity change is impulse / ship mass.
 @export_range(0.0, 1000000.0, 100.0, "or_greater") var missile_impact_impulse: float = 200000.0
@@ -34,7 +32,6 @@ var missile_speed: float = 80.0
 var _player_previous := Vector3.ZERO
 var _rng := RandomNumberGenerator.new()
 var _player_position := Vector3.ZERO
-var _frame_missiles: Array[Node] = []
 var _collision_grid := CollisionGrid.new()
 var _ship_indices: Dictionary = {}
 var _spacing_grid: Dictionary = {}
@@ -63,7 +60,6 @@ func set_active(value: bool) -> void:
 	active = value
 	visible = value
 	set_process(value)
-	_frame_missiles.clear()
 	_spacing_grid.clear()
 	for container in [_missiles, _explosions]:
 		for child in container.get_children():
@@ -93,7 +89,6 @@ func _process(delta: float) -> void:
 	delta = minf(delta, 0.1)
 	var radius := planet.global_basis.x.length()
 	_player_position = to_local(player.global_position)
-	_frame_missiles = _missiles.get_children()
 	var camera := get_viewport().get_camera_3d()
 	for ship in ships:
 		ship.previous_position = ship.position
@@ -106,7 +101,6 @@ func _process(delta: float) -> void:
 		ship.think_remaining -= delta
 		if ship.think_remaining <= 0.0:
 			ship.think_remaining += 0.1
-			_check_dodge(ship)
 			_update_spacing(ship, radius)
 		var aim: Vector3 = ship.heading
 		var movement: Vector3 = ship.heading
@@ -238,23 +232,6 @@ func _movement_for(ship: AIShip, aim: Vector3) -> Vector3:
 	desired_velocity = desired_velocity.lerp(ship.separation_velocity, ship.separation_priority)
 	return desired_velocity / maxf(ai_speed, 0.001)
 
-func _check_dodge(ship: AIShip) -> void:
-	for missile: MissileState in _frame_missiles:
-		if missile.launcher == ship:
-			continue
-		var offset: Vector3 = missile.position - ship.position
-		if offset.length_squared() < 0.001 or ship.facing.dot(offset.normalized()) < cos(deg_to_rad(vision_cone_degrees * 0.5)):
-			continue
-		var relative_velocity: Vector3 = missile.velocity - ship.combat_velocity
-		var approach_time := -offset.dot(relative_velocity) / maxf(relative_velocity.length_squared(), 0.001)
-		if approach_time <= 0.0 or approach_time > dodge_detection_time:
-			continue
-		if (offset + relative_velocity * approach_time).length() < dodge_clearance:
-			var right: Vector3 = ship.heading.cross(ship.up).normalized()
-			ship.dodge_direction = right * (-1.0 if offset.dot(right) >= 0.0 else 1.0)
-			ship.dodge_remaining = 0.7
-			return
-
 func _intercept_direction(offset: Vector3, target_velocity: Vector3) -> Vector3:
 	# Solve |offset + velocity * t| = launch_offset + missile_speed * t.
 	# Missiles have world velocity of their own; they do not inherit ship speed.
@@ -290,7 +267,6 @@ func _fire(ship: AIShip, aim: Vector3) -> void:
 		direction = aim.rotated(axis, angle).rotated(aim, _rng.randf_range(0.0, TAU)).normalized()
 	var missile: MissileState = Missile.instantiate()
 	_missiles.add_child(missile)
-	_frame_missiles.append(missile)
 	missile.launch(ship.position + direction * 1.5, direction, missile_speed, ship, ship.up)
 	ship.reload_remaining = reload_seconds
 

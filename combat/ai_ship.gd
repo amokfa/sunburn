@@ -21,8 +21,6 @@ var target: Node3D
 var target_remaining: float = 0.0
 var reload_remaining: float = 0.0
 var think_remaining: float = 0.0
-var dodge_remaining: float = 0.0
-var dodge_direction := Vector3.ZERO
 var target_altitude_offset: float = 0.0
 var desired_orbit_radius: float = 0.0
 var separation_velocity := Vector3.ZERO
@@ -54,7 +52,6 @@ func reset(planet_node: Node3D) -> void:
 	previous_position = position
 	target = null
 	target_remaining = 0.0
-	dodge_remaining = 0.0
 	target_altitude_offset = 0.0
 	desired_orbit_radius = position.length()
 	separation_velocity = Vector3.ZERO
@@ -66,9 +63,6 @@ func fly(delta: float, speed: float, aim: Vector3, movement: Vector3) -> void:
 		return
 	set_view_direction(_planet.global_basis.orthonormalized() * aim)
 	var desired_velocity := movement * speed
-	if dodge_remaining > 0.0:
-		dodge_remaining = maxf(0.0, dodge_remaining - delta)
-		desired_velocity += dodge_direction * speed
 	var desired_radial := clampf(desired_velocity.dot(up), -speed, speed)
 	var desired_tangent := (desired_velocity - up * desired_velocity.dot(up)).limit_length(speed)
 	var radial_speed := _velocity.dot(up)
