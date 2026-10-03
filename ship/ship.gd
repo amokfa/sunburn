@@ -443,6 +443,19 @@ func _update_thrusters(horizontal: Vector2, vertical: float, yaw_torque: float) 
 		exhaust.set_power(power)
 
 
+func set_cutscene_thrust(forward_power: float, brake_power: float, delta: float = 1.0 / 60.0) -> void:
+	# Free-flight cutscenes don't have a bound planet or a player input loop.
+	model.transform = model.transform.interpolate_with(_model_rest_transform, 1.0 - exp(-6.0 * delta))
+	for marker_name: StringName in _thrusters:
+		var power := 0.0
+		if marker_name == &"back":
+			power = forward_power
+		elif marker_name == &"front":
+			power = brake_power
+		var exhaust: ThrusterController = _thrusters[marker_name]
+		exhaust.set_power(power)
+
+
 func _update_visual_tilt(delta: float, horizontal: Vector2) -> void:
 	if not is_instance_valid(model):
 		return

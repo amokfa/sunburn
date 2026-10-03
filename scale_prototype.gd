@@ -3,6 +3,16 @@ extends Node3D
 const ShipController = preload("res://ship/ship.gd")
 const IntroDialogue = preload("res://ui/intro_dialogue.gd")
 const ExplosionDialogue = preload("res://ui/planet_1_explosion_dialogue.gd")
+const EngulfedSurface = preload("res://planets/engulfed_surface.gdshader")
+var _heated_surfaces: Array[Dictionary] = []
+var _heat_material: ShaderMaterial
+var _heat_atmosphere: ShaderMaterial
+var _heat_atmosphere_color := Color.WHITE
+var _heat_color := Color.WHITE
+var _heat_tween: Tween
+@onready var departure = $PlanetDeparture
+var _travel_tween: Tween
+var _fuel_departure_pending := false
 @onready var fuel_cells = $Planet1FuelCells
 var _solar_death := false
 var _death_fade: Tween
@@ -88,6 +98,7 @@ var _platform_clearance := 0.5
 
 
 func _ready() -> void:
+	departure.source_heated.connect(_heat_planet_1)
 	fuel_cells.all_collected.connect(_on_planet_1_fuel_collected)
 	# Set runtime looping too, so this works before the editor reimports the audio.
 	var looping_music := phase_2_music.stream.duplicate() as AudioStreamOggVorbis
@@ -114,6 +125,12 @@ func _update_occluders() -> void:
 
 
 func _reset() -> void:
+	departure.cancel()
+	_restore_planet_1_materials()
+	if _travel_tween != null:
+		_travel_tween.kill()
+	travelling = false
+	_fuel_departure_pending = false
 	_solar_death = false
 	if _death_fade != null:
 		_death_fade.kill()
@@ -243,8 +260,9 @@ func _begin_planet_1_phase_2() -> void:
 
 
 func _on_planet_1_fuel_collected() -> void:
-	if current_planet != 0 or travelling:
+	if current_planet != 0 or travelling or _solar_death or _fuel_departure_pending:
 		return
+	_fuel_departure_pending = true
 	# Let the final collection animation and 10/10 counter read before departure.
 	await get_tree().create_timer(0.25).timeout
 	if current_planet != 0 or travelling or not _fuel_cells_spawned or not _planet_1_phase_2_started:
@@ -252,6 +270,7 @@ func _on_planet_1_fuel_collected() -> void:
 	if _explosion_dialogue_in_progress:
 		_on_intro_finished()
 	terminal.close()
+	_fuel_departure_pending = false
 	_travel_to_next_planet()
 
 
@@ -275,10 +294,13 @@ func _process(delta: float) -> void:
 	if _solar_death:
 		return
 	if _sun_expanding:
-		sun_radius += maxf(sun_expansion_speed, 0.0) * delta
+		var next_radius := sun_radius + maxf(sun_expansion_speed, 0.0) * delta
+		if departure.active:
+			next_radius = minf(next_radius, maxf(sun_radius, departure.sun_stop_radius()))
+		sun_radius = next_radius
 		sun.scale = Vector3.ONE * sun_radius
 	# The sun reaches the near side of the flight shell at center distance - 1.5R.
-	if current_planet == 0 and not travelling and _sun_expanding:
+	if current_planet == 0 and not travelling and not _fuel_departure_pending and _sun_expanding:
 		var sun_gap := sun.global_position.distance_to(planets[0].global_position) - sun_radius
 		if sun_gap <= planet_radii.x * 1.5:
 			_show_solar_death()
@@ -291,7 +313,10 @@ func _process(delta: float) -> void:
 	rocket_audio.update_layers(ship.active_booster_count(), _rocket_audio_enabled and ship.can_fight, delta)
 	if _opening_camera_moved:
 		_opening_framing_weight = maxf(0.0, _opening_framing_weight - delta * 5.0)
-	_update_camera()
+	if departure.active:
+		departure.step(delta)
+	else:
+		_update_camera()
 	_update_sunlight()
 	_update_ocean_sun()
 
@@ -457,11 +482,57 @@ func _update_camera() -> void:
 		var opening_direction := (ship_direction + sun_direction).normalized()
 		look_direction = look_direction.slerp(opening_direction, _opening_camera_blend * _opening_framing_weight)
 	camera.look_at(camera.global_position + look_direction, radial_up)
+func _skip_checkpoint() -> void:
+	if departure.active:
+		departure.skip()
+		return
+	if travelling:
+		if _travel_tween != null and _travel_tween.is_running():
+			_travel_tween.custom_step(10000.0)
+		return
+	if _fuel_departure_pending:
+		return
+	if current_planet == 0:
+		if _intro_in_progress:
+			terminal.finish_dialogue()
+		elif not _sun_expansion_triggered:
+			trigger_sun_expansion()
+		elif not explosion_dialogue_delay.is_stopped():
+			explosion_dialogue_delay.stop()
+			_begin_planet_1_phase_2()
+		elif _explosion_dialogue_in_progress:
+			terminal.finish_dialogue()
+		elif _fuel_cells_spawned:
+			fuel_cells.collect_all()
+			if _fuel_departure_pending:
+				var contact_radius := sun.global_position.distance_to(planets[0].global_position) - planet_radii.x
+				sun_radius = maxf(sun_radius, contact_radius)
+				_update_sun()
+	elif current_planet == 2 or ship.is_destroyed:
+		_reset()
+	else:
+		_travel_to_next_planet()
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if _solar_death:
 		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_P:
 			_reset()
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		return
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_P:
+		_skip_checkpoint()
+		get_viewport().set_input_as_handled()
+		return
+	if departure.active:
+		if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+			departure.rotate_camera(event.relative * mouse_sensitivity)
+		elif event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		return
+	if travelling:
 		return
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_T:
 		trigger_sun_expansion()
@@ -488,17 +559,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_begin_launch_sequence()
 		elif event.keycode == KEY_ESCAPE:
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-		elif event.keycode == KEY_P and not travelling:
-			if _intro_in_progress:
-				return
-			if ship.is_parked and not ship.takeoff_enabled:
-				return
-			if ship.is_dying:
-				return
-			if current_planet == 2 or ship.is_destroyed:
-				_reset()
-			else:
-				_travel_to_next_planet()
+
 
 
 func _update_sun() -> void:
@@ -520,8 +581,8 @@ func _update_sunlight() -> void:
 	sunlight.light_energy = clampf(energy, 0.0, maxf(sunlight_max_energy, 0.0)) * lerpf(1.0, 10.0, _sun_flash_strength)
 
 
-func _travel_to_next_planet() -> void:
-	if _solar_death:
+func _travel_to_next_planet(continue_from_departure := false) -> void:
+	if _solar_death or (travelling and not continue_from_departure):
 		return
 	explosion_dialogue_delay.stop()
 	fuel_cells.clear()
@@ -530,6 +591,11 @@ func _travel_to_next_planet() -> void:
 		_fade_out_planet_1_music()
 		phase_2_music.stop()
 	forest_ambience.stop()
+	terminal.close()
+	if current_planet == 0 and not continue_from_departure:
+		_begin_planet_1_departure()
+		return
+	departure.cancel()
 	ship.surface_repulsion_enabled = true
 	_left_platform = true
 	_repulsion_countdown = -1.0
@@ -546,9 +612,9 @@ func _travel_to_next_planet() -> void:
 	# Move the destination under the stationary ship with its current radial orientation.
 	var destination_center := fixed_ship_position - radial_up * (planet_radii[destination] + altitude)
 	var target_origin := solar_positions[destination] - destination_center
-	var tween := create_tween()
-	tween.tween_method(_set_frame_origin, frame_origin, target_origin, maxf(travel_duration, 0.01)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	await tween.finished
+	_travel_tween = create_tween()
+	_travel_tween.tween_method(_set_frame_origin, frame_origin, target_origin, maxf(travel_duration, 0.01)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	await _travel_tween.finished
 	# Rebase everything together: destination at zero, no visible camera/ship jump.
 	current_planet = destination
 	_set_frame_origin(solar_positions[destination])
@@ -556,8 +622,76 @@ func _travel_to_next_planet() -> void:
 	ship.bind_to_planet(planets[destination])
 	ship.set_view_direction(view_direction)
 	ship.set_movement_profile(current_planet)
+	ship.controls_enabled = true
+	ship.mouse_look_enabled = true
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	terminal.set_process(true)
+	terminal.set_process_input(true)
 	battle.set_active(current_planet == 1)
 	travelling = false
 	_update_occluders()
 	_update_camera()
 	_update_sunlight()
+
+
+func _heat_planet_1() -> void:
+	if not _heated_surfaces.is_empty():
+		return
+	_heat_color = _sun_material.get_shader_parameter("surface_color")
+	_heat_color = Color(_heat_color.r * 0.3, _heat_color.g * 0.3, _heat_color.b * 0.5, _heat_color.a)
+	_heat_material = ShaderMaterial.new()
+	_heat_material.shader = EngulfedSurface
+	_heat_material.set_shader_parameter("surface_color", _heat_color)
+	_heat_material.set_shader_parameter("reveal", 0.0)
+	var pending: Array[Node] = [planets[0]]
+	while not pending.is_empty():
+		var node := pending.pop_back() as Node
+		if node is GeometryInstance3D:
+			var geometry := node as GeometryInstance3D
+			if node.name == &"Atmosphere":
+				_heated_surfaces.append({"node": geometry, "override": geometry.material_override})
+				_heat_atmosphere = geometry.material_override.duplicate() as ShaderMaterial
+				_heat_atmosphere_color = _heat_atmosphere.get_shader_parameter("glow_color")
+				geometry.material_override = _heat_atmosphere
+			else:
+				_heated_surfaces.append({"node": geometry, "overlay": geometry.material_overlay})
+				geometry.material_overlay = _heat_material
+		pending.append_array(node.get_children())
+	_heat_tween = create_tween()
+	_heat_tween.tween_method(_set_planet_1_heat, 0.0, 1.0, maxf(departure.source_color_duration, 0.01)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _set_planet_1_heat(strength: float) -> void:
+	_heat_material.set_shader_parameter("reveal", strength)
+	if _heat_atmosphere != null:
+		_heat_atmosphere.set_shader_parameter("glow_color", _heat_atmosphere_color.lerp(_heat_color, strength))
+
+
+func _restore_planet_1_materials() -> void:
+	if _heat_tween != null:
+		_heat_tween.kill()
+	for entry in _heated_surfaces:
+		if not is_instance_valid(entry["node"]):
+			continue
+		if entry.has("override"):
+			entry["node"].material_override = entry["override"]
+		else:
+			entry["node"].material_overlay = entry["overlay"]
+	_heated_surfaces.clear()
+	_heat_material = null
+	_heat_atmosphere = null
+
+
+func _begin_planet_1_departure() -> void:
+	travelling = true
+	_left_platform = true
+	_repulsion_countdown = -1.0
+	_opening_camera_blend = 0.0
+	_opening_framing_weight = 0.0
+	_rocket_audio_enabled = true
+	battle.set_active(false)
+	terminal.set_process(false)
+	terminal.set_process_input(false)
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	departure.begin(ship, planets[0], planets[1], camera, sun)
+	_update_occluders()

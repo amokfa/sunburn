@@ -109,6 +109,23 @@ func play_dialogue(messages: Array, open_window := true, clear_history := true) 
 		open()
 
 
+func finish_dialogue() -> void:
+	# Use the normal message signals so tutorial unlocks and story events still run.
+	_progress_blocked = false
+	_auto_advance_remaining = -1.0
+	while _index >= 0 and _index < _queue.size():
+		if _typing != null:
+			_finish_typing()
+		if _index + 1 >= _queue.size():
+			break
+		_next_message()
+	_waiting = false
+	_progress_blocked = false
+	_auto_advance_remaining = -1.0
+	close()
+	dialogue_finished.emit()
+
+
 func show_message(message: String, speaker := "BX") -> void:
 	_queue.append({ "speaker": speaker, "text": message })
 	if _typing == null and not _waiting:

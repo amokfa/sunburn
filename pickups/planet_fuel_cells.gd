@@ -102,6 +102,19 @@ func _process(_delta: float) -> void:
 		all_collected.emit()
 
 
+func collect_all() -> void:
+	if not _collecting:
+		return
+	_collecting = false
+	_collected += _cells.size()
+	for cell in _cells:
+		cell.queue_free()
+	_cells.clear()
+	_counter.text = "FUEL CELLS  %d / %d" % [_collected, cell_count]
+	_pickup_sound.play()
+	all_collected.emit()
+
+
 func stop() -> void:
 	_collecting = false
 	_counter.hide()
