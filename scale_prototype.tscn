@@ -14,6 +14,8 @@
 [ext_resource type="AudioStream" uid="uid://cktksa758p1o1" path="res://assets/sfx/launch.mp3" id="12_launch"]
 [ext_resource type="PackedScene" uid="uid://b6fw4htq2r7ks" path="res://ship/rocket_audio.tscn" id="13_rocket"]
 [ext_resource type="AudioStream" uid="uid://bqy5jwwxjdmay" path="res://assets/sfx/mus/mus1.mp3" id="14_music"]
+[ext_resource type="PackedScene" uid="uid://bw4qr3pf6hm2s" path="res://pickups/planet_fuel_cells.tscn" id="15_fuel_cells"]
+[ext_resource type="AudioStream" uid="uid://d20tjf0v6wtvp" path="res://assets/sfx/sun_trigger.mp3" id="16_sun_trigger"]
 [ext_resource type="Script" uid="uid://2ka8k7whcsv" path="res://ship/movement_settings.gd" id="movement_settings"]
 
 [sub_resource type="Sky" id="Sky"]
@@ -27,7 +29,7 @@ ambient_light_color = Color(1, 1, 1, 1)
 ambient_light_energy = 0.02
 reflected_light_source = 1
 
-[sub_resource type="Resource" id="Resource_4v1ah"]
+[sub_resource type="Resource" id="Resource_lrecf"]
 resource_local_to_scene = true
 script = ExtResource("movement_settings")
 horizontal_damping = 1.6
@@ -67,7 +69,7 @@ transform = Transform3D(250, 0, 0, 0, 250, 0, 0, 0, 250, -1800, 0, 0)
 
 [node name="Ship" parent="." unique_id=1306759738 instance=ExtResource("7_ship")]
 transform = Transform3D(0, 0, -1, -0.8, 0.6, 0, 0.6, 0.8, 0, -276, 207, 0)
-planet_1_movement = SubResource("Resource_4v1ah")
+planet_1_movement = SubResource("Resource_lrecf")
 
 [node name="Camera" type="Camera3D" parent="." unique_id=1243361966]
 transform = Transform3D(0, 0, -1, -0.880679, 0.473711, 0, 0.473711, 0.880679, 0, -274.5946, 212.74374, 0)
@@ -112,3 +114,9 @@ script = ExtResource("9_perf")
 [node name="SunExpansionDelay" type="Timer" parent="." unique_id=1794205865]
 wait_time = 60.0
 one_shot = true
+
+[node name="Planet1FuelCells" parent="." unique_id=972960667 instance=ExtResource("15_fuel_cells")]
+
+[node name="SunTriggerAudio" type="AudioStreamPlayer" parent="." unique_id=903219503]
+stream = ExtResource("16_sun_trigger")
+bus = &"sun_trigger"

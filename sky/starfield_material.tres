@@ -30,6 +30,7 @@ shader_parameter/milkyway_brightness = 0.05
 shader_parameter/noise_texture = SubResource("TextureA")
 shader_parameter/noise_texture_b = SubResource("TextureB")
 shader_parameter/sky_brightness = 0.5
+shader_parameter/flash_intensity = 0.0
 shader_parameter/shimmer_scale = 8.0
 shader_parameter/velocity_a = Vector2(0.012, -0.008)
 shader_parameter/velocity_b = Vector2(-0.008, 0.015)

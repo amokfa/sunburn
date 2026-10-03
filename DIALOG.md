@@ -18,3 +18,21 @@ BX: Use 'W', 'S', 'A', and 'D' to move the ship horizontally.
 BX: And that's about it!
 BX: Try them out for a few minutes and let me know if you have any questions.
 Now player can roam around on planet 1.
+
+# Explosion
+Music stops.
+Lars: What the hell was that?
+BX: What is it?
+Lars: Something happened to the sun!
+BX: ...
+BX: ...
+BX: Receving an emergency broadcast.
+BX: Our sun is turning into a red giant.
+BX: Soon it would swallow planet 1.
+BX: The only hope of survival is jumping to planet 2 before that happens.
+BX: But we don't have enough fuel to do that.
+BX: I suggest you roam around the planet and collect fuel cells
+
+At this point we spawn 10 instances of pickup randomly on planet 1 where the ship can reach it.
+Once the final cell is picked up, we jump to planet 2, like we do on pressing 'P'
+...

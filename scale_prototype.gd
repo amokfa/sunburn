@@ -2,12 +2,18 @@ extends Node3D
 ## Ship movement uses forces and radial geometry; planets have static mesh colliders.
 const ShipController = preload("res://ship/ship.gd")
 const IntroDialogue = preload("res://ui/intro_dialogue.gd")
+const ExplosionDialogue = preload("res://ui/planet_1_explosion_dialogue.gd")
+@onready var fuel_cells = $Planet1FuelCells
+var _planet_1_phase_2_started := false
+var _explosion_dialogue_in_progress := false
+var _fuel_cells_spawned := false
 @onready var terminal = $AssistantTerminal
 @onready var forest_ambience: AudioStreamPlayer = $ForestAmbience
 @onready var launch_audio: AudioStreamPlayer = $LaunchAudio
 @onready var launch_audio_duration: Timer = $LaunchAudioDuration
 @onready var rocket_audio = $RocketAudio
 @onready var intro_music: AudioStreamPlayer = $IntroMusic
+@onready var sun_trigger_audio: AudioStreamPlayer = $SunTriggerAudio
 var _intro_music_fade: Tween
 var _launch_started := false
 var _rocket_audio_enabled := false
@@ -76,6 +82,7 @@ var _platform_clearance := 0.5
 
 
 func _ready() -> void:
+	fuel_cells.all_collected.connect(_on_planet_1_fuel_collected)
 	_setup_sun_flash()
 	sun_expansion_delay.timeout.connect(trigger_sun_expansion)
 	terminal.message_finished.connect(_on_intro_message_finished)
@@ -96,6 +103,11 @@ func _update_occluders() -> void:
 
 
 func _reset() -> void:
+	sun_trigger_audio.stop()
+	fuel_cells.clear()
+	_planet_1_phase_2_started = false
+	_explosion_dialogue_in_progress = false
+	_fuel_cells_spawned = false
 	sun_expansion_delay.stop()
 	if _sun_flash_tween != null:
 		_sun_flash_tween.kill()
@@ -159,6 +171,11 @@ func _reset() -> void:
 
 
 func _on_intro_message_finished(index: int) -> void:
+	if _explosion_dialogue_in_progress:
+		if index == ExplosionDialogue.MESSAGES.size() - 1 and not _fuel_cells_spawned:
+			_fuel_cells_spawned = true
+			fuel_cells.begin(planets[0], ship)
+		return
 	if not _intro_in_progress or index < 0 or index >= IntroDialogue.MESSAGES.size():
 		return
 	var message: Dictionary = IntroDialogue.MESSAGES[index]
@@ -182,6 +199,37 @@ func _on_intro_message_finished(index: int) -> void:
 func _on_intro_finished() -> void:
 	_intro_in_progress = false
 	_intro_wait_altitude = -1.0
+	_explosion_dialogue_in_progress = false
+
+
+func _begin_planet_1_phase_2() -> void:
+	_planet_1_phase_2_started = true
+	_intro_in_progress = false
+	_intro_wait_altitude = -1.0
+	_explosion_dialogue_in_progress = true
+	if _intro_music_fade != null:
+		_intro_music_fade.kill()
+	intro_music.stop()
+	# Testing the explosion during the tutorial must not leave any controls locked.
+	ship.controls_enabled = true
+	ship.mouse_look_enabled = true
+	ship.ascend_input_enabled = true
+	ship.descend_input_enabled = true
+	ship.horizontal_input_enabled = true
+	ship.allow_parked_view = true
+	terminal.play_dialogue(ExplosionDialogue.MESSAGES, true, false)
+
+
+func _on_planet_1_fuel_collected() -> void:
+	if current_planet != 0 or travelling:
+		return
+	# Let the final collection animation and 10/10 counter read before departure.
+	await get_tree().create_timer(0.25).timeout
+	if current_planet != 0 or travelling or not _fuel_cells_spawned or not _planet_1_phase_2_started:
+		return
+	_explosion_dialogue_in_progress = false
+	terminal.close()
+	_travel_to_next_planet()
 
 
 func _set_frame_origin(origin: Vector3) -> void:
@@ -231,8 +279,11 @@ func _setup_sun_flash() -> void:
 
 
 func trigger_sun_expansion() -> void:
+	sun_trigger_audio.play()
 	sun_expansion_delay.stop()
 	_sun_expansion_triggered = true
+	if current_planet == 0 and not _planet_1_phase_2_started:
+		_begin_planet_1_phase_2()
 	if _sun_flash_tween != null:
 		_sun_flash_tween.kill()
 	_sun_flash_tween = create_tween()
@@ -399,6 +450,8 @@ func _update_sunlight() -> void:
 
 
 func _travel_to_next_planet() -> void:
+	fuel_cells.clear()
+	_explosion_dialogue_in_progress = false
 	if current_planet == 0:
 		_fade_out_planet_1_music()
 	forest_ambience.stop()

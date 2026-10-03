@@ -75,19 +75,23 @@ func _input(event: InputEvent) -> void:
 				dialogue_finished.emit()
 
 
-func play_dialogue(messages: Array, open_window := true) -> void:
-	if _scroll_animation != null:
-		_scroll_animation.kill()
-	_scroll.scroll_vertical = 0
-	_scroll_target = 0.0
+func play_dialogue(messages: Array, open_window := true, clear_history := true) -> void:
+	if _typing != null:
+		_typing.visible_characters = -1
+	if clear_history:
+		if _scroll_animation != null:
+			_scroll_animation.kill()
+		_scroll.scroll_vertical = 0
+		_scroll_target = 0.0
 	_typing = null
 	_waiting = false
 	_progress_blocked = false
 	_hint.hide()
-	for row in _message_rows:
-		_messages.remove_child(row)
-		row.queue_free()
-	_message_rows.clear()
+	if clear_history:
+		for row in _message_rows:
+			_messages.remove_child(row)
+			row.queue_free()
+		_message_rows.clear()
 	_queue = messages.duplicate(true)
 	_index = -1
 	if not _queue.is_empty():
