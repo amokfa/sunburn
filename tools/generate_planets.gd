@@ -198,78 +198,15 @@ func bake_planet(kind: int) -> void:
 	print("Planet %d: %d terrain triangles; radial extent %.4f" % [kind + 1, mesh_indices.size() / 3, maximum_radius])
 	root.free()
 
-func make_collider(kind: int) -> StaticBody3D:
-	var sphere := SphereMesh.new()
-	sphere.radius = 1.0
-	sphere.height = 2.0
-	sphere.radial_segments = 64
-	sphere.rings = 32
-	var arrays := sphere.get_mesh_arrays()
-	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
-	for index in range(vertices.size()):
-		var p := vertices[index].normalized()
-		var ground := 1.0 + elevation(p, kind)
-		var surface := maxf(1.0, ground) if kind == 0 else ground
-		vertices[index] = p * surface
-	var faces := PackedVector3Array()
-	var mesh_indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
-	for index in mesh_indices:
-		faces.append(vertices[index])
-	# Increasing resolution alone still lets flat faces cut through hills.
-	# Fit an outward envelope to the actual baked terrain, including face centres.
-	var triangle_mesh := TriangleMesh.new()
-	triangle_mesh.create_from_faces(faces)
-	var terrain := load("res://planets/planet%d_terrain.res" % (kind + 1)) as ArrayMesh
-	var terrain_arrays := terrain.surface_get_arrays(0)
-	var terrain_vertices: PackedVector3Array = terrain_arrays[Mesh.ARRAY_VERTEX]
-	var terrain_indices: PackedInt32Array = terrain_arrays[Mesh.ARRAY_INDEX]
-	var expansion := 1.0
-	for p in terrain_vertices:
-		expansion = maxf(expansion, enclosing_scale(triangle_mesh, p, kind == 0))
-	for index in range(0, terrain_indices.size(), 3):
-		var a := terrain_vertices[terrain_indices[index]]
-		var b := terrain_vertices[terrain_indices[index + 1]]
-		var c := terrain_vertices[terrain_indices[index + 2]]
-		for p in [(a + b) * 0.5, (b + c) * 0.5, (c + a) * 0.5, (a + b + c) / 3.0]:
-			expansion = maxf(expansion, enclosing_scale(triangle_mesh, p, kind == 0))
-	# An extra metre absorbs remaining interpolation and mesh precision error.
-	var nominal_radius: float = [300.0, 240.0, 180.0][kind]
-	var minimum_face_radius := INF
-	for index in range(0, faces.size(), 3):
-		var normal := (faces[index + 1] - faces[index]).cross(faces[index + 2] - faces[index])
-		if normal.length_squared() < 0.000000000001:
-			continue
-		normal = normal.normalized()
-		minimum_face_radius = minf(minimum_face_radius, absf(normal.dot(faces[index])))
-	expansion += 1.0 / (nominal_radius * minimum_face_radius)
-	for index in range(faces.size()):
-		faces[index] *= expansion
-	print("Planet %d collider: %d triangles; outward expansion %.5f" % [kind + 1, faces.size() / 3, expansion])
-	var shape := ConcavePolygonShape3D.new()
-	shape.set_faces(faces)
-	save_resource(shape, "res://planets/planet%d_collision.res" % (kind + 1))
+func make_collider(_kind: int) -> StaticBody3D:
+	# Geometry is generated from the current terrain and ocean when the scene loads.
 	var body := StaticBody3D.new()
 	body.name = "SurfaceCollider"
 	body.set_script(load("res://planets/surface_collider.gd"))
 	var collision := CollisionShape3D.new()
 	collision.name = "Shape"
-	collision.shape = shape
 	body.add_child(collision)
 	return body
-
-func enclosing_scale(triangles: TriangleMesh, point: Vector3, include_water: bool) -> float:
-	var direction := point.normalized()
-	var hit := triangles.intersect_ray(Vector3.ZERO, direction)
-	if hit.is_empty():
-		var reference := Vector3.UP if absf(direction.y) < 0.9 else Vector3.RIGHT
-		direction = (direction + direction.cross(reference).normalized() * 0.00001).normalized()
-		hit = triangles.intersect_ray(Vector3.ZERO, direction)
-	if hit.is_empty():
-		push_error("Missing radial collider sample during bake")
-		quit(1)
-		return 1.0
-	var required_radius := maxf(1.0, point.length()) if include_water else point.length()
-	return required_radius / hit.position.length()
 
 func add_owned(root: Node, child: Node) -> void:
 	root.add_child(child)

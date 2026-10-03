@@ -24,6 +24,7 @@ reflected_light_source = 1
 [node name="ScalePrototype" type="Node3D" unique_id=1293193467]
 script = ExtResource("1")
 sunlight_ship_offset = 10000.0
+travel_duration = 2.0
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=198271429]
 environment = SubResource("Environment")
@@ -51,6 +52,10 @@ transform = Transform3D(500, 0, 0, 0, 500, 0, 0, 0, 500, -1800, 0, 0)
 
 [node name="Ship" parent="." unique_id=1306759738 instance=ExtResource("7_ship")]
 transform = Transform3D(0, 0, -1, -0.8, 0.6, 0, 0.6, 0.8, 0, -276, 207, 0)
+upgraded_speed_multiplier = 2.0
+surface_clearance = 10.0
+boundary_spring_stiffness = 50000.0
+boundary_spring_damping = 1000.0
 
 [node name="Camera" type="Camera3D" parent="." unique_id=1243361966]
 transform = Transform3D(0, 0, -1, -0.880679, 0.473711, 0, 0.473711, 0.880679, 0, -274.5946, 212.74374, 0)

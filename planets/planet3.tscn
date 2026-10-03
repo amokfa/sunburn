@@ -2,7 +2,6 @@
 
 
 [ext_resource type="Script" path="res://planets/surface_collider.gd" id="surface_script"]
-[ext_resource type="ConcavePolygonShape3D" path="res://planets/planet3_collision.res" id="surface_shape"]
 
 [ext_resource type="ArrayMesh" path="res://planets/planet3_terrain.res" id="1_43ufh"]
 
@@ -24,4 +23,3 @@ occluder = SubResource("SphereOccluder3D_0h4pa")
 script = ExtResource("surface_script")
 
 [node name="Shape" type="CollisionShape3D" parent="SurfaceCollider"]
-shape = ExtResource("surface_shape")

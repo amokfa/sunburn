@@ -1,0 +1,29 @@
+{
+  "battle_stages_ms": {
+    "battle": 11.6793374827109,
+    "missiles": 0.814641770401107,
+    "spacing": 0.537159059474412,
+    "spacing_grid": 0.145968188105118,
+    "steering": 0.538424619640387,
+    "targets": 0.0137994467496542
+  },
+  "cpu_render_ms": 3.18154861178332,
+  "enemies": 200,
+  "exhaust_updates_ms": 2.42103734439834,
+  "fly_ms": 8.40741286307054,
+  "fps": 48.1683983194759,
+  "frame_p50_ms": 20.319,
+  "frame_p95_ms": 23.908,
+  "frame_p99_ms": 25.631,
+  "frames": 1446,
+  "gpu_render_ms": 2.73011112213135,
+  "measurement_s": 30,
+  "peak_missiles": 224,
+  "renderer": "gl_compatibility",
+  "terrain_all_ms": 1.58693845089903,
+  "terrain_queries_per_frame": 644.042185338866,
+  "thrust_ms": 3.66070124481328,
+  "thruster_requests_ms": 2.68279253112033,
+  "tilt_ms": 0.466309820193638,
+  "warmup_s": 30
+}

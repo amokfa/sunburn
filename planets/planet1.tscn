@@ -67,7 +67,6 @@
 [ext_resource type="MultiMesh" uid="uid://cruv8o10v7cb5" path="res://planets/forest_patch_63.tres" id="65_nmv14"]
 [ext_resource type="PackedScene" path="res://planets/atmosphere.tscn" id="atmosphere_scene"]
 [ext_resource type="Script" uid="uid://hosuk27hxit" path="res://planets/surface_collider.gd" id="surface_script"]
-[ext_resource type="Shape3D" uid="uid://bkugrr1x7flc4" path="res://planets/planet1_collision.res" id="surface_shape"]
 
 [sub_resource type="SphereMesh" id="SphereMesh_axsso"]
 radius = 1.0
@@ -288,7 +287,6 @@ occluder = SubResource("SphereOccluder3D_p22sr")
 script = ExtResource("surface_script")
 
 [node name="Shape" type="CollisionShape3D" parent="SurfaceCollider" unique_id=1290375568]
-shape = ExtResource("surface_shape")
 
 [node name="Atmosphere" parent="." unique_id=2114200768 instance=ExtResource("atmosphere_scene")]
 transform = Transform3D(1.1, 0, 0, 0, 1.1, 0, 0, 0, 1.1, 0, 0, 0)

@@ -1,7 +1,12 @@
 extends Node3D
+const LIFETIME_SECONDS := 8.0
 var velocity := Vector3.ZERO
 var launcher: Node3D
-var remaining: float = 8.0
+var remaining: float = LIFETIME_SECONDS
+
+func _ready() -> void:
+	var material := $Body.material_override as ShaderMaterial
+	material.set_shader_parameter("pulse_phase", randf_range(0.0, TAU))
 
 func launch(origin: Vector3, direction: Vector3, speed: float, owner_ship: Node3D, up: Vector3) -> void:
 	position = origin

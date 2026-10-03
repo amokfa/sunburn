@@ -55,6 +55,7 @@ func _update_occluders() -> void:
 
 func _reset() -> void:
 	battle.set_active(false)
+	ship.reset_health()
 	ship.set_agility_boost(false)
 	ship.bind_to_planet(null)
 	current_planet = 0
@@ -127,7 +128,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.keycode == KEY_ESCAPE:
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		elif event.keycode == KEY_P and not travelling:
-			if current_planet == 2:
+			if ship.is_dying:
+				return
+			if current_planet == 2 or ship.is_destroyed:
 				_reset()
 			else:
 				_travel_to_next_planet()

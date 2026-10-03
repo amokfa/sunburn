@@ -4,6 +4,17 @@ extends Node3D
 ## Bind after placing the ship in the scene. Unbinding preserves its transform.
 const ThrusterController = preload("res://ship/thruster.gd")
 const SurfaceCollider = preload("res://planets/surface_collider.gd")
+signal destroyed(ship: PlanetShip)
+const MAX_LIVES := 5
+var lives_remaining := MAX_LIVES
+var is_dying := false
+var is_destroyed := false
+var _wreck_remaining := 0.0
+var _wreck_velocity := Vector3.ZERO
+var _wreck_spin := Vector3.ZERO
+var can_fight: bool:
+	get:
+		return lives_remaining > 0 and not is_destroyed
 
 @export var mass: float = 1000.0
 @export var horizontal_thrust_force: float = 32000.0
@@ -61,6 +72,10 @@ var view_forward: Vector3:
 		return (_planet.global_basis * _local_view_forward).normalized() if is_instance_valid(_planet) else _unbound_view_forward
 var velocity: Vector3:
 	get:
+		if is_dying:
+			return _wreck_velocity
+		if is_destroyed:
+			return Vector3.ZERO
 		return _planet.global_basis.orthonormalized() * _velocity if is_instance_valid(_planet) else Vector3.ZERO
 var yaw_velocity: float:
 	get:
@@ -87,6 +102,7 @@ var _last_yaw_torque: float = 0.0
 
 
 func _ready() -> void:
+	lives_remaining = maximum_lives()
 	_model_rest_transform = model.transform
 	_wobble_noise.seed = 73129
 	_wobble_noise.frequency = 1.0
@@ -135,6 +151,50 @@ func _planet_radius(planet: Node3D) -> float:
 func set_agility_boost(enabled: bool) -> void:
 	agility_boost = enabled
 
+func maximum_lives() -> int:
+	return MAX_LIVES
+
+func reset_health() -> void:
+	lives_remaining = maximum_lives()
+	is_dying = false
+	is_destroyed = false
+	_wreck_remaining = 0.0
+	visible = true
+	for exhaust: ThrusterController in _thrusters.values():
+		exhaust.set_process(true)
+
+func receive_missile_hit(impulse: Vector3, torque_impulse: Vector3) -> void:
+	if not can_fight:
+		return
+	apply_impulse(impulse)
+	apply_torque_impulse(torque_impulse)
+	lives_remaining -= 1
+	if lives_remaining == 0:
+		_wreck_velocity = velocity
+		_wreck_spin = _planet.global_basis.orthonormalized() * _navigation_basis() * _impact_angular_velocity
+		_wreck_spin += radial_up * _yaw_velocity
+		_wreck_remaining = 2.0
+		is_dying = true
+		_last_stabilization_torque = Vector3.ZERO
+		for exhaust: ThrusterController in _thrusters.values():
+			exhaust.set_static_power(0.0)
+
+func step_wreck(delta: float) -> void:
+	if not is_dying:
+		return
+	var step := minf(maxf(delta, 0.0), _wreck_remaining)
+	global_position += _wreck_velocity * step
+	var speed := _wreck_spin.length()
+	if speed > 0.000001:
+		global_basis = Basis(Quaternion(_wreck_spin / speed, speed * step)) * global_basis
+	_wreck_remaining -= step
+	if _wreck_remaining <= 0.000001:
+		is_dying = false
+		is_destroyed = true
+		destroyed.emit(self)
+		visible = false
+		set_process(false)
+
 
 func apply_impulse(world_impulse: Vector3) -> void:
 	if not is_instance_valid(_planet):
@@ -181,6 +241,11 @@ func _step_attitude(delta: float) -> void:
 
 
 func _process(delta: float) -> void:
+	if is_dying:
+		step_wreck(delta)
+		return
+	if is_destroyed:
+		return
 	if not is_instance_valid(_planet):
 		bind_to_planet(null)
 		return
@@ -194,6 +259,8 @@ func _process(delta: float) -> void:
 
 
 func set_view_direction(direction: Vector3) -> void:
+	if not can_fight:
+		return
 	if not is_instance_valid(_planet):
 		return
 	var local_direction := _planet.global_basis.inverse() * direction
@@ -203,7 +270,7 @@ func set_view_direction(direction: Vector3) -> void:
 
 
 func rotate_view(angle: float) -> void:
-	if is_instance_valid(_planet):
+	if can_fight and is_instance_valid(_planet):
 		_local_view_forward = _local_view_forward.rotated(_local_up, angle).normalized()
 
 
@@ -218,7 +285,7 @@ func _move(delta: float) -> void:
 
 
 func apply_flight_controls(delta: float, horizontal: Vector2, vertical: float) -> void:
-	if not is_instance_valid(_planet):
+	if not can_fight or not is_instance_valid(_planet):
 		return
 	horizontal = horizontal.limit_length()
 	vertical = clampf(vertical, -1.0, 1.0)
@@ -259,6 +326,8 @@ func _update_thrusters(horizontal: Vector2, vertical: float, yaw_torque: float) 
 				var roll_sign := 1.0 if name_text.ends_with("_right") else -1.0
 				var correction := (_last_stabilization_torque.x * pitch_sign + _last_stabilization_torque.z * roll_sign) / torque_scale
 				power = maxf(power, maxf(correction if name_text.begins_with("down_") else -correction, 0.0))
+			if vertical < 0.0 and name_text.begins_with("down_"):
+				power = 0.0
 		var exhaust: ThrusterController = _thrusters[marker_name]
 		exhaust.set_power(power)
 

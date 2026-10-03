@@ -61,8 +61,19 @@ func run_checks() -> void:
 		key(control[0], true)
 		ship._move(1.0 / 120.0)
 		key(control[0], false)
+		if control[0] == KEY_E:
+			for marker in markers.get_children():
+				if String(marker.name).begins_with("down_"):
+					assert(marker.get_node("Exhaust").target_power == 0.0)
 		var added_force := force_and_torque(ship)[0] - idle_force
 		assert(added_force.normalized().dot(control[1]) > 0.999)
+	# Downward input also suppresses bottom exhaust used by stabilization.
+	ship._last_stabilization_torque = Vector3(1000.0, 0.0, 1000.0)
+	ship._update_thrusters(Vector2.ZERO, -1.0, 0.0)
+	for marker in markers.get_children():
+		if String(marker.name).begins_with("down_"):
+			assert(marker.get_node("Exhaust").target_power == 0.0)
+	ship._last_stabilization_torque = Vector3.ZERO
 	# Turning and braking must use opposite physical torque, without side force.
 	for turn in [-0.5, 0.5]:
 		ship.global_transform = placed

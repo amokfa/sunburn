@@ -20,12 +20,16 @@ var previous_position := Vector3.ZERO
 var target: Node3D
 var target_remaining: float = 0.0
 var reload_remaining: float = 0.0
+var fire_reaction_remaining: float = -1.0
 var think_remaining: float = 0.0
 var target_altitude_offset: float = 0.0
 var desired_orbit_radius: float = 0.0
 var separation_velocity := Vector3.ZERO
 var separation_priority: float = 0.0
 
+
+func maximum_lives() -> int:
+	return 3
 
 func _ready() -> void:
 	super._ready()
@@ -69,6 +73,7 @@ func _process(_delta: float) -> void:
 
 
 func reset(planet_node: Node3D) -> void:
+	reset_health()
 	var spawn_up := spawn_direction.normalized()
 	var spawn_forward := (spawn_heading - spawn_up * spawn_heading.dot(spawn_up)).normalized()
 	position = spawn_up * (_planet_radius(planet_node) + cruise_altitude)
