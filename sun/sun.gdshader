@@ -4,6 +4,7 @@ render_mode unshaded, cull_disabled, fog_disabled;
 uniform sampler2D noise_texture : repeat_enable, filter_linear_mipmap;
 uniform sampler2D noise_texture_b : repeat_enable, filter_linear_mipmap;
 uniform vec4 surface_color : source_color = vec4(1.0, 0.28, 0.015, 1.0);
+uniform float explosion_strength = 0.0;
 uniform vec4 spot_color : source_color = vec4(0.65, 0.19, 0.025, 1.0);
 uniform float spot_strength : hint_range(0.0, 1.0) = 0.65;
 uniform float wave_amplitude : hint_range(0.0, 0.05, 0.001) = 0.012;
@@ -55,5 +56,5 @@ void fragment() {
 	float blend = 0.5 + 0.5 * sin(TAU * TIME / max(spot_blend_period, 0.001) - PI * 0.5 + phase_offset);
 	float spots = mix(field_a, field_b, blend);
 	float darkness = smoothstep(spot_threshold - spot_softness * 0.5, spot_threshold + spot_softness * 0.5, spots);
-	ALBEDO = mix(surface_color.rgb, spot_color.rgb, darkness * spot_strength);
+	ALBEDO = mix(surface_color.rgb, spot_color.rgb, darkness * spot_strength) * max(1.0, explosion_strength);
 }

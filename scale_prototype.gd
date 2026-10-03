@@ -13,13 +13,25 @@ var _launch_started := false
 var _rocket_audio_enabled := false
 var _intro_in_progress := false
 var _intro_wait_altitude := -1.0
+@onready var sun_expansion_delay: Timer = $SunExpansionDelay
+var _sun_expanding := false
+var _sun_expansion_triggered := false
+var sun_expansion_speed := 0.0
+var _sun_flash_strength := 0.0
+var _sun_flash_tween: Tween
+var _environment: Environment
+var _sky_material: ShaderMaterial
+var _sun_material: ShaderMaterial
+var _normal_ambient_energy := 0.0
 
 @export_group("Solar system scale")
 @export var planet_radii := Vector3(300.0, 240.0, 180.0)
 @export var orbit_radii := Vector3(1800.0, 3600.0, 6000.0)
 @export var orbit_angles_degrees := Vector3(0.0, 10.0, -10.0)
 @export var initial_sun_radius: float = 250.0
-@export var sun_scroll_step: float = 100.0
+
+@export_group("Sun expansion")
+@export var sun_expansion_time_to_planet_1: float = 120.0
 
 @export_group("Sun lighting")
 @export var sunlight_ship_offset: float = 200.0
@@ -64,6 +76,8 @@ var _platform_clearance := 0.5
 
 
 func _ready() -> void:
+	_setup_sun_flash()
+	sun_expansion_delay.timeout.connect(trigger_sun_expansion)
 	terminal.message_finished.connect(_on_intro_message_finished)
 	terminal.dialogue_finished.connect(_on_intro_finished)
 	launch_audio_duration.timeout.connect(launch_audio.stop)
@@ -82,6 +96,13 @@ func _update_occluders() -> void:
 
 
 func _reset() -> void:
+	sun_expansion_delay.stop()
+	if _sun_flash_tween != null:
+		_sun_flash_tween.kill()
+	_sun_expanding = false
+	_sun_expansion_triggered = false
+	sun_expansion_speed = 0.0
+	_set_sun_flash(0.0)
 	launch_audio_duration.stop()
 	launch_audio.stop()
 	rocket_audio.stop()
@@ -180,6 +201,9 @@ func _fade_out_planet_1_music() -> void:
 
 
 func _process(delta: float) -> void:
+	if _sun_expanding:
+		sun_radius += maxf(sun_expansion_speed, 0.0) * delta
+		sun.scale = Vector3.ONE * sun_radius
 	if _intro_wait_altitude >= 0.0 and current_planet == 0 and not travelling and ship.altitude >= _intro_wait_altitude:
 		_intro_wait_altitude = -1.0
 		terminal.resume_dialogue()
@@ -191,6 +215,48 @@ func _process(delta: float) -> void:
 	_update_camera()
 	_update_sunlight()
 	_update_ocean_sun()
+
+
+func _setup_sun_flash() -> void:
+	# Keep runtime flash changes out of the shared resources and editor preview.
+	_sun_material = sun.material_override.duplicate() as ShaderMaterial
+	sun.material_override = _sun_material
+	var world_environment: WorldEnvironment = $WorldEnvironment
+	_environment = world_environment.environment.duplicate() as Environment
+	_environment.sky = _environment.sky.duplicate() as Sky
+	_sky_material = _environment.sky.sky_material.duplicate() as ShaderMaterial
+	_environment.sky.sky_material = _sky_material
+	world_environment.environment = _environment
+	_normal_ambient_energy = _environment.ambient_light_energy
+
+
+func trigger_sun_expansion() -> void:
+	sun_expansion_delay.stop()
+	_sun_expansion_triggered = true
+	if _sun_flash_tween != null:
+		_sun_flash_tween.kill()
+	_sun_flash_tween = create_tween()
+	_sun_flash_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_sun_flash_tween.tween_method(_set_sun_flash, 0., 1.0, 0.3)
+	_sun_flash_tween.tween_method(_set_sun_flash, 1.0, 0.0, 3.0)
+	_sun_flash_tween.tween_callback(_begin_sun_growth)
+
+
+func _begin_sun_growth() -> void:
+	if _sun_expanding:
+		return
+	var contact_radius := sun.global_position.distance_to(planets[0].global_position) - planet_radii.x
+	sun_expansion_speed = maxf(contact_radius - sun_radius, 0.0) / maxf(sun_expansion_time_to_planet_1, 0.001)
+	_sun_expanding = true
+
+
+func _set_sun_flash(strength: float) -> void:
+	strength = strength * 10.
+	_sun_flash_strength = strength
+	_environment.ambient_light_energy = _normal_ambient_energy * lerpf(1.0, 100.0, strength)
+	_sky_material.set_shader_parameter("flash_intensity", strength)
+	_sun_material.set_shader_parameter("explosion_strength", strength)
+	_update_sunlight()
 
 
 func _update_forest_ambience() -> void:
@@ -234,6 +300,8 @@ func _update_platform_departure(delta: float) -> void:
 		if ship.is_parked:
 			return
 		_left_platform = true
+		if not _sun_expansion_triggered:
+			sun_expansion_delay.start()
 		_repulsion_countdown = platform_repulsion_delay
 		return
 	_opening_camera_blend = maxf(0.0, _opening_camera_blend - delta / maxf(platform_repulsion_delay, 0.001))
@@ -273,6 +341,10 @@ func _update_camera() -> void:
 		look_direction = look_direction.slerp(opening_direction, _opening_camera_blend * _opening_framing_weight)
 	camera.look_at(camera.global_position + look_direction, radial_up)
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_T:
+		trigger_sun_expansion()
+		get_viewport().set_input_as_handled()
+		return
 	if not ship.controls_enabled:
 		if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -287,13 +359,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		ship.rotate_view(-event.relative.x * mouse_sensitivity)
 		camera_pitch = clampf(camera_pitch - event.relative.y * mouse_sensitivity, -1.4, 1.4)
 	elif event is InputEventMouseButton and event.pressed:
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			sun_radius += sun_scroll_step
-			_update_sun()
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			sun_radius = maxf(1.0, sun_radius - sun_scroll_step)
-			_update_sun()
-		elif event.button_index == MOUSE_BUTTON_LEFT:
+		if event.button_index == MOUSE_BUTTON_LEFT:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	elif event is InputEventKey and event.pressed and not event.echo:
 		if event.physical_keycode == KEY_Q:
@@ -329,7 +395,7 @@ func _update_sunlight() -> void:
 	var surface_distance := maxf(sun_to_ship.length() - sun_radius, 1.0)
 	# Reference energy at reference distance, capped as the sun reaches the ship.
 	var energy := sunlight_reference_energy * pow(maxf(sunlight_reference_distance, 1.0) / surface_distance, sunlight_falloff)
-	sunlight.light_energy = clampf(energy, 0.0, maxf(sunlight_max_energy, 0.0))
+	sunlight.light_energy = clampf(energy, 0.0, maxf(sunlight_max_energy, 0.0)) * lerpf(1.0, 10.0, _sun_flash_strength)
 
 
 func _travel_to_next_planet() -> void:

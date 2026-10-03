@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="ShipMovementSettings" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="ShipMovementSettings" format=3 uid="uid://dhhxb18rs2uro"]
 
-[ext_resource type="Script" path="res://ship/movement_settings.gd" id="1"]
+[ext_resource type="Script" uid="uid://2ka8k7whcsv" path="res://ship/movement_settings.gd" id="1"]
 
 [resource]
 resource_local_to_scene = true
