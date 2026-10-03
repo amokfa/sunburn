@@ -15,6 +15,7 @@ var _collected := 0
 var _previous_ship_position := Vector3.ZERO
 var _rng := RandomNumberGenerator.new()
 @onready var _counter: Label = $HUD/Counter
+@onready var _pickup_sound: AudioStreamPlayer = $PickupSound
 
 
 func _ready() -> void:
@@ -23,7 +24,7 @@ func _ready() -> void:
 
 
 func begin(planet: Node3D, player: ShipController) -> void:
-	clear()
+	clear(true)
 	_planet = planet
 	_ship = player
 	global_position = planet.global_position
@@ -89,6 +90,7 @@ func _process(_delta: float) -> void:
 			continue
 		_cells.remove_at(index)
 		_collected += 1
+		_pickup_sound.play()
 		_counter.text = "FUEL CELLS  %d / %d" % [_collected, cell_count]
 		cell.set_process(false)
 		var animation := create_tween().bind_node(cell)
@@ -105,8 +107,10 @@ func stop() -> void:
 	_counter.hide()
 
 
-func clear() -> void:
+func clear(stop_audio := false) -> void:
 	stop()
+	if stop_audio:
+		_pickup_sound.stop()
 	_collected = 0
 	_cells.clear()
 	for child in get_children():

@@ -13,6 +13,7 @@ var _fuel_cells_spawned := false
 @onready var launch_audio_duration: Timer = $LaunchAudioDuration
 @onready var rocket_audio = $RocketAudio
 @onready var intro_music: AudioStreamPlayer = $IntroMusic
+@onready var phase_2_music: AudioStreamPlayer = $Phase2Music
 @onready var sun_trigger_audio: AudioStreamPlayer = $SunTriggerAudio
 var _intro_music_fade: Tween
 var _launch_started := false
@@ -20,6 +21,7 @@ var _rocket_audio_enabled := false
 var _intro_in_progress := false
 var _intro_wait_altitude := -1.0
 @onready var sun_expansion_delay: Timer = $SunExpansionDelay
+@onready var explosion_dialogue_delay: Timer = $ExplosionDialogueDelay
 var _sun_expanding := false
 var _sun_expansion_triggered := false
 var sun_expansion_speed := 0.0
@@ -85,6 +87,7 @@ func _ready() -> void:
 	fuel_cells.all_collected.connect(_on_planet_1_fuel_collected)
 	_setup_sun_flash()
 	sun_expansion_delay.timeout.connect(trigger_sun_expansion)
+	explosion_dialogue_delay.timeout.connect(_begin_planet_1_phase_2)
 	terminal.message_finished.connect(_on_intro_message_finished)
 	terminal.dialogue_finished.connect(_on_intro_finished)
 	launch_audio_duration.timeout.connect(launch_audio.stop)
@@ -103,8 +106,10 @@ func _update_occluders() -> void:
 
 
 func _reset() -> void:
+	phase_2_music.stop()
+	explosion_dialogue_delay.stop()
 	sun_trigger_audio.stop()
-	fuel_cells.clear()
+	fuel_cells.clear(true)
 	_planet_1_phase_2_started = false
 	_explosion_dialogue_in_progress = false
 	_fuel_cells_spawned = false
@@ -197,19 +202,20 @@ func _on_intro_message_finished(index: int) -> void:
 
 
 func _on_intro_finished() -> void:
+	if _explosion_dialogue_in_progress:
+		_begin_sun_growth()
 	_intro_in_progress = false
 	_intro_wait_altitude = -1.0
 	_explosion_dialogue_in_progress = false
 
 
 func _begin_planet_1_phase_2() -> void:
-	_planet_1_phase_2_started = true
+	if current_planet != 0 or travelling or not _planet_1_phase_2_started:
+		return
 	_intro_in_progress = false
 	_intro_wait_altitude = -1.0
 	_explosion_dialogue_in_progress = true
-	if _intro_music_fade != null:
-		_intro_music_fade.kill()
-	intro_music.stop()
+	phase_2_music.play()
 	# Testing the explosion during the tutorial must not leave any controls locked.
 	ship.controls_enabled = true
 	ship.mouse_look_enabled = true
@@ -227,7 +233,8 @@ func _on_planet_1_fuel_collected() -> void:
 	await get_tree().create_timer(0.25).timeout
 	if current_planet != 0 or travelling or not _fuel_cells_spawned or not _planet_1_phase_2_started:
 		return
-	_explosion_dialogue_in_progress = false
+	if _explosion_dialogue_in_progress:
+		_on_intro_finished()
 	terminal.close()
 	_travel_to_next_planet()
 
@@ -283,21 +290,24 @@ func trigger_sun_expansion() -> void:
 	sun_expansion_delay.stop()
 	_sun_expansion_triggered = true
 	if current_planet == 0 and not _planet_1_phase_2_started:
-		_begin_planet_1_phase_2()
+		_planet_1_phase_2_started = true
+		if _intro_music_fade != null:
+			_intro_music_fade.kill()
+		intro_music.stop()
+		explosion_dialogue_delay.start()
 	if _sun_flash_tween != null:
 		_sun_flash_tween.kill()
 	_sun_flash_tween = create_tween()
 	_sun_flash_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	_sun_flash_tween.tween_method(_set_sun_flash, 0., 1.0, 0.3)
 	_sun_flash_tween.tween_method(_set_sun_flash, 1.0, 0.0, 3.0)
-	_sun_flash_tween.tween_callback(_begin_sun_growth)
 
 
 func _begin_sun_growth() -> void:
 	if _sun_expanding:
 		return
-	var contact_radius := sun.global_position.distance_to(planets[0].global_position) - planet_radii.x
-	sun_expansion_speed = maxf(contact_radius - sun_radius, 0.0) / maxf(sun_expansion_time_to_planet_1, 0.001)
+	var target_radius := sun.global_position.distance_to(planets[0].global_position) - 2.0 * planet_radii.x
+	sun_expansion_speed = maxf(target_radius - sun_radius, 0.0) / maxf(sun_expansion_time_to_planet_1, 0.001)
 	_sun_expanding = true
 
 
@@ -450,6 +460,7 @@ func _update_sunlight() -> void:
 
 
 func _travel_to_next_planet() -> void:
+	explosion_dialogue_delay.stop()
 	fuel_cells.clear()
 	_explosion_dialogue_in_progress = false
 	if current_planet == 0:
