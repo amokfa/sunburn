@@ -33,6 +33,15 @@ BX: The only hope of survival is jumping to planet 2 before that happens.
 BX: But we don't have enough fuel to do that.
 BX: I suggest you roam around the planet and collect fuel cells
 
+Lars: What happens when the sun reaches planet 1?
+Lars: Will planet 1 explode?
+BX: No, dummy. This was a 3 day game jam.
+BX: The programmer didn't have time to implement all that crap.
+BX: You'll just get a banner saying "you died"
+BX: But it'll be a really scary banner
+BX: YOU DO NOT WANT TO FACE THAT BANNER!!
+BX: So hurry up and collect all the fuel cells.
+
 At this point we spawn 10 instances of pickup randomly on planet 1 where the ship can reach it.
 Once the final cell is picked up, we jump to planet 2, like we do on pressing 'P'
 ...

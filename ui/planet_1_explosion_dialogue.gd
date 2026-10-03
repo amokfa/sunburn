@@ -44,5 +44,37 @@ const MESSAGES := [
     {
         "speaker": "BX",
         "text": "I suggest you roam around the planet and collect fuel cells"
+    },
+    {
+        "speaker": "Lars",
+        "text": "What happens when the sun reaches planet 1?"
+    },
+    {
+        "speaker": "Lars",
+        "text": "Will planet 1 explode?"
+    },
+    {
+        "speaker": "BX",
+        "text": "No, dummy. This was a 3 day game jam."
+    },
+    {
+        "speaker": "BX",
+        "text": "The programmer didn't have time to implement all that crap."
+    },
+    {
+        "speaker": "BX",
+        "text": "You'll just get a banner saying \"you died\""
+    },
+    {
+        "speaker": "BX",
+        "text": "But it'll be a really scary banner"
+    },
+    {
+        "speaker": "BX",
+        "text": "YOU DO NOT WANT TO FACE THAT BANNER!!"
+    },
+    {
+        "speaker": "BX",
+        "text": "So hurry up and collect all the fuel cells."
     }
 ]

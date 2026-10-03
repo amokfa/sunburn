@@ -5,3 +5,4 @@
 [resource]
 resource_local_to_scene = true
 script = ExtResource("1")
+maximum_altitude_ratio = 0.5

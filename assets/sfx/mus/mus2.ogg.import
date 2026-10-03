@@ -12,7 +12,7 @@ dest_files=["res://.godot/imported/mus2.ogg-e8a394f7741273fa6dacd7f30311c485.ogg
 
 [params]
 
-loop=false
+loop=true
 loop_offset=0
 bpm=0
 beat_count=0

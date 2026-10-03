@@ -4,6 +4,10 @@ const ShipController = preload("res://ship/ship.gd")
 const IntroDialogue = preload("res://ui/intro_dialogue.gd")
 const ExplosionDialogue = preload("res://ui/planet_1_explosion_dialogue.gd")
 @onready var fuel_cells = $Planet1FuelCells
+var _solar_death := false
+var _death_fade: Tween
+@onready var death_image: TextureRect = $DeathOverlay/Image
+@onready var death_audio: AudioStreamPlayer = $DeathAudio
 var _planet_1_phase_2_started := false
 var _explosion_dialogue_in_progress := false
 var _fuel_cells_spawned := false
@@ -85,6 +89,10 @@ var _platform_clearance := 0.5
 
 func _ready() -> void:
 	fuel_cells.all_collected.connect(_on_planet_1_fuel_collected)
+	# Set runtime looping too, so this works before the editor reimports the audio.
+	var looping_music := phase_2_music.stream.duplicate() as AudioStreamOggVorbis
+	looping_music.loop = true
+	phase_2_music.stream = looping_music
 	_setup_sun_flash()
 	sun_expansion_delay.timeout.connect(trigger_sun_expansion)
 	explosion_dialogue_delay.timeout.connect(_begin_planet_1_phase_2)
@@ -106,6 +114,14 @@ func _update_occluders() -> void:
 
 
 func _reset() -> void:
+	_solar_death = false
+	if _death_fade != null:
+		_death_fade.kill()
+	death_audio.stop()
+	death_image.hide()
+	death_image.modulate = Color.WHITE
+	terminal.set_process(true)
+	terminal.set_process_input(true)
 	phase_2_music.stop()
 	explosion_dialogue_delay.stop()
 	sun_trigger_audio.stop()
@@ -256,9 +272,17 @@ func _fade_out_planet_1_music() -> void:
 
 
 func _process(delta: float) -> void:
+	if _solar_death:
+		return
 	if _sun_expanding:
 		sun_radius += maxf(sun_expansion_speed, 0.0) * delta
 		sun.scale = Vector3.ONE * sun_radius
+	# The sun reaches the near side of the flight shell at center distance - 1.5R.
+	if current_planet == 0 and not travelling and _sun_expanding:
+		var sun_gap := sun.global_position.distance_to(planets[0].global_position) - sun_radius
+		if sun_gap <= planet_radii.x * 1.5:
+			_show_solar_death()
+			return
 	if _intro_wait_altitude >= 0.0 and current_planet == 0 and not travelling and ship.altitude >= _intro_wait_altitude:
 		_intro_wait_altitude = -1.0
 		terminal.resume_dialogue()
@@ -270,6 +294,38 @@ func _process(delta: float) -> void:
 	_update_camera()
 	_update_sunlight()
 	_update_ocean_sun()
+
+
+func _show_solar_death() -> void:
+	if _solar_death:
+		return
+	_solar_death = true
+	_sun_expanding = false
+	sun_expansion_delay.stop()
+	explosion_dialogue_delay.stop()
+	launch_audio_duration.stop()
+	ship.bind_to_planet(null)
+	ship.controls_enabled = false
+	terminal.close()
+	terminal.set_process(false)
+	terminal.set_process_input(false)
+	fuel_cells.clear(true)
+	rocket_audio.stop()
+	forest_ambience.stop()
+	launch_audio.stop()
+	intro_music.stop()
+	phase_2_music.stop()
+	sun_trigger_audio.stop()
+	if _intro_music_fade != null:
+		_intro_music_fade.kill()
+	if _sun_flash_tween != null:
+		_sun_flash_tween.kill()
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	death_image.modulate.a = 0.0
+	death_image.show()
+	death_audio.play()
+	_death_fade = create_tween()
+	_death_fade.tween_property(death_image, "modulate:a", 1.0, 1.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
 func _setup_sun_flash() -> void:
@@ -402,6 +458,11 @@ func _update_camera() -> void:
 		look_direction = look_direction.slerp(opening_direction, _opening_camera_blend * _opening_framing_weight)
 	camera.look_at(camera.global_position + look_direction, radial_up)
 func _unhandled_input(event: InputEvent) -> void:
+	if _solar_death:
+		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_P:
+			_reset()
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		return
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_T:
 		trigger_sun_expansion()
 		get_viewport().set_input_as_handled()
@@ -460,11 +521,14 @@ func _update_sunlight() -> void:
 
 
 func _travel_to_next_planet() -> void:
+	if _solar_death:
+		return
 	explosion_dialogue_delay.stop()
 	fuel_cells.clear()
 	_explosion_dialogue_in_progress = false
 	if current_planet == 0:
 		_fade_out_planet_1_music()
+		phase_2_music.stop()
 	forest_ambience.stop()
 	ship.surface_repulsion_enabled = true
 	_left_platform = true

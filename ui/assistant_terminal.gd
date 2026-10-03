@@ -15,6 +15,7 @@ var _index := -1
 var _typing: RichTextLabel
 var _typed_characters := 0.0
 var _waiting := false
+var _auto_advance_remaining := -1.0
 var _progress_blocked := false
 var _scroll_animation: Tween
 var _scroll_pending := false
@@ -38,6 +39,12 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	if _auto_advance_remaining >= 0.0 and _waiting and not _progress_blocked:
+		_auto_advance_remaining -= delta
+		if _auto_advance_remaining <= 0.0:
+			_auto_advance_remaining = -1.0
+			resume_dialogue()
+		return
 	if not _is_open or _typing == null:
 		return
 	_typed_characters += delta * characters_per_second
@@ -52,7 +59,8 @@ func _finish_typing() -> void:
 	_typing.visible_characters = -1
 	_typing = null
 	_waiting = true
-	_hint.visible = _is_open and not _progress_blocked
+	_auto_advance_remaining = float(_queue[_index].get("auto_advance_seconds", -1.0))
+	_hint.visible = _is_open and not _progress_blocked and _auto_advance_remaining < 0.0
 	message_finished.emit(_index)
 	_scroll_to_bottom.call_deferred()
 
@@ -65,7 +73,7 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		if _typing != null:
 			_finish_typing()
-		elif _waiting and not _progress_blocked:
+		elif _waiting and not _progress_blocked and _auto_advance_remaining < 0.0:
 			_waiting = false
 			_hint.hide()
 			if _index + 1 < _queue.size():
@@ -85,6 +93,7 @@ func play_dialogue(messages: Array, open_window := true, clear_history := true) 
 		_scroll_target = 0.0
 	_typing = null
 	_waiting = false
+	_auto_advance_remaining = -1.0
 	_progress_blocked = false
 	_hint.hide()
 	if clear_history:
@@ -109,7 +118,7 @@ func show_message(message: String, speaker := "BX") -> void:
 
 func set_progress_blocked(blocked: bool) -> void:
 	_progress_blocked = blocked
-	_hint.visible = _is_open and (_typing != null or (_waiting and not blocked))
+	_hint.visible = _is_open and (_typing != null or (_waiting and not blocked and _auto_advance_remaining < 0.0))
 
 
 func resume_dialogue() -> void:
@@ -121,6 +130,7 @@ func resume_dialogue() -> void:
 
 
 func _next_message() -> void:
+	_auto_advance_remaining = -1.0
 	_index += 1
 	var entry: Dictionary = _queue[_index]
 	var character_message: bool = entry.get("speaker", "BX") == "Lars"
@@ -224,7 +234,7 @@ func _animate(expanding: bool) -> void:
 		_animation.kill()
 	_is_open = expanding
 	_panel.show()
-	_hint.visible = expanding and (_typing != null or (_waiting and not _progress_blocked))
+	_hint.visible = expanding and (_typing != null or (_waiting and not _progress_blocked and _auto_advance_remaining < 0.0))
 	var target := _expanded_size() if expanding else COLLAPSED_SIZE
 	_animation = create_tween()
 	_animation.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT if expanding else Tween.EASE_IN)
@@ -238,4 +248,4 @@ func _on_viewport_resized() -> void:
 		_animation.kill()
 	_set_window_size(_expanded_size() if _is_open else COLLAPSED_SIZE)
 	_panel.visible = _is_open
-	_hint.visible = _is_open and (_typing != null or (_waiting and not _progress_blocked))
+	_hint.visible = _is_open and (_typing != null or (_waiting and not _progress_blocked and _auto_advance_remaining < 0.0))

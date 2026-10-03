@@ -1,5 +1,5 @@
 extends RefCounted
-## Intro dialogue. Preserve unlock and wait_altitude fields when editing messages.
+## Intro dialogue. Preserve unlock, wait_altitude, and auto_advance_seconds fields when editing messages.
 const MESSAGES := [
 	{
 		"speaker": "BX",
@@ -59,7 +59,8 @@ const MESSAGES := [
 	{
 		"speaker": "BX",
 		"text": "and 'E' to come back down",
-		"unlock": "descend"
+		"unlock": "descend",
+		"auto_advance_seconds": 2.0
 	},
 	{
 		"speaker": "BX",
