@@ -1,7 +1,9 @@
 extends CanvasLayer
-## Append messages or play a sequence. Each finished message waits for left click.
+## Dialogue supports click advancement, timed messages, and pauses after a click.
 signal message_finished(index: int)
+signal message_advanced(index: int)
 signal dialogue_finished
+var allow_toggle := true
 
 @export var animation_duration := 0.4
 @export var characters_per_second := 30.0
@@ -16,6 +18,7 @@ var _typing: RichTextLabel
 var _typed_characters := 0.0
 var _waiting := false
 var _auto_advance_remaining := -1.0
+var _next_delay_remaining := -1.0
 var _progress_blocked := false
 var _scroll_animation: Tween
 var _scroll_pending := false
@@ -39,6 +42,12 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	if _next_delay_remaining >= 0.0:
+		_next_delay_remaining -= delta
+		if _next_delay_remaining <= 0.0:
+			_next_delay_remaining = -1.0
+			_advance_message()
+		return
 	if _auto_advance_remaining >= 0.0 and _waiting and not _progress_blocked:
 		_auto_advance_remaining -= delta
 		if _auto_advance_remaining <= 0.0:
@@ -60,27 +69,43 @@ func _finish_typing() -> void:
 	_typing = null
 	_waiting = true
 	_auto_advance_remaining = float(_queue[_index].get("auto_advance_seconds", -1.0))
-	_hint.visible = _is_open and not _progress_blocked and _auto_advance_remaining < 0.0
+	_hint.visible = _is_open and not _progress_blocked and _auto_advance_remaining < 0.0 and _click_allowed()
 	message_finished.emit(_index)
 	_scroll_to_bottom.call_deferred()
 
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_M:
-		toggle()
+		if allow_toggle:
+			toggle()
 		get_viewport().set_input_as_handled()
 	elif _is_open and event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		get_viewport().set_input_as_handled()
+		if not _click_allowed() or _next_delay_remaining >= 0.0:
+			return
 		if _typing != null:
 			_finish_typing()
 		elif _waiting and not _progress_blocked and _auto_advance_remaining < 0.0:
 			_waiting = false
 			_hint.hide()
-			if _index + 1 < _queue.size():
-				_next_message()
+			message_advanced.emit(_index)
+			var delay := float(_queue[_index].get("next_delay_seconds", 0.0))
+			if delay > 0.0:
+				_next_delay_remaining = delay
 			else:
-				close()
-				dialogue_finished.emit()
+				_advance_message()
+
+
+func _click_allowed() -> bool:
+	return _index >= 0 and _index < _queue.size() and not _queue[_index].get("timed", false)
+
+
+func _advance_message() -> void:
+	if _index + 1 < _queue.size():
+		_next_message()
+	else:
+		close()
+		dialogue_finished.emit()
 
 
 func play_dialogue(messages: Array, open_window := true, clear_history := true) -> void:
@@ -94,6 +119,7 @@ func play_dialogue(messages: Array, open_window := true, clear_history := true) 
 	_typing = null
 	_waiting = false
 	_auto_advance_remaining = -1.0
+	_next_delay_remaining = -1.0
 	_progress_blocked = false
 	_hint.hide()
 	if clear_history:
@@ -109,6 +135,17 @@ func play_dialogue(messages: Array, open_window := true, clear_history := true) 
 		open()
 
 
+func stop_dialogue() -> void:
+	_typing = null
+	_waiting = false
+	_auto_advance_remaining = -1.0
+	_next_delay_remaining = -1.0
+	_progress_blocked = false
+	_queue.clear()
+	_index = -1
+	close()
+
+
 func finish_dialogue() -> void:
 	# Use the normal message signals so tutorial unlocks and story events still run.
 	_progress_blocked = false
@@ -116,12 +153,14 @@ func finish_dialogue() -> void:
 	while _index >= 0 and _index < _queue.size():
 		if _typing != null:
 			_finish_typing()
+		message_advanced.emit(_index)
 		if _index + 1 >= _queue.size():
 			break
 		_next_message()
 	_waiting = false
 	_progress_blocked = false
 	_auto_advance_remaining = -1.0
+	_next_delay_remaining = -1.0
 	close()
 	dialogue_finished.emit()
 
@@ -135,7 +174,7 @@ func show_message(message: String, speaker := "BX") -> void:
 
 func set_progress_blocked(blocked: bool) -> void:
 	_progress_blocked = blocked
-	_hint.visible = _is_open and (_typing != null or (_waiting and not blocked and _auto_advance_remaining < 0.0))
+	_hint.visible = _is_open and (_typing != null or (_waiting and not blocked and _auto_advance_remaining < 0.0)) and _click_allowed() and _next_delay_remaining < 0.0
 
 
 func resume_dialogue() -> void:
@@ -181,7 +220,7 @@ func _next_message() -> void:
 	_message_rows.append(row)
 	_typing = label
 	_typed_characters = 0.0
-	_hint.visible = _is_open
+	_hint.visible = _is_open and _click_allowed()
 	_resize_messages()
 	_scroll_to_bottom.call_deferred()
 
@@ -251,7 +290,7 @@ func _animate(expanding: bool) -> void:
 		_animation.kill()
 	_is_open = expanding
 	_panel.show()
-	_hint.visible = expanding and (_typing != null or (_waiting and not _progress_blocked and _auto_advance_remaining < 0.0))
+	_hint.visible = expanding and (_typing != null or (_waiting and not _progress_blocked and _auto_advance_remaining < 0.0)) and _click_allowed() and _next_delay_remaining < 0.0
 	var target := _expanded_size() if expanding else COLLAPSED_SIZE
 	_animation = create_tween()
 	_animation.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT if expanding else Tween.EASE_IN)
@@ -265,4 +304,4 @@ func _on_viewport_resized() -> void:
 		_animation.kill()
 	_set_window_size(_expanded_size() if _is_open else COLLAPSED_SIZE)
 	_panel.visible = _is_open
-	_hint.visible = _is_open and (_typing != null or (_waiting and not _progress_blocked and _auto_advance_remaining < 0.0))
+	_hint.visible = _is_open and (_typing != null or (_waiting and not _progress_blocked and _auto_advance_remaining < 0.0)) and _click_allowed() and _next_delay_remaining < 0.0

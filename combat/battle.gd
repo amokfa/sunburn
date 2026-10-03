@@ -2,10 +2,18 @@ extends Node3D
 const Missile = preload("res://combat/missile.tscn")
 const Explosion = preload("res://combat/explosion.tscn")
 const AIShip = preload("res://combat/ai_ship.gd")
+const AIShipScene = preload("res://combat/ai_ship.tscn")
+const MINIMUM_SHIP_COUNT := 200
+const MAXIMUM_SHIP_COUNT := 230
 const MissileState = preload("res://combat/missile.gd")
 const CollisionGrid = preload("res://combat/ship_collision_grid.gd")
 const VelocityHistory = preload("res://combat/velocity_history.gd")
 const OrbitalIntercept = preload("res://combat/orbital_intercept.gd")
+signal player_hit
+signal player_destroyed
+var damage_enabled := true
+var allow_player_targeting := true
+var targeting_hud_enabled := false
 
 @export var vision_cone_degrees: float = 60.0
 @export var missile_spread_degrees: float = 0.0
@@ -36,6 +44,7 @@ var ai_speed: float = 40.0
 var missile_speed: float = 100.0
 var _player_previous := Vector3.ZERO
 var _rng := RandomNumberGenerator.new()
+var _population_rng := RandomNumberGenerator.new()
 var _player_position := Vector3.ZERO
 var _collision_grid := CollisionGrid.new()
 var _ship_indices: Dictionary = {}
@@ -44,12 +53,15 @@ var _spacing_grid: Dictionary = {}
 var _velocity_histories: Dictionary = {}
 @onready var _missiles: Node3D = $Missiles
 @onready var _explosions: Node3D = $Explosions
+@onready var _ship_counter: Label = $FleetHUD/Counter
 
 func _ready() -> void:
 	for child in $Ships.get_children():
 		ships.append(child)
 		child.destroyed.connect(_on_ship_destroyed)
 	_rng.seed = 73129
+	_population_rng.randomize()
+	$FleetHUD.hide()
 	set_process(false)
 	visible = false
 
@@ -70,11 +82,13 @@ func follow_planet() -> void:
 func set_active(value: bool) -> void:
 	active = value
 	visible = value
+	$FleetHUD.visible = value
 	set_process(value)
-	$TargetIndicators.visible = value
-	$TargetIndicators/Crosshairs.set_process(value)
+	set_hud_enabled(targeting_hud_enabled)
 	_spacing_grid.clear()
 	_velocity_histories.clear()
+	_collision_targets.clear()
+	_ship_indices.clear()
 	for container in [_missiles, _explosions]:
 		for child in container.get_children():
 			child.free()
@@ -83,6 +97,7 @@ func set_active(value: bool) -> void:
 			ship.bind_to_planet(null)
 		return
 	follow_planet()
+	_resize_fleet(_population_rng.randi_range(MINIMUM_SHIP_COUNT, MAXIMUM_SHIP_COUNT))
 	for index in range(ships.size()):
 		var ship = ships[index]
 		ship.reset(planet)
@@ -98,6 +113,57 @@ func set_active(value: bool) -> void:
 	# Choose in order so later ships can respond to earlier ships' choices.
 	for ship in ships:
 		_choose_target(ship)
+	_refresh_ship_counter()
+
+
+func _resize_fleet(count: int) -> void:
+	while ships.size() > count:
+		var ship: AIShip = ships.pop_back()
+		$Ships.remove_child(ship)
+		ship.free()
+	while ships.size() < count:
+		var ship := AIShipScene.instantiate() as AIShip
+		ship.name = "AIShip%03d" % (ships.size() + 1)
+		var y := _population_rng.randf_range(-1.0, 1.0)
+		var azimuth := _population_rng.randf_range(0.0, TAU)
+		var horizontal_radius := sqrt(maxf(1.0 - y * y, 0.0))
+		ship.spawn_direction = Vector3(horizontal_radius * cos(azimuth), y, horizontal_radius * sin(azimuth))
+		var reference := Vector3.UP if absf(y) < 0.9 else Vector3.RIGHT
+		ship.spawn_heading = ship.spawn_direction.cross(reference).normalized().rotated(ship.spawn_direction, _population_rng.randf_range(0.0, TAU))
+		ship.cruise_altitude = _population_rng.randf_range(35.0, 70.0)
+		$Ships.add_child(ship)
+		ships.append(ship)
+		ship.destroyed.connect(_on_ship_destroyed)
+
+
+func _refresh_ship_counter() -> int:
+	var remaining := 0
+	for ship in ships:
+		if ship.can_fight:
+			remaining += 1
+	_ship_counter.text = "SHIPS LEFT  %d" % remaining
+	return remaining
+
+func set_protected_mode(protected: bool) -> void:
+	damage_enabled = not protected
+	allow_player_targeting = not protected
+	if active:
+		for ship in ships:
+			if ship.can_fight:
+				_choose_target(ship)
+
+
+func set_hud_enabled(enabled: bool) -> void:
+	targeting_hud_enabled = enabled
+	$TargetIndicators.visible = active and enabled
+	$TargetIndicators/Crosshairs.set_process(active and enabled)
+	$TargetIndicators/Crosshairs.queue_redraw()
+
+
+func sync_player_position() -> void:
+	_player_position = to_local(player.global_position)
+	_player_previous = _player_position
+
 
 func _process(delta: float) -> void:
 	if not is_instance_valid(planet) or not is_instance_valid(player):
@@ -183,7 +249,7 @@ func _choose_target(ship: AIShip) -> void:
 	for candidate in ships:
 		if candidate != ship and candidate.can_fight:
 			candidates.append(candidate)
-	if player.bound_planet == planet and player.can_fight:
+	if allow_player_targeting and player.bound_planet == planet and player.can_fight:
 		candidates.append(player)
 	var weights: Array[float] = []
 	var total_weight := 0.0
@@ -306,10 +372,7 @@ func _fire(ship: AIShip, aim: Vector3) -> void:
 
 func _on_ship_destroyed(wreck: PlanetShip) -> void:
 	if wreck != player:
-		var remaining := 0
-		for ship in ships:
-			if ship.can_fight:
-				remaining += 1
+		var remaining := _refresh_ship_counter()
 		print("%d ai ships left" % remaining)
 	var explosion = Explosion.instantiate()
 	explosion.size_multiplier = 3.0
@@ -317,6 +380,8 @@ func _on_ship_destroyed(wreck: PlanetShip) -> void:
 	explosion.lifetime = 1.2
 	_explosions.add_child(explosion)
 	explosion.global_position = wreck.global_position
+	if wreck == player:
+		player_destroyed.emit()
 
 func _step_missiles(delta: float) -> void:
 	if _missiles.get_child_count() == 0:
@@ -355,14 +420,18 @@ func _step_missiles(delta: float) -> void:
 		if hit_t <= 1.0:
 			var contact := start.lerp(end, hit_t)
 			var impact := frame_transform.basis * missile.velocity.normalized() * missile_impact_impulse
-			if hit_index >= 0:
+			if hit_index >= 0 and damage_enabled:
 				var target_ship: PlanetShip = _collision_targets[hit_index]
 				# Use the moving target's center at impact time, not its end-of-frame position.
 				var center := previous[hit_index].lerp(current[hit_index], hit_t)
 				var lever := frame_transform.basis * (contact - center)
 				var direction := frame_transform.basis * missile.velocity.normalized()
+				var was_alive := target_ship.can_fight
 				target_ship.receive_missile_hit(impact, lever.cross(direction) * missile_torque_impulse)
+				if target_ship != player and was_alive and not target_ship.can_fight:
+					_refresh_ship_counter()
 				if target_ship == player:
+					player_hit.emit()
 					print("Player ship hit by missile from %s" % missile.launcher.name)
 			var explosion = Explosion.instantiate()
 			_explosions.add_child(explosion)

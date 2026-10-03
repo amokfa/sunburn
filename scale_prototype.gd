@@ -3,6 +3,7 @@ extends Node3D
 const ShipController = preload("res://ship/ship.gd")
 const IntroDialogue = preload("res://ui/intro_dialogue.gd")
 const ExplosionDialogue = preload("res://ui/planet_1_explosion_dialogue.gd")
+const ArrivalDialogue = preload("res://ui/planet_2_arrival_dialogue.gd")
 const EngulfedSurface = preload("res://planets/engulfed_surface.gdshader")
 var _heated_surfaces: Array[Dictionary] = []
 var _heat_material: ShaderMaterial
@@ -10,6 +11,17 @@ var _heat_atmosphere: ShaderMaterial
 var _heat_atmosphere_color := Color.WHITE
 var _heat_color := Color.WHITE
 var _heat_tween: Tween
+var _arrival_dialogue_phase := ""
+var _arrival_skipping := false
+var _weapons_ejected := false
+var _player_death_pending := false
+var _gameplay_camera_blend := 1.0
+var _gameplay_camera_local := Transform3D.IDENTITY
+@onready var planet_2_music: AudioStreamPlayer = $Planet2Music
+@onready var player_hit_audio: AudioStreamPlayer = $PlayerHitAudio
+@onready var player_death_explosion_audio: AudioStreamPlayer = $PlayerDeathExplosionAudio
+@onready var weapons_module: Node3D = $Ship/WeaponsModule
+@onready var cutscene_debris: Node3D = $CutsceneDebris
 @onready var departure = $PlanetDeparture
 var _travel_tween: Tween
 var _fuel_departure_pending := false
@@ -54,6 +66,8 @@ var _normal_ambient_energy := 0.0
 
 @export_group("Sun expansion")
 @export var sun_expansion_time_to_planet_1: float = 120.0
+@export var planet_2_sun_approach_time: float = 175.0
+@export var planet_2_sun_approach_gap: float = 200.0
 
 @export_group("Sun lighting")
 @export var sunlight_ship_offset: float = 200.0
@@ -99,6 +113,12 @@ var _platform_clearance := 0.5
 
 func _ready() -> void:
 	departure.source_heated.connect(_heat_planet_1)
+	departure.rear_view_ready.connect(_begin_departure_farewell)
+	departure.destination_view_ready.connect(_begin_arrival_conversation)
+	departure.descent_finished.connect(_finish_planet_2_arrival)
+	battle.player_hit.connect(_on_player_missile_hit)
+	battle.player_destroyed.connect(_on_player_destroyed)
+	terminal.message_advanced.connect(_on_arrival_message_advanced)
 	fuel_cells.all_collected.connect(_on_planet_1_fuel_collected)
 	# Set runtime looping too, so this works before the editor reimports the audio.
 	var looping_music := phase_2_music.stream.duplicate() as AudioStreamOggVorbis
@@ -125,6 +145,20 @@ func _update_occluders() -> void:
 
 
 func _reset() -> void:
+	_arrival_dialogue_phase = ""
+	_arrival_skipping = false
+	_weapons_ejected = false
+	_player_death_pending = false
+	_gameplay_camera_blend = 1.0
+	weapons_module.show()
+	for child in cutscene_debris.get_children():
+		child.queue_free()
+	planet_2_music.stop()
+	player_hit_audio.stop()
+	player_death_explosion_audio.stop()
+	battle.set_protected_mode(false)
+	battle.set_hud_enabled(false)
+	terminal.allow_toggle = true
 	departure.cancel()
 	_restore_planet_1_materials()
 	if _travel_tween != null:
@@ -209,6 +243,9 @@ func _reset() -> void:
 
 
 func _on_intro_message_finished(index: int) -> void:
+	if not _arrival_dialogue_phase.is_empty():
+		_on_arrival_message_finished(index)
+		return
 	if _explosion_dialogue_in_progress:
 		if index == ExplosionDialogue.MESSAGES.size() - 1 and not _fuel_cells_spawned:
 			_fuel_cells_spawned = true
@@ -235,6 +272,12 @@ func _on_intro_message_finished(index: int) -> void:
 
 
 func _on_intro_finished() -> void:
+	if _arrival_dialogue_phase == "arrival":
+		_arrival_dialogue_phase = ""
+		departure.begin_descent()
+		return
+	if _arrival_dialogue_phase == "farewell":
+		return
 	if _explosion_dialogue_in_progress:
 		_begin_sun_growth()
 	_intro_in_progress = false
@@ -308,6 +351,7 @@ func _process(delta: float) -> void:
 	if _intro_wait_altitude >= 0.0 and current_planet == 0 and not travelling and ship.altitude >= _intro_wait_altitude:
 		_intro_wait_altitude = -1.0
 		terminal.resume_dialogue()
+	_gameplay_camera_blend = minf(_gameplay_camera_blend + delta / 1.2, 1.0)
 	_update_platform_departure(delta)
 	_update_forest_ambience()
 	rocket_audio.update_layers(ship.active_booster_count(), _rocket_audio_enabled and ship.can_fight, delta)
@@ -325,6 +369,8 @@ func _show_solar_death() -> void:
 	if _solar_death:
 		return
 	_solar_death = true
+	battle.set_active(false)
+	planet_2_music.stop()
 	_sun_expanding = false
 	sun_expansion_delay.stop()
 	explosion_dialogue_delay.stop()
@@ -422,7 +468,7 @@ func _begin_launch_sequence() -> void:
 
 func _ship_platform_clearance() -> float:
 	var minimum_y := 0.0
-	var pending: Array[Node] = [ship.model]
+	var pending: Array[Node] = [ship.model, weapons_module]
 	while not pending.is_empty():
 		var node := pending.pop_back() as Node
 		if node.name == &"markers":
@@ -482,9 +528,14 @@ func _update_camera() -> void:
 		var opening_direction := (ship_direction + sun_direction).normalized()
 		look_direction = look_direction.slerp(opening_direction, _opening_camera_blend * _opening_framing_weight)
 	camera.look_at(camera.global_position + look_direction, radial_up)
+	if _gameplay_camera_blend < 1.0:
+		var attached := ship.global_transform * _gameplay_camera_local
+		camera.global_transform = attached.interpolate_with(camera.global_transform, smoothstep(0.0, 1.0, _gameplay_camera_blend))
+
+
 func _skip_checkpoint() -> void:
 	if departure.active:
-		departure.skip()
+		_skip_arrival_cutscene()
 		return
 	if travelling:
 		if _travel_tween != null and _travel_tween.is_running():
@@ -520,17 +571,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			_reset()
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		return
+	if ship.is_dying or _player_death_pending:
+		return
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_P:
 		_skip_checkpoint()
 		get_viewport().set_input_as_handled()
 		return
 	if departure.active:
-		if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-			departure.rotate_camera(event.relative * mouse_sensitivity)
-		elif event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
-			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-		elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		return
 	if travelling:
 		return
@@ -692,6 +739,134 @@ func _begin_planet_1_departure() -> void:
 	battle.set_active(false)
 	terminal.set_process(false)
 	terminal.set_process_input(false)
+	terminal.allow_toggle = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	departure.begin(ship, planets[0], planets[1], camera, sun)
 	_update_occluders()
+
+
+func _begin_departure_farewell() -> void:
+	if _arrival_skipping or not departure.active:
+		return
+	_arrival_dialogue_phase = "farewell"
+	terminal.set_process(true)
+	terminal.set_process_input(true)
+	terminal.play_dialogue(ArrivalDialogue.FAREWELL, true, false)
+
+
+func _begin_arrival_conversation() -> void:
+	if _arrival_skipping or _arrival_dialogue_phase != "farewell":
+		return
+	_arrival_dialogue_phase = "arrival"
+	terminal.play_dialogue(ArrivalDialogue.ARRIVAL, true, false)
+
+
+func _on_arrival_message_finished(index: int) -> void:
+	var messages: Array = ArrivalDialogue.FAREWELL if _arrival_dialogue_phase == "farewell" else ArrivalDialogue.ARRIVAL
+	if index < 0 or index >= messages.size():
+		return
+	match messages[index].get("event", ""):
+		"face_planet_2":
+			terminal.set_progress_blocked(true)
+			departure.face_destination()
+		"begin_combat":
+			_start_protected_combat()
+		"enable_threatwatch":
+			battle.set_hud_enabled(true)
+
+
+func _on_arrival_message_advanced(index: int) -> void:
+	if _arrival_dialogue_phase != "arrival" or index < 0 or index >= ArrivalDialogue.ARRIVAL.size():
+		return
+	if ArrivalDialogue.ARRIVAL[index].get("advance_event", "") == "eject_weapons":
+		_eject_weapons_module()
+
+
+func _start_protected_combat() -> void:
+	battle.set_protected_mode(true)
+	if not battle.active:
+		battle.set_active(true)
+
+
+func _eject_weapons_module() -> void:
+	if _weapons_ejected:
+		return
+	_weapons_ejected = true
+	var debris := weapons_module.duplicate() as Node3D
+	cutscene_debris.add_child(debris)
+	debris.global_transform = weapons_module.global_transform
+	weapons_module.hide()
+	var target: Vector3 = debris.global_position + departure.velocity * 2.0 - ship.global_basis.y.normalized() * 10.0
+	var animation := create_tween().bind_node(debris)
+	animation.set_parallel(true)
+	animation.tween_property(debris, "global_position", target, 2.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	animation.tween_property(debris, "rotation", debris.rotation + Vector3(0.8, 1.5, 0.4), 2.0)
+	animation.chain().tween_interval(3.0)
+	animation.chain().tween_property(debris, "scale", Vector3.ONE * 0.01, 0.5)
+	animation.chain().tween_callback(debris.queue_free)
+
+
+func _skip_arrival_cutscene() -> void:
+	_arrival_skipping = true
+	_arrival_dialogue_phase = ""
+	terminal.stop_dialogue()
+	_start_protected_combat()
+	_eject_weapons_module()
+	battle.set_hud_enabled(true)
+	departure.skip_to_gameplay()
+	_arrival_skipping = false
+
+
+func _finish_planet_2_arrival() -> void:
+	var flight_velocity: Vector3 = departure.velocity
+	var offset := solar_positions[1] - frame_origin
+	ship.position -= offset
+	camera.position -= offset
+	current_planet = 1
+	_set_frame_origin(solar_positions[1])
+	ship.set_movement_profile(1)
+	ship.bind_to_planet(planets[1])
+	ship.set_world_velocity(flight_velocity)
+	ship.controls_enabled = true
+	ship.mouse_look_enabled = true
+	ship.horizontal_input_enabled = true
+	ship.ascend_input_enabled = true
+	ship.descend_input_enabled = true
+	ship.surface_repulsion_enabled = true
+	travelling = false
+	_arrival_dialogue_phase = ""
+	terminal.allow_toggle = true
+	terminal.set_process(true)
+	terminal.set_process_input(true)
+	terminal.stop_dialogue()
+	_gameplay_camera_local = ship.global_transform.affine_inverse() * camera.global_transform
+	_gameplay_camera_blend = 0.0
+	_update_occluders()
+	battle.sync_player_position()
+	battle.set_protected_mode(false)
+	# This clock starts with mus3 and the return of full player controls.
+	var target_radius := sun.global_position.distance_to(planets[1].global_position) - planet_radii.y - planet_2_sun_approach_gap
+	sun_expansion_speed = maxf(target_radius - sun_radius, 0.0) / maxf(planet_2_sun_approach_time, 0.001)
+	_sun_expanding = true
+	planet_2_music.play()
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
+func _on_player_missile_hit() -> void:
+	if not _solar_death:
+		player_hit_audio.play()
+
+
+func _on_player_destroyed() -> void:
+	if _player_death_pending or _solar_death:
+		return
+	_player_death_pending = true
+	ship.controls_enabled = false
+	ship.mouse_look_enabled = false
+	planet_2_music.stop()
+	rocket_audio.stop()
+	_rocket_audio_enabled = false
+	player_death_explosion_audio.play()
+	await get_tree().create_timer(1.2).timeout
+	if _player_death_pending and not _solar_death:
+		_show_solar_death()

@@ -22,6 +22,11 @@
 [ext_resource type="Script" uid="uid://kjlmgswxeo25" path="res://ship/planet_departure.gd" id="20_departure"]
 [ext_resource type="Script" uid="uid://2ka8k7whcsv" path="res://ship/movement_settings.gd" id="movement_settings"]
 
+[ext_resource type="AudioStream" path="res://assets/sfx/mus/mus3.mp3" id="21_music3"]
+[ext_resource type="AudioStream" path="res://assets/sfx/explosion2.mp3" id="22_hit_audio"]
+[ext_resource type="AudioStream" path="res://assets/sfx/explosion1.mp3" id="23_death_explosion"]
+[ext_resource type="PackedScene" path="res://ship/weapons_module.tscn" id="24_weapons_module"]
+
 [sub_resource type="Sky" id="Sky"]
 sky_material = ExtResource("2_sky")
 
@@ -153,3 +158,21 @@ stretch_mode = 6
 
 [node name="PlanetDeparture" type="Node" parent="." unique_id=177567179]
 script = ExtResource("20_departure")
+
+[node name="Planet2Music" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("21_music3")
+bus = &"mus3"
+
+[node name="PlayerHitAudio" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("22_hit_audio")
+bus = &"explosion2"
+max_polyphony = 8
+
+[node name="PlayerDeathExplosionAudio" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("23_death_explosion")
+bus = &"explosion1"
+
+[node name="WeaponsModule" parent="Ship" instance=ExtResource("24_weapons_module")]
+position = Vector3(0, -0.32, 0.12)
+
+[node name="CutsceneDebris" type="Node3D" parent="."]

@@ -300,6 +300,11 @@ func apply_impulse(world_impulse: Vector3) -> void:
 	_velocity += _planet.global_basis.orthonormalized().inverse() * world_impulse / maxf(mass, 0.001)
 
 
+func set_world_velocity(world_velocity: Vector3) -> void:
+	if is_instance_valid(_planet):
+		_velocity = _planet.global_basis.orthonormalized().inverse() * world_velocity
+
+
 func apply_torque_impulse(world_impulse: Vector3) -> void:
 	if not is_instance_valid(_planet):
 		return

@@ -22,7 +22,7 @@ func _indicator_color(ship: Node3D) -> Color:
 
 
 func _draw() -> void:
-	if not battle.active:
+	if not battle.active or not battle.targeting_hud_enabled:
 		return
 	var camera := get_viewport().get_camera_3d()
 	if camera == null:

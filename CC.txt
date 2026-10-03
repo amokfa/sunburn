@@ -3,3 +3,4 @@ ship2: https://sketchfab.com/3d-models/low-poly-spaceship-410-70d47ef02ee5487e8c
 ship3: https://sketchfab.com/3d-models/low-poly-spaceship-ef75ce1fe22245cfb2e5c5d566450806
 mus1: https://rustedstudio.itch.io/anemoia
 mus2: https://kayugames.itch.io/scifi-cyberpunk-free-music-pack-loops-3
+mus3: https://www.youtube.com/watch?v=zPGf4liO-KQ

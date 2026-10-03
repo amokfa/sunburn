@@ -29,7 +29,7 @@ var separation_priority: float = 0.0
 
 
 func maximum_lives() -> int:
-	return 3
+	return 4
 
 func _ready() -> void:
 	super._ready()

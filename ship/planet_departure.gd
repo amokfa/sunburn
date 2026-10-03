@@ -2,7 +2,10 @@ extends Node
 ## Kinematic departure and a continuous transfer into orbit around the next planet.
 const ShipController = preload("res://ship/ship.gd")
 signal source_heated
-enum Stage { INACTIVE, ORBIT, TRANSFER, DESTINATION_ORBIT }
+signal rear_view_ready
+signal destination_view_ready
+signal descent_finished
+enum Stage { INACTIVE, ORBIT, TRANSFER, DESTINATION_ORBIT, DESCENT }
 @export var transfer_duration := 20.0
 @export var camera_distance := 9.0
 @export var camera_height := 3.0
@@ -15,6 +18,8 @@ enum Stage { INACTIVE, ORBIT, TRANSFER, DESTINATION_ORBIT }
 @export var orbit_climb_speed := 12.0
 @export var departure_acceleration_time := 1.2
 @export var turn_response := 4.0
+@export var descent_duration := 5.0
+@export var descent_altitude := 65.0
 var stage := Stage.INACTIVE
 var active: bool:
 	get:
@@ -31,8 +36,16 @@ var _end := Vector3.ZERO
 var _up := Vector3.UP
 var _elapsed := 0.0
 var _camera_angle := 0.0
-var _look_yaw := 0.0
-var _look_pitch := 0.0
+var _rear_ready_emitted := false
+var _destination_ready_emitted := false
+var _face_destination := false
+var _descent_requested := false
+var _descent_elapsed := 0.0
+var _descent_start_radius := 480.0
+var _descent_end_radius := 305.0
+var velocity: Vector3:
+	get:
+		return _departure_velocity
 var _camera_blend := 0.0
 var _initial_camera_local := Transform3D.IDENTITY
 var _orbit_up := Vector3.UP
@@ -63,7 +76,7 @@ func begin(player: ShipController, source: Node3D, destination: Node3D, view: Ca
 	_camera = view
 	_sun = sun
 	_ship.controls_enabled = false
-	_ship.mouse_look_enabled = true
+	_ship.mouse_look_enabled = false
 	_ship.set_parked(false)
 	# Capture the live trajectory before unbinding. Everything from here on is
 	# prescribed motion; neither the player loop nor the flight forces run.
@@ -82,11 +95,13 @@ func begin(player: ShipController, source: Node3D, destination: Node3D, view: Ca
 	_elapsed = 0.0
 	stage = Stage.ORBIT
 	_camera_angle = 0.0
-	_look_yaw = 0.0
-	_look_pitch = 0.0
 	_camera_blend = 0.0
 	_initial_camera_local = _ship.global_transform.affine_inverse() * _camera.global_transform
 	_rear_started = false
+	_rear_ready_emitted = false
+	_destination_ready_emitted = false
+	_face_destination = false
+	_descent_requested = false
 	_rear_elapsed = 0.0
 	_return_elapsed = -1.0
 	_destination_elapsed = 0.0
@@ -118,6 +133,7 @@ func step(delta: float) -> void:
 		var arrival_acceleration := _arrival_acceleration * _flight_duration * _flight_duration
 		_ship.global_position = _start + displacement * position_weight + momentum * velocity_weight + arrival_momentum * (-4.0 * t3 + 7.0 * t4 - 3.0 * t5) + arrival_acceleration * (0.5 * t3 - t4 + 0.5 * t5)
 		var tangent := displacement * (30.0 * t2 - 60.0 * t3 + 30.0 * t4) + momentum * (1.0 - 18.0 * t2 + 32.0 * t3 - 15.0 * t4) + arrival_momentum * (-12.0 * t2 + 28.0 * t3 - 15.0 * t4) + arrival_acceleration * (1.5 * t2 - 4.0 * t3 + 2.5 * t4)
+		_departure_velocity = tangent / _flight_duration
 		_up = Basis(Quaternion.IDENTITY.slerp(_up_rotation, position_weight)) * _transfer_up
 		if tangent.length_squared() > 0.0001:
 			var desired := _flight_basis(tangent.normalized())
@@ -131,9 +147,14 @@ func step(delta: float) -> void:
 			_step_destination_orbit(maxf(_elapsed - _flight_duration, 0.0))
 	elif stage == Stage.DESTINATION_ORBIT:
 		_step_destination_orbit(delta)
+		if _descent_requested:
+			_start_descent()
+	elif stage == Stage.DESCENT:
+		_step_descent(delta)
 	_step_rear_view(delta)
 	_camera_blend = minf(_camera_blend + delta, 1.0)
-	_update_camera()
+	if active:
+		_update_camera()
 
 
 func _step_orbit(delta: float) -> void:
@@ -246,12 +267,66 @@ func _step_destination_orbit(delta: float) -> void:
 	_arrival_up = _arrival_up.rotated(_arrival_axis, angle).normalized()
 	_arrival_heading = _arrival_heading.rotated(_arrival_axis, angle).normalized()
 	_ship.global_position = _destination.global_position + _arrival_up * _arrival_radius
+	_departure_velocity = _arrival_heading * destination_orbit_speed
 	_up = _arrival_up
 	_ship.global_basis = _ship.global_basis.orthonormalized().slerp(_flight_basis(_arrival_heading), 1.0 - exp(-turn_response * delta))
 	_ship.set_cutscene_thrust(1.0, 0.0, delta)
 
 
+func face_destination() -> void:
+	_return_elapsed = 0.0
+	_face_destination = true
+
+
+func begin_descent() -> void:
+	_descent_requested = true
+	if stage == Stage.DESTINATION_ORBIT:
+		_start_descent()
+
+
+func _start_descent() -> void:
+	stage = Stage.DESCENT
+	_descent_elapsed = 0.0
+	_descent_start_radius = _arrival_radius
+	var radius := _destination.global_basis.x.length()
+	_descent_end_radius = radius + minf(descent_altitude, radius * 0.45)
+
+
+func _step_descent(delta: float) -> void:
+	_descent_elapsed += delta
+	var duration := maxf(descent_duration, 0.01)
+	var t := clampf(_descent_elapsed / duration, 0.0, 1.0)
+	var weight := t * t * t * (10.0 + t * (-15.0 + 6.0 * t))
+	var radius := lerpf(_descent_start_radius, _descent_end_radius, weight)
+	var angular_step := destination_orbit_speed * delta / radius
+	_arrival_up = _arrival_up.rotated(_arrival_axis, angular_step).normalized()
+	_arrival_heading = _arrival_heading.rotated(_arrival_axis, angular_step).normalized()
+	_ship.global_position = _destination.global_position + _arrival_up * radius
+	_up = _arrival_up
+	_ship.global_basis = _ship.global_basis.orthonormalized().slerp(_flight_basis(_arrival_heading), 1.0 - exp(-turn_response * delta))
+	var radial_speed := (_descent_end_radius - _descent_start_radius) * (30.0 * t * t * pow(1.0 - t, 2.0)) / duration
+	_departure_velocity = _arrival_heading * destination_orbit_speed + _arrival_up * radial_speed
+	_ship.set_cutscene_thrust(1.0, 0.0, delta)
+	_update_camera()
+	if t >= 1.0:
+		stage = Stage.INACTIVE
+		descent_finished.emit()
+
+
+func skip_to_gameplay() -> void:
+	if not active:
+		return
+	skip()
+	_face_destination = true
+	_camera_angle = 0.0
+	_destination_ready_emitted = true
+	_start_descent()
+	_step_descent(maxf(descent_duration, 0.01))
+
+
 func _step_rear_view(delta: float) -> void:
+	if not active:
+		return
 	if not _rear_started:
 		var source_gap := _ship.global_position.distance_to(_source.global_position) - _source.global_basis.x.length()
 		if source_gap < source_reveal_distance:
@@ -261,11 +336,15 @@ func _step_rear_view(delta: float) -> void:
 	_rear_elapsed += delta
 	var turn_time := maxf(camera_turn_duration, 0.01)
 	_camera_angle = PI * smoothstep(source_color_duration, source_color_duration + turn_time, _rear_elapsed)
-	if _rear_elapsed >= source_color_duration + turn_time and _sun.global_basis.x.length() >= sun_stop_radius() - 0.001:
-		if _return_elapsed < 0.0:
-			_return_elapsed = 0.0
+	if _rear_elapsed >= source_color_duration + turn_time and not _rear_ready_emitted:
+		_rear_ready_emitted = true
+		rear_view_ready.emit()
+	if _return_elapsed >= 0.0:
 		_return_elapsed += delta
 		_camera_angle = PI * (1.0 - smoothstep(0.0, turn_time, _return_elapsed))
+		if _return_elapsed >= turn_time and not _destination_ready_emitted:
+			_destination_ready_emitted = true
+			destination_view_ready.emit()
 
 
 func _view_basis(direction: Vector3) -> Basis:
@@ -277,19 +356,15 @@ func _view_basis(direction: Vector3) -> Basis:
 	return Basis.looking_at(direction, up)
 
 
-func rotate_camera(motion: Vector2) -> void:
-	_look_yaw = wrapf(_look_yaw - motion.x, -PI, PI)
-	_look_pitch = clampf(_look_pitch - motion.y, -1.4, 1.4)
-
-
 func _update_camera() -> void:
 	var front := _view_basis(_ship.forward)
-	if stage == Stage.DESTINATION_ORBIT:
+	if _face_destination:
+		front = _view_basis((_destination.global_position - _ship.global_position).normalized())
+	elif stage == Stage.DESTINATION_ORBIT:
 		var planet_view := _view_basis((_destination.global_position - _ship.global_position).normalized())
 		front = front.slerp(planet_view, smoothstep(0.0, 2.0, _destination_elapsed))
 	var rear := _view_basis((_source.global_position - _ship.global_position).normalized())
 	var view := front.slerp(rear, _camera_angle / PI)
-	view = view * Basis(Vector3.UP, _look_yaw) * Basis(Vector3.RIGHT, _look_pitch)
 	var position := _ship.global_position + view.z * camera_distance + view.y * camera_height
 	var target := Transform3D(Basis.looking_at((_ship.global_position - position).normalized(), view.y), position)
 	# Ease the initial framing in ship space, so even that blend follows the
