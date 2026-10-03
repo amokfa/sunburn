@@ -160,6 +160,14 @@ func _move(delta: float) -> void:
 		float(Input.is_physical_key_pressed(KEY_D)) - float(Input.is_physical_key_pressed(KEY_A)),
 		float(Input.is_physical_key_pressed(KEY_W)) - float(Input.is_physical_key_pressed(KEY_S))).limit_length()
 	var vertical := float(Input.is_physical_key_pressed(KEY_Q)) - float(Input.is_physical_key_pressed(KEY_E))
+	apply_flight_controls(delta, horizontal, vertical)
+
+
+func apply_flight_controls(delta: float, horizontal: Vector2, vertical: float) -> void:
+	if not is_instance_valid(_planet):
+		return
+	horizontal = horizontal.limit_length()
+	vertical = clampf(vertical, -1.0, 1.0)
 	var remaining := minf(maxf(delta, 0.0), 0.25)
 	while remaining > 0.000001:
 		var step := minf(remaining, 1.0 / 120.0)

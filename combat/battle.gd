@@ -4,7 +4,6 @@ const Explosion = preload("res://combat/explosion.tscn")
 const AIShip = preload("res://combat/ai_ship.gd")
 const MissileState = preload("res://combat/missile.gd")
 const CollisionGrid = preload("res://combat/ship_collision_grid.gd")
-const SurfaceCollider = preload("res://planets/surface_collider.gd")
 
 @export var vision_cone_degrees: float = 60.0
 @export var missile_spread_degrees: float = 2.0
@@ -13,7 +12,6 @@ const SurfaceCollider = preload("res://planets/surface_collider.gd")
 @export var reload_seconds: float = 5.0
 @export var target_duration_min: float = 15.0
 @export var target_duration_max: float = 30.0
-@export var ai_turn_speed: float = 0.8
 @export var dodge_detection_time: float = 1.5
 @export var dodge_clearance: float = 8.0
 @export var ship_hit_radius: float = 1.0
@@ -26,7 +24,6 @@ var missile_speed: float = 80.0
 var _player_previous := Vector3.ZERO
 var _rng := RandomNumberGenerator.new()
 var _player_position := Vector3.ZERO
-var _surface_collider: SurfaceCollider
 var _frame_missiles: Array[Node] = []
 var _collision_grid := CollisionGrid.new()
 var _ship_indices: Dictionary = {}
@@ -43,7 +40,6 @@ func _ready() -> void:
 func configure(planet_node: Node3D, player_ship: Node3D) -> void:
 	planet = planet_node
 	player = player_ship
-	_surface_collider = planet.get_node("SurfaceCollider")
 	var base_speed: float = player.horizontal_thrust_force / player.mass / maxf(player.horizontal_damping, 0.001)
 	ai_speed = base_speed
 	follow_planet()
@@ -61,13 +57,13 @@ func set_active(value: bool) -> void:
 		for child in container.get_children():
 			child.free()
 	if not value:
+		for ship in ships:
+			ship.bind_to_planet(null)
 		return
 	follow_planet()
-	var radius := planet.global_basis.x.length()
 	for index in range(ships.size()):
 		var ship = ships[index]
-		ship.reset(radius)
-		ship.velocity = ship.heading * ai_speed
+		ship.reset(planet)
 		ship.reload_remaining = _rng.randf_range(0.0, reload_seconds)
 		ship.think_remaining = float(index % 10) * 0.01
 	# Choose in order so later ships can respond to earlier ships' choices.
@@ -101,34 +97,22 @@ func _process(delta: float) -> void:
 		var movement: Vector3 = ship.heading
 		if is_instance_valid(ship.target):
 			aim = _target_position(ship.target) - ship.position
-			var separation := aim.length() - minimum_target_distance
+			var anticipated_aim := aim - ship.combat_velocity * 0.5
+			var separation := anticipated_aim.length() - (minimum_target_distance + 10.0)
 			var closing := clampf(separation / 10.0, -1.0, 1.0)
 			var circling: Vector3 = ship.up.cross(aim).normalized()
 			if circling.length_squared() < 0.0001:
 				circling = ship.heading
 			# Trade closing speed for sideways motion while keeping full speed.
 			movement = (aim.normalized() * closing + circling * sqrt(1.0 - closing * closing)).normalized()
-		# Nearby targets sweep across the nose faster during a tight orbit.
-		var tracking_speed := maxf(ai_turn_speed, ai_speed * 1.5 / maxf(aim.length(), minimum_target_distance))
-		ship.fly(delta, radius, ai_speed, tracking_speed, aim, movement)
-		ship.altitude = clampf(ship.altitude, _surface_collider.surface_radius(ship.up) + 2.0 - radius, radius * 0.5)
-		ship.position = ship.up * (radius + ship.altitude)
-		ship.velocity = (ship.position - ship.previous_position) / maxf(delta, 0.0001)
+		ship.fly(delta, ai_speed, aim, movement)
 		if ship.reload_remaining <= 0.0 and is_instance_valid(ship.target):
 			if ship.target == player and (camera == null or not camera.is_position_in_frustum(ship.global_position)):
 				continue
 			var offset: Vector3 = _target_position(ship.target) - ship.position
 			if offset.length() <= firing_range and _visible(ship, offset, radius):
-				var target_velocity: Vector3 = ship.target.velocity
-				if ship.target == player:
-					target_velocity = global_basis.inverse() * target_velocity
+				var target_velocity: Vector3 = global_basis.inverse() * ship.target.velocity
 				_fire(ship, _intercept_direction(offset, target_velocity))
-	# Correct orbit movement that would cross the minimum-distance boundary,
-	# including a target moving toward a circling ship.
-	for pass_index in range(2):
-		for ship in ships:
-			if is_instance_valid(ship.target):
-				ship.keep_target_distance(_target_position(ship.target), minimum_target_distance, delta)
 	_step_missiles(delta)
 	_player_previous = _player_position
 
@@ -177,7 +161,7 @@ func _check_dodge(ship: AIShip) -> void:
 		var offset: Vector3 = missile.position - ship.position
 		if offset.length_squared() < 0.001 or ship.facing.dot(offset.normalized()) < cos(deg_to_rad(vision_cone_degrees * 0.5)):
 			continue
-		var relative_velocity: Vector3 = missile.velocity - ship.velocity
+		var relative_velocity: Vector3 = missile.velocity - ship.combat_velocity
 		var approach_time := -offset.dot(relative_velocity) / maxf(relative_velocity.length_squared(), 0.001)
 		if approach_time <= 0.0 or approach_time > dodge_detection_time:
 			continue
