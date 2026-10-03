@@ -10,10 +10,10 @@ emission = Color(1, 0.55, 0.03, 1)
 emission_energy_multiplier = 4.0
 
 [sub_resource type="BoxMesh" id="Body"]
-size = Vector3(0.16, 0.16, 1.0)
+size = Vector3(0.32, 0.32, 2.0)
 
 [sub_resource type="BoxMesh" id="Trail"]
-size = Vector3(0.06, 0.06, 3.0)
+size = Vector3(0.12, 0.12, 6.0)
 
 [node name="Missile" type="Node3D"]
 script = ExtResource("1")
@@ -24,7 +24,7 @@ mesh = SubResource("Body")
 material_override = SubResource("Glow")
 
 [node name="Trail" type="MeshInstance3D" parent="."]
-position = Vector3(0, 0, 2)
+position = Vector3(0, 0, 4)
 cast_shadow = 0
 mesh = SubResource("Trail")
 material_override = SubResource("Glow")

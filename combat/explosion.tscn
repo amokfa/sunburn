@@ -13,8 +13,8 @@ emission = Color(1, 0.4, 0.05, 1)
 emission_energy_multiplier = 5.0
 
 [sub_resource type="SphereMesh" id="Sphere"]
-radius = 1.0
-height = 2.0
+radius = 3.0
+height = 6.0
 radial_segments = 16
 rings = 8
 

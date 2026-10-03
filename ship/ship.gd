@@ -13,6 +13,8 @@ const SurfaceCollider = preload("res://planets/surface_collider.gd")
 @export var yaw_inertia: float = 100.0
 @export var view_turn_torque: float = 1200.0
 @export var yaw_damping: float = 700.0
+@export var impact_angular_inertia: float = 10000.0
+@export var attitude_stabilization_frequency: float = 4.0
 
 @export_group("Planet two agility")
 @export var upgraded_speed_multiplier: float = 1.5
@@ -49,7 +51,7 @@ var altitude: float:
 		return _altitude
 var radial_up: Vector3:
 	get:
-		return global_basis.y.normalized()
+		return (_planet.global_basis.orthonormalized() * _local_up).normalized() if is_instance_valid(_planet) else global_basis.y.normalized()
 var forward: Vector3:
 	get:
 		return -global_basis.z.normalized()
@@ -73,6 +75,9 @@ var _local_view_forward := Vector3.FORWARD
 var _unbound_view_forward := Vector3.FORWARD
 var _velocity := Vector3.ZERO
 var _yaw_velocity: float = 0.0
+var _impact_rotation := Quaternion.IDENTITY
+var _impact_angular_velocity := Vector3.ZERO
+var _last_stabilization_torque := Vector3.ZERO
 var _model_rest_transform := Transform3D.IDENTITY
 var _visual_tilt := Vector2.ZERO
 var _visual_time: float = 0.0
@@ -98,6 +103,8 @@ func bind_to_planet(planet: Node3D) -> void:
 	_surface_collider = _planet.get_node_or_null("SurfaceCollider") as SurfaceCollider if is_instance_valid(_planet) else null
 	set_process(is_instance_valid(_planet))
 	if not is_instance_valid(_planet):
+		_impact_angular_velocity = Vector3.ZERO
+		_last_stabilization_torque = Vector3.ZERO
 		_update_thrusters(Vector2.ZERO, 0.0, 0.0)
 		# The owner now has complete control of position and orientation.
 		return
@@ -108,6 +115,9 @@ func bind_to_planet(planet: Node3D) -> void:
 	_local_view_forward = _local_forward
 	_velocity = Vector3.ZERO
 	_yaw_velocity = 0.0
+	_impact_rotation = Quaternion.IDENTITY
+	_impact_angular_velocity = Vector3.ZERO
+	_last_stabilization_torque = Vector3.ZERO
 	_last_yaw_torque = 0.0
 	_visual_tilt = Vector2.ZERO
 	_visual_time = 0.0
@@ -124,6 +134,50 @@ func _planet_radius(planet: Node3D) -> float:
 
 func set_agility_boost(enabled: bool) -> void:
 	agility_boost = enabled
+
+
+func apply_impulse(world_impulse: Vector3) -> void:
+	if not is_instance_valid(_planet):
+		return
+	_velocity += _planet.global_basis.orthonormalized().inverse() * world_impulse / maxf(mass, 0.001)
+
+
+func apply_torque_impulse(world_impulse: Vector3) -> void:
+	if not is_instance_valid(_planet):
+		return
+	var world_frame := _planet.global_basis.orthonormalized() * _navigation_basis()
+	_impact_angular_velocity += world_frame.inverse() * world_impulse / maxf(impact_angular_inertia, 0.001)
+
+
+func _navigation_basis() -> Basis:
+	return Basis(_local_forward.cross(_local_up).normalized(), _local_up, -_local_forward)
+
+
+func _flight_basis() -> Basis:
+	return _navigation_basis() * Basis(_impact_rotation)
+
+
+func _step_attitude(delta: float) -> void:
+	# Critically damped torque restores the actual ship attitude, independently of view yaw.
+	var rotation := _impact_rotation
+	if rotation.w < 0.0:
+		rotation = -rotation
+	var imaginary := Vector3(rotation.x, rotation.y, rotation.z)
+	var sine := imaginary.length()
+	var angle := 2.0 * atan2(sine, rotation.w)
+	var error := imaginary * (angle / sine) if sine > 0.000001 else Vector3.ZERO
+	var frequency := maxf(attitude_stabilization_frequency, 0.0)
+	var acceleration := -error * frequency * frequency - _impact_angular_velocity * 2.0 * frequency
+	_last_stabilization_torque = Basis(_impact_rotation).inverse() * acceleration * impact_angular_inertia
+	_impact_angular_velocity += acceleration * delta
+	var speed := _impact_angular_velocity.length()
+	if speed < 0.00001 and angle < 0.00001:
+		_impact_rotation = Quaternion.IDENTITY
+		_impact_angular_velocity = Vector3.ZERO
+	elif speed > 0.000001:
+		_impact_rotation = (Quaternion(_impact_angular_velocity / speed, speed * delta) * _impact_rotation).normalized()
+		if _impact_rotation.w < 0.0:
+			_impact_rotation = -_impact_rotation
 
 
 func _process(delta: float) -> void:
@@ -180,7 +234,8 @@ func apply_flight_controls(delta: float, horizontal: Vector2, vertical: float) -
 
 func _update_thrusters(horizontal: Vector2, vertical: float, yaw_torque: float) -> void:
 	var active := is_instance_valid(_planet)
-	var turn := clampf(yaw_torque / maxf(full_yaw_thrust_torque, 0.001), -1.0, 1.0)
+	var torque_scale := maxf(full_yaw_thrust_torque, 0.001)
+	var turn := clampf((yaw_torque + _last_stabilization_torque.y) / torque_scale, -1.0, 1.0)
 	for marker_name: StringName in _thrusters:
 		var name_text := String(marker_name)
 		var power := 0.0
@@ -199,6 +254,11 @@ func _update_thrusters(horizontal: Vector2, vertical: float, yaw_torque: float) 
 				# Positive torque turns left: front-right and back-left push oppositely.
 				var turns_left := (name_text.begins_with("side_front_") and not left) or (name_text.begins_with("side_back_") and left)
 				power = maxf(power, maxf(turn if turns_left else -turn, 0.0))
+			if name_text.begins_with("up_") or name_text.begins_with("down_"):
+				var pitch_sign := 1.0 if name_text.contains("_front_") else -1.0
+				var roll_sign := 1.0 if name_text.ends_with("_right") else -1.0
+				var correction := (_last_stabilization_torque.x * pitch_sign + _last_stabilization_torque.z * roll_sign) / torque_scale
+				power = maxf(power, maxf(correction if name_text.begins_with("down_") else -correction, 0.0))
 		var exhaust: ThrusterController = _thrusters[marker_name]
 		exhaust.set_power(power)
 
@@ -228,15 +288,16 @@ func _step_thrust(delta: float, horizontal: Vector2, vertical: float) -> void:
 	_last_yaw_torque = torque
 	_yaw_velocity += torque / maxf(yaw_inertia, 0.001) * delta
 	_local_forward = _local_forward.rotated(_local_up, _yaw_velocity * delta).normalized()
+	_step_attitude(delta)
 	var radial_speed := _velocity.dot(_local_up)
 	var tangent_velocity := _velocity - _local_up * radial_speed
 	var thrust_multiplier := upgraded_acceleration_multiplier if agility_boost else 1.0
 	var drag_multiplier := thrust_multiplier / maxf(upgraded_speed_multiplier, 0.001) if agility_boost else 1.0
 	tangent_velocity *= exp(-maxf(horizontal_damping, 0.0) * drag_multiplier * delta)
 	radial_speed *= exp(-maxf(vertical_damping, 0.0) * drag_multiplier * delta)
-	var right := _local_forward.cross(_local_up).normalized()
-	var acceleration := (right * horizontal.x + _local_forward * horizontal.y) * horizontal_thrust_force * thrust_multiplier / maxf(mass, 0.001)
-	acceleration += _local_up * vertical * vertical_thrust_force * thrust_multiplier / maxf(mass, 0.001)
+	var body := _flight_basis()
+	var acceleration := (body.x * horizontal.x - body.z * horizontal.y) * horizontal_thrust_force * thrust_multiplier / maxf(mass, 0.001)
+	acceleration += body.y * vertical * vertical_thrust_force * thrust_multiplier / maxf(mass, 0.001)
 	var radius := _planet_radius(_planet)
 	var boundary_force := 0.0
 	if is_instance_valid(_surface_collider):
@@ -272,5 +333,5 @@ func _update_transform() -> void:
 	_orthonormalize_heading()
 	var radius := _planet_radius(_planet)
 	var local_position := _local_up * (1.0 + _altitude / radius)
-	var local_basis := Basis(_local_forward.cross(_local_up).normalized(), _local_up, -_local_forward)
+	var local_basis := _flight_basis()
 	global_transform = Transform3D(_planet.global_basis.orthonormalized() * local_basis, _planet.to_global(local_position))

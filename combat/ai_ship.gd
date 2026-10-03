@@ -12,7 +12,7 @@ var heading: Vector3:
 		return _local_forward
 var facing: Vector3:
 	get:
-		return _local_forward
+		return -_flight_basis().z
 var combat_velocity: Vector3:
 	get:
 		return _velocity
@@ -23,6 +23,10 @@ var reload_remaining: float = 0.0
 var think_remaining: float = 0.0
 var dodge_remaining: float = 0.0
 var dodge_direction := Vector3.ZERO
+var target_altitude_offset: float = 0.0
+var desired_orbit_radius: float = 0.0
+var separation_velocity := Vector3.ZERO
+var separation_priority: float = 0.0
 
 
 func _ready() -> void:
@@ -51,6 +55,10 @@ func reset(planet_node: Node3D) -> void:
 	target = null
 	target_remaining = 0.0
 	dodge_remaining = 0.0
+	target_altitude_offset = 0.0
+	desired_orbit_radius = position.length()
+	separation_velocity = Vector3.ZERO
+	separation_priority = 0.0
 
 
 func fly(delta: float, speed: float, aim: Vector3, movement: Vector3) -> void:
@@ -70,15 +78,15 @@ func fly(delta: float, speed: float, aim: Vector3, movement: Vector3) -> void:
 	var acceleration := (
 		(desired_tangent - tangent_velocity) / response + tangent_velocity * horizontal_damping
 	)
-	var right := heading.cross(up).normalized()
+	var body := _flight_basis()
+	var radial_acceleration := (
+		(desired_radial - radial_speed) / response + radial_speed * vertical_damping
+	)
+	acceleration += up * radial_acceleration
 	var horizontal := (
-		Vector2(acceleration.dot(right), acceleration.dot(heading))
+		Vector2(acceleration.dot(body.x), -acceleration.dot(body.z))
 		* mass
 		/ maxf(horizontal_thrust_force, 0.001)
 	)
-	var vertical := (
-		((desired_radial - radial_speed) / response + radial_speed * vertical_damping)
-		* mass
-		/ maxf(vertical_thrust_force, 0.001)
-	)
+	var vertical := acceleration.dot(body.y) * mass / maxf(vertical_thrust_force, 0.001)
 	apply_flight_controls(delta, horizontal, vertical)
