@@ -29,8 +29,11 @@ func _draw() -> void:
 		return
 	var inverse_frame: Transform3D = battle.global_transform.affine_inverse()
 	var camera_position: Vector3 = inverse_frame * camera.global_position
-	var occluder: OccluderInstance3D = battle.planet.get_node("CoreOccluder")
-	var planet_radius: float = occluder.occluder.radius * battle.planet.global_basis.x.length()
+	var occluder := battle.planet.get_node_or_null("CoreOccluder") as OccluderInstance3D
+	var core_radius := 0.98
+	if occluder != null and occluder.occluder is SphereOccluder3D:
+		core_radius = (occluder.occluder as SphereOccluder3D).radius
+	var planet_radius: float = core_radius * battle.planet.global_basis.x.length()
 	var planet_radius_squared := planet_radius * planet_radius
 	for ship in battle.ships:
 		var color := _indicator_color(ship)
@@ -39,7 +42,7 @@ func _draw() -> void:
 		var world_position: Vector3 = ship.global_position
 		if not camera.is_position_in_frustum(world_position):
 			continue
-		# The planet's existing occlusion sphere hides far-side reticles too.
+		# Hide far-side reticles even when the planet has no occluder node.
 		var offset: Vector3 = ship.position - camera_position
 		var t := clampf(
 			-camera_position.dot(offset) / maxf(offset.length_squared(), 0.001), 0.0, 1.0

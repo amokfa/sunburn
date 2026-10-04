@@ -179,10 +179,13 @@ func set_progress_blocked(blocked: bool) -> void:
 
 func resume_dialogue() -> void:
 	set_progress_blocked(false)
-	if _waiting and _index + 1 < _queue.size():
+	if _waiting:
 		_waiting = false
-		_next_message()
-		open()
+		if _index + 1 < _queue.size():
+			_next_message()
+			open()
+		else:
+			_advance_message()
 
 
 func _next_message() -> void:

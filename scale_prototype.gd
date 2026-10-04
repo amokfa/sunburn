@@ -90,11 +90,13 @@ var _sun_normal_aabb := AABB()
 var _sun_normal_halo_scale := Vector3.ONE
 var _sun_normal_halo_intensity := 1.2
 var _sun_normal_halo_surface_ratio := 0.7
+var _collapse_dialogue_countdown := -1.0
 var _planet3_surface_material: StandardMaterial3D
 
 @export_group("Sun final phase")
 @export var sun_final_radius := 100.0
 @export var sun_collapse_duration := 20.0
+@export var sun_final_trigger_distance := 500.0
 @export var sun_final_light_energy := 0.005
 @export var sun_final_ambient_energy := 0.0005
 
@@ -196,12 +198,15 @@ func _ready() -> void:
 
 func _update_occluders() -> void:
 	for index in range(planets.size()):
-		planets[index].get_node("CoreOccluder").visible = not travelling and index == current_planet
+		var occluder := planets[index].get_node_or_null("CoreOccluder") as OccluderInstance3D
+		if occluder != null:
+			occluder.visible = not travelling and index == current_planet
 
 
 func _reset() -> void:
 	_sun_final_started = false
 	_sun_collapse_elapsed = -1.0
+	_collapse_dialogue_countdown = -1.0
 	_sun_blue_blend = 0.0
 	_planet3_surface_material.roughness = 1.0
 	_sun_material.set_shader_parameter("wave_amplitude", _sun_normal_wave_amplitude)
@@ -332,6 +337,13 @@ func _reset() -> void:
 
 
 func _on_intro_message_finished(index: int) -> void:
+	if _planet3_dialogue_phase == "collapse" and index >= 0 and index < Planet3Dialogue.ON_COLLAPSE.size():
+		if Planet3Dialogue.ON_COLLAPSE[index].get("event", "") == "assistant_power_lost":
+			_planet3_dialogue_phase = "ended"
+			terminal.set_progress_blocked(true)
+			terminal.allow_toggle = false
+			terminal.set_process_input(false)
+		return
 	if not _planet3_dialogue_phase.is_empty():
 		return
 	if not _planet2_dialogue_phase.is_empty():
@@ -365,6 +377,11 @@ func _on_intro_message_finished(index: int) -> void:
 
 
 func _on_intro_finished() -> void:
+	if _planet3_dialogue_phase == "collapse":
+		_planet3_dialogue_phase = "ended"
+		terminal.allow_toggle = false
+		terminal.set_process_input(false)
+		return
 	if not _planet3_dialogue_phase.is_empty():
 		_planet3_dialogue_phase = ""
 		return
@@ -497,6 +514,12 @@ func _process(delta: float) -> void:
 		_sun_expanding = false
 	if _sun_collapse_elapsed >= 0.0:
 		_step_sun_collapse(delta)
+	if _collapse_dialogue_countdown >= 0.0:
+		_collapse_dialogue_countdown -= delta
+		if _collapse_dialogue_countdown <= 0.0:
+			_collapse_dialogue_countdown = -1.0
+			_planet3_dialogue_phase = "collapse"
+			terminal.play_dialogue(Planet3Dialogue.ON_COLLAPSE, true, false)
 	if _sun_expanding:
 		var next_radius := sun_radius + maxf(sun_expansion_speed, 0.0) * delta
 		if departure.active:
@@ -508,6 +531,10 @@ func _process(delta: float) -> void:
 		sun_radius = next_radius
 		sun.scale = Vector3.ONE * sun_radius
 		_update_sun_color()
+	if _crash_landed and not _sun_final_started:
+		var planet3_gap := sun.global_position.distance_to(planets[2].global_position) - sun_radius - planet_radii.z
+		if planet3_gap <= sun_final_trigger_distance:
+			trigger_sun_final_phase()
 	if current_planet == 1 and _sun_expanding and not planet_3_departure.active:
 		var planet2_gap := sun.global_position.distance_to(planets[1].global_position) - sun_radius - planet_radii.y
 		if not _sun_passed_planet2_200m and planet2_gap <= planet_2_sun_approach_gap:
@@ -672,6 +699,14 @@ func trigger_sun_final_phase() -> void:
 		return
 	_sun_final_started = true
 	_sun_expanding = false
+	booster_dialogue_delay.stop()
+	landing_dialogue_delay.stop()
+	_planet3_dialogue_phase = "collapse_wait"
+	terminal.stop_dialogue()
+	terminal.allow_toggle = false
+	terminal.set_process(true)
+	terminal.set_process_input(true)
+	_collapse_dialogue_countdown = 5.0
 	planets[0].hide()
 	planets[1].hide()
 	sun_expansion_delay.stop()
@@ -1322,14 +1357,14 @@ func _on_planet_3_boosters_failed() -> void:
 
 
 func _begin_booster_dialogue() -> void:
-	if not planet_3_departure.active or _solar_death:
+	if not planet_3_departure.active or _solar_death or _sun_final_started:
 		return
 	_planet3_dialogue_phase = "malfunction"
 	terminal.play_dialogue(Planet3Dialogue.MALFUNCTION, true, false)
 
 
 func _begin_landing_dialogue() -> void:
-	if not _crash_landed or _solar_death:
+	if not _crash_landed or _solar_death or _sun_final_started:
 		return
 	_planet3_dialogue_phase = "landing"
 	terminal.play_dialogue(Planet3Dialogue.AFTER_LANDING, true, false)
