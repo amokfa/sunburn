@@ -377,7 +377,7 @@ func _begin_planet2_overheat(force_instant: bool) -> void:
 		_sun_expanding = true
 		_sun_passed_planet2_200m = true
 		_sun_passed_planet2_100m = false
-		sun_expansion_speed = 100.0 / 30.0
+		sun_expansion_speed = 100.0 / 60.0
 		_update_sun()
 		if _planet2_cells_spawned:
 			fuel_cells.collect_all()
@@ -433,7 +433,7 @@ func _process(delta: float) -> void:
 		var planet2_gap := sun.global_position.distance_to(planets[1].global_position) - sun_radius - planet_radii.y
 		if not _sun_passed_planet2_200m and planet2_gap <= planet_2_sun_approach_gap:
 			_sun_passed_planet2_200m = true
-			sun_expansion_speed = 100.0 / 30.0
+			sun_expansion_speed = 100.0 / 60.0
 		if not _sun_passed_planet2_100m and planet2_gap <= 100.0:
 			_sun_passed_planet2_100m = true
 			sun_expansion_speed = 100.0 / maxf(planet_2_final_100m_time, 0.001)
