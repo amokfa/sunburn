@@ -78,6 +78,8 @@ var _sun_flash_tween: Tween
 var _environment: Environment
 var _sky_material: ShaderMaterial
 var _sun_material: ShaderMaterial
+var _sun_halo_material: ShaderMaterial
+var _sun_yellow_halo := Color.WHITE
 var _normal_ambient_energy := 0.0
 
 @export_group("Solar system scale")
@@ -91,7 +93,7 @@ var _normal_ambient_energy := 0.0
 @export var planet_2_sun_approach_time: float = 175.0
 @export var planet_2_sun_approach_gap: float = 200.0
 @export var planet_2_final_100m_time: float = 120.0
-@export var planet_3_sun_approach_time: float = 150.0
+@export var planet_3_sun_approach_time: float = 120.0
 @export var planet_3_sun_approach_gap: float = 100.0
 
 @export_group("Sun lighting")
@@ -472,6 +474,7 @@ func _process(delta: float) -> void:
 				_sun_expanding = false
 		sun_radius = next_radius
 		sun.scale = Vector3.ONE * sun_radius
+		_update_sun_color()
 	if current_planet == 1 and _sun_expanding and not planet_3_departure.active:
 		var planet2_gap := sun.global_position.distance_to(planets[1].global_position) - sun_radius - planet_radii.y
 		if not _sun_passed_planet2_200m and planet2_gap <= planet_2_sun_approach_gap:
@@ -563,6 +566,10 @@ func _setup_sun_flash() -> void:
 	# Keep runtime flash changes out of the shared resources and editor preview.
 	_sun_material = sun.material_override.duplicate() as ShaderMaterial
 	sun.material_override = _sun_material
+	var halo := sun.get_node("GlowShell") as MeshInstance3D
+	_sun_halo_material = halo.material_override.duplicate() as ShaderMaterial
+	_sun_yellow_halo = _sun_halo_material.get_shader_parameter("glow_color")
+	halo.material_override = _sun_halo_material
 	var world_environment: WorldEnvironment = $WorldEnvironment
 	_environment = world_environment.environment.duplicate() as Environment
 	_environment.sky = _environment.sky.duplicate() as Sky
@@ -609,7 +616,9 @@ func _set_sun_flash(strength: float) -> void:
 
 func _update_sun_ambience() -> void:
 	var surface_distance := camera.global_position.distance_to(sun.global_position) - sun_radius
-	var gain := clampf((800.0 - surface_distance) / 300.0, 0.0, 1.0)
+	var silent_distance := 1500.0 if current_planet == 2 else 800.0
+	var full_volume_distance := 700.0 if current_planet == 2 else 500.0
+	var gain := clampf((silent_distance - surface_distance) / (silent_distance - full_volume_distance), 0.0, 1.0)
 	if gain <= 0.0:
 		sun_ambience.stop()
 		sun_ambience.volume_db = -80.0
@@ -805,8 +814,33 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _update_sun() -> void:
 	sun.scale = Vector3.ONE * sun_radius
+	_update_sun_color()
 	_update_sunlight()
 	_update_ocean_sun()
+
+
+func _update_sun_color() -> void:
+	# Fully red when the surface first touches the near side of planet 2.
+	var red_radius := orbit_radii.y - planet_radii.y
+	var progress := smoothstep(initial_sun_radius, maxf(red_radius, initial_sun_radius + 0.001), sun_radius)
+	_sun_material.set_shader_parameter("color_progress", progress)
+	var red: Color = _sun_material.get_shader_parameter("red_color")
+	var brightness := maxf(maxf(red.r, red.g), maxf(red.b, 0.001))
+	var red_halo := Color(red.r, red.g, red.b, red.a) * (_sun_yellow_halo.r / brightness)
+	red_halo.a = _sun_yellow_halo.a
+	_sun_halo_material.set_shader_parameter("glow_color", _sun_yellow_halo.lerp(red_halo, progress))
+	# Keep some white illumination so terrain retains detail under the red sun.
+	var red_tint := Color(red.r / brightness, red.g / brightness, red.b / brightness, 1.0)
+	var light_tint := Color.WHITE.lerp(red_tint, progress * 0.7)
+	sunlight.light_color = light_tint
+	_environment.ambient_light_color = light_tint
+
+
+func _sun_surface_color() -> Color:
+	var yellow: Color = _sun_material.get_shader_parameter("yellow_color")
+	var red: Color = _sun_material.get_shader_parameter("red_color")
+	var progress: float = _sun_material.get_shader_parameter("color_progress")
+	return yellow.lerp(red, progress)
 
 
 func _update_sunlight() -> void:
@@ -883,7 +917,7 @@ func _travel_to_next_planet(continue_from_departure := false) -> void:
 func _heat_planet_1() -> void:
 	if not _heated_surfaces.is_empty():
 		return
-	_heat_color = _sun_material.get_shader_parameter("surface_color")
+	_heat_color = _sun_surface_color()
 	_heat_color = Color(_heat_color.r * 0.3, _heat_color.g * 0.3, _heat_color.b * 0.5, _heat_color.a)
 	_heat_material = ShaderMaterial.new()
 	_heat_material.shader = EngulfedSurface
@@ -1085,6 +1119,8 @@ func _begin_planet_3_departure() -> void:
 
 
 func _heat_planet_2() -> void:
+	_heat_color = _sun_surface_color()
+	_heat_color = Color(_heat_color.r * 0.3, _heat_color.g * 0.3, _heat_color.b * 0.5, _heat_color.a)
 	var material := ShaderMaterial.new()
 	material.shader = EngulfedSurface
 	material.set_shader_parameter("surface_color", _heat_color)

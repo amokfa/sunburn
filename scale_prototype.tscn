@@ -114,6 +114,7 @@ bus = &"mus1"
 
 [node name="PerformanceOverlay" type="CanvasLayer" parent="." unique_id=1044000258]
 layer = 10
+visible = false
 
 [node name="PerformanceLabel" type="Label" parent="PerformanceOverlay" unique_id=968596934]
 offset_left = 12.0
