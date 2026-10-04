@@ -650,6 +650,8 @@ func _process(delta: float) -> void:
 		sun_radius = next_radius
 		sun.scale = Vector3.ONE * sun_radius
 		_update_sun_color()
+	if planets[0].visible and sun_radius >= sun.global_position.distance_to(planets[0].global_position) + planet_radii.x * 1.4:
+		planets[0].hide()
 	if _crash_landed and not _sun_final_started:
 		var planet3_gap := sun.global_position.distance_to(planets[2].global_position) - sun_radius - planet_radii.z
 		if planet3_gap <= sun_final_trigger_distance:

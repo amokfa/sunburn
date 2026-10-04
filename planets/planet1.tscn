@@ -69,6 +69,7 @@
 [ext_resource type="PackedScene" path="res://planets/launch_platform.tscn" id="launch_platform"]
 [ext_resource type="Script" uid="uid://hosuk27hxit" path="res://planets/surface_collider.gd" id="surface_script"]
 [ext_resource type="Material" path="res://planets/terrain1_material.tres" id="terrain_material"]
+[ext_resource type="Material" path="res://planets/tree_sway_material.tres" id="tree_sway"]
 
 [sub_resource type="SphereMesh" id="SphereMesh_axsso"]
 radius = 1.0
@@ -94,192 +95,255 @@ mesh = SubResource("SphereMesh_axsso")
 [node name="Forests" type="Node3D" parent="." unique_id=1924285882]
 
 [node name="Patch00" type="MultiMeshInstance3D" parent="Forests" unique_id=1612182483]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("3_bm7g1")
 
 [node name="Patch01" type="MultiMeshInstance3D" parent="Forests" unique_id=641967776]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("4_wibga")
 
 [node name="Patch02" type="MultiMeshInstance3D" parent="Forests" unique_id=30208594]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("5_5e64c")
 
 [node name="Patch03" type="MultiMeshInstance3D" parent="Forests" unique_id=1630613616]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("6_wpdcf")
 
 [node name="Patch04" type="MultiMeshInstance3D" parent="Forests" unique_id=1889524820]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("7_s5jhi")
 
 [node name="Patch05" type="MultiMeshInstance3D" parent="Forests" unique_id=1722817367]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("8_82ek7")
 
 [node name="Patch06" type="MultiMeshInstance3D" parent="Forests" unique_id=926356010]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("9_3pwo1")
 
 [node name="Patch07" type="MultiMeshInstance3D" parent="Forests" unique_id=436503683]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("10_iwajk")
 
 [node name="Patch08" type="MultiMeshInstance3D" parent="Forests" unique_id=679601711]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("11_8i2h1")
 
 [node name="Patch09" type="MultiMeshInstance3D" parent="Forests" unique_id=522146678]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("12_xfqcy")
 
 [node name="Patch10" type="MultiMeshInstance3D" parent="Forests" unique_id=1643365032]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("13_amkjj")
 
 [node name="Patch11" type="MultiMeshInstance3D" parent="Forests" unique_id=450674099]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("14_bibjp")
 
 [node name="Patch12" type="MultiMeshInstance3D" parent="Forests" unique_id=1537659885]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("15_67p3j")
 
 [node name="Patch13" type="MultiMeshInstance3D" parent="Forests" unique_id=1977287744]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("16_7lt2r")
 
 [node name="Patch14" type="MultiMeshInstance3D" parent="Forests" unique_id=1598990510]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("17_c1fr6")
 
 [node name="Patch15" type="MultiMeshInstance3D" parent="Forests" unique_id=1560640196]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("18_r1i7p")
 
 [node name="Patch16" type="MultiMeshInstance3D" parent="Forests" unique_id=203610674]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("19_8dd5u")
 
 [node name="Patch17" type="MultiMeshInstance3D" parent="Forests" unique_id=521504041]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("20_ak7it")
 
 [node name="Patch18" type="MultiMeshInstance3D" parent="Forests" unique_id=1333057577]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("21_2xn3a")
 
 [node name="Patch19" type="MultiMeshInstance3D" parent="Forests" unique_id=1962512435]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("22_akh33")
 
 [node name="Patch20" type="MultiMeshInstance3D" parent="Forests" unique_id=1834922326]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("23_yxsre")
 
 [node name="Patch21" type="MultiMeshInstance3D" parent="Forests" unique_id=766929420]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("24_koiya")
 
 [node name="Patch22" type="MultiMeshInstance3D" parent="Forests" unique_id=1536653326]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("25_v325a")
 
 [node name="Patch23" type="MultiMeshInstance3D" parent="Forests" unique_id=713108188]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("26_0xbpl")
 
 [node name="Patch24" type="MultiMeshInstance3D" parent="Forests" unique_id=1490601336]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("27_80ojl")
 
 [node name="Patch25" type="MultiMeshInstance3D" parent="Forests" unique_id=413411027]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("28_adu6o")
 
 [node name="Patch26" type="MultiMeshInstance3D" parent="Forests" unique_id=659725663]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("29_nhhfu")
 
 [node name="Patch27" type="MultiMeshInstance3D" parent="Forests" unique_id=1936365063]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("30_xnxgx")
 
 [node name="Patch28" type="MultiMeshInstance3D" parent="Forests" unique_id=1018223869]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("31_l0ndx")
 
 [node name="Patch29" type="MultiMeshInstance3D" parent="Forests" unique_id=1820209350]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("32_w5vbk")
 
 [node name="Patch30" type="MultiMeshInstance3D" parent="Forests" unique_id=107543230]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("33_3yepm")
 
 [node name="Patch31" type="MultiMeshInstance3D" parent="Forests" unique_id=1794127766]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("34_6bjk4")
 
 [node name="Patch32" type="MultiMeshInstance3D" parent="Forests" unique_id=946672829]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("35_capv4")
 
 [node name="Patch33" type="MultiMeshInstance3D" parent="Forests" unique_id=101986932]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("36_sdkoc")
 
 [node name="Patch34" type="MultiMeshInstance3D" parent="Forests" unique_id=1835197992]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("37_24fqs")
 
 [node name="Patch35" type="MultiMeshInstance3D" parent="Forests" unique_id=245523349]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("38_yuw71")
 
 [node name="Patch36" type="MultiMeshInstance3D" parent="Forests" unique_id=2127469707]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("39_g3g51")
 
 [node name="Patch37" type="MultiMeshInstance3D" parent="Forests" unique_id=1113418693]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("40_tp1rb")
 
 [node name="Patch38" type="MultiMeshInstance3D" parent="Forests" unique_id=1093615668]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("41_uy8lq")
 
 [node name="Patch39" type="MultiMeshInstance3D" parent="Forests" unique_id=1852527161]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("42_jvoq1")
 
 [node name="Patch40" type="MultiMeshInstance3D" parent="Forests" unique_id=64027055]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("43_71g3b")
 
 [node name="Patch41" type="MultiMeshInstance3D" parent="Forests" unique_id=277117992]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("44_f3da7")
 
 [node name="Patch42" type="MultiMeshInstance3D" parent="Forests" unique_id=637609280]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("45_bx3hx")
 
 [node name="Patch43" type="MultiMeshInstance3D" parent="Forests" unique_id=1136903649]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("46_e6tpd")
 
 [node name="Patch44" type="MultiMeshInstance3D" parent="Forests" unique_id=1814470407]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("47_mam8r")
 
 [node name="Patch45" type="MultiMeshInstance3D" parent="Forests" unique_id=299160478]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("48_befvi")
 
 [node name="Patch46" type="MultiMeshInstance3D" parent="Forests" unique_id=7704826]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("49_bc0xq")
 
 [node name="Patch47" type="MultiMeshInstance3D" parent="Forests" unique_id=2001146168]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("50_6a2rp")
 
 [node name="Patch48" type="MultiMeshInstance3D" parent="Forests" unique_id=1920701021]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("51_fn4gm")
 
 [node name="Patch49" type="MultiMeshInstance3D" parent="Forests" unique_id=1470432665]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("52_13adx")
 
 [node name="Patch50" type="MultiMeshInstance3D" parent="Forests" unique_id=700759290]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("53_hnp4e")
 
 [node name="Patch51" type="MultiMeshInstance3D" parent="Forests" unique_id=59683884]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("54_lmusd")
 
 [node name="Patch52" type="MultiMeshInstance3D" parent="Forests" unique_id=1698127630]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("55_cppo7")
 
 [node name="Patch53" type="MultiMeshInstance3D" parent="Forests" unique_id=1356454295]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("56_5ff0o")
 
 [node name="Patch54" type="MultiMeshInstance3D" parent="Forests" unique_id=54382551]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("57_bqb1e")
 
 [node name="Patch55" type="MultiMeshInstance3D" parent="Forests" unique_id=1009898661]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("58_7u5jn")
 
 [node name="Patch56" type="MultiMeshInstance3D" parent="Forests" unique_id=1885375339]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("59_ay2mc")
 
 [node name="Patch57" type="MultiMeshInstance3D" parent="Forests" unique_id=1846303984]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("60_0yvpy")
 
 [node name="Patch58" type="MultiMeshInstance3D" parent="Forests" unique_id=1223533857]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("61_l2aqi")
 
 [node name="Patch60" type="MultiMeshInstance3D" parent="Forests" unique_id=175521020]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("62_1elw8")
 
 [node name="Patch61" type="MultiMeshInstance3D" parent="Forests" unique_id=1807286174]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("63_t411n")
 
 [node name="Patch62" type="MultiMeshInstance3D" parent="Forests" unique_id=1925108610]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("64_xt4kj")
 
 [node name="Patch63" type="MultiMeshInstance3D" parent="Forests" unique_id=1786661964]
+material_override = ExtResource("tree_sway")
 multimesh = ExtResource("65_nmv14")
 
 [node name="CoreOccluder" type="OccluderInstance3D" parent="." unique_id=465332553]
