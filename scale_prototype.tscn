@@ -26,6 +26,9 @@
 [ext_resource type="PackedScene" path="res://ship/weapons_module.tscn" id="24_weapons_module"]
 [ext_resource type="Script" uid="uid://2ka8k7whcsv" path="res://ship/movement_settings.gd" id="movement_settings"]
 [ext_resource type="Script" path="res://ship/planet_3_departure.gd" id="25_departure3"]
+[ext_resource type="AudioStream" path="res://assets/sfx/mus/mus4.mp3" id="26_music4"]
+[ext_resource type="AudioStream" path="res://assets/sfx/sun.mp3" id="27_sun_audio"]
+[ext_resource type="PackedScene" path="res://combat/warzone_audio.tscn" id="28_warzone_audio"]
 
 [sub_resource type="Sky" id="Sky"]
 sky_material = ExtResource("2_sky")
@@ -80,8 +83,8 @@ transform = Transform3D(250, 0, 0, 0, 250, 0, 0, 0, 250, -1800, 0, 0)
 transform = Transform3D(0, 0, -1, -0.8, 0.6, 0, 0.6, 0.8, 0, -276, 207, 0)
 planet_1_movement = SubResource("Resource_072px")
 
-[node name="WeaponsModule" parent="Ship" unique_id=586741800 instance=ExtResource("24_weapons_module")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.32, 0.12)
+[node name="WeaponsModule" parent="Ship/Model" unique_id=586741800 instance=ExtResource("24_weapons_module")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, -0.32, -0.12)
 
 [node name="Camera" type="Camera3D" parent="." unique_id=1243361966]
 transform = Transform3D(0, 0, -1, -0.880679, 0.473711, 0, 0.473711, 0.880679, 0, -274.5946, 212.74374, 0)
@@ -187,3 +190,14 @@ one_shot = true
 [node name="LandingDialogueDelay" type="Timer" parent="."]
 wait_time = 5.0
 one_shot = true
+
+[node name="DepartureMusic" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("26_music4")
+bus = &"mus4"
+
+[node name="SunAmbience" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("27_sun_audio")
+volume_db = -80.0
+bus = &"sun"
+
+[node name="WarzoneAudio" parent="." instance=ExtResource("28_warzone_audio")]

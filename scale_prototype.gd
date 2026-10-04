@@ -30,9 +30,12 @@ var _sun_passed_planet2_100m := false
 var _gameplay_camera_blend := 1.0
 var _gameplay_camera_local := Transform3D.IDENTITY
 @onready var planet_2_music: AudioStreamPlayer = $Planet2Music
+@onready var departure_music: AudioStreamPlayer = $DepartureMusic
+@onready var sun_ambience: AudioStreamPlayer = $SunAmbience
+@onready var warzone_audio = $WarzoneAudio
 @onready var player_hit_audio: AudioStreamPlayer = $PlayerHitAudio
 @onready var player_death_explosion_audio: AudioStreamPlayer = $PlayerDeathExplosionAudio
-@onready var weapons_module: Node3D = $Ship/WeaponsModule
+@onready var weapons_module: Node3D = $Ship/Model/WeaponsModule
 @onready var cutscene_debris: Node3D = $CutsceneDebris
 @onready var departure = $PlanetDeparture
 @onready var planet_3_departure = $Planet3Departure
@@ -148,12 +151,16 @@ func _ready() -> void:
 	battle.player_hit.connect(_on_player_missile_hit)
 	battle.player_destroyed.connect(_on_player_destroyed)
 	battle.enemy_fleet_destroyed.connect(_on_planet2_fleet_destroyed)
+	battle.enemy_destroyed.connect(warzone_audio.enemy_destroyed)
 	terminal.message_advanced.connect(_on_arrival_message_advanced)
 	fuel_cells.all_collected.connect(_on_planet_1_fuel_collected)
 	# Set runtime looping too, so this works before the editor reimports the audio.
 	var looping_music := phase_2_music.stream.duplicate() as AudioStreamOggVorbis
 	looping_music.loop = true
 	phase_2_music.stream = looping_music
+	var looping_sun := sun_ambience.stream.duplicate() as AudioStreamMP3
+	looping_sun.loop = true
+	sun_ambience.stream = looping_sun
 	_setup_sun_flash()
 	sun_expansion_delay.timeout.connect(trigger_sun_expansion)
 	explosion_dialogue_delay.timeout.connect(_begin_planet_1_phase_2)
@@ -175,6 +182,10 @@ func _update_occluders() -> void:
 
 
 func _reset() -> void:
+	warzone_audio.stop()
+	sun_ambience.stop()
+	sun_ambience.volume_db = -80.0
+	departure_music.stop()
 	booster_dialogue_delay.stop()
 	landing_dialogue_delay.stop()
 	_planet3_dialogue_phase = ""
@@ -506,9 +517,13 @@ func _process(delta: float) -> void:
 		_update_camera()
 	_update_sunlight()
 	_update_ocean_sun()
+	_update_sun_ambience()
 
 
 func _show_solar_death() -> void:
+	warzone_audio.stop()
+	sun_ambience.stop()
+	departure_music.stop()
 	booster_dialogue_delay.stop()
 	landing_dialogue_delay.stop()
 	if _solar_death:
@@ -592,6 +607,18 @@ func _set_sun_flash(strength: float) -> void:
 	_update_sunlight()
 
 
+func _update_sun_ambience() -> void:
+	var surface_distance := camera.global_position.distance_to(sun.global_position) - sun_radius
+	var gain := clampf((800.0 - surface_distance) / 300.0, 0.0, 1.0)
+	if gain <= 0.0:
+		sun_ambience.stop()
+		sun_ambience.volume_db = -80.0
+		return
+	sun_ambience.volume_linear = gain + 2.
+	if not sun_ambience.playing:
+		sun_ambience.play()
+
+
 func _update_forest_ambience() -> void:
 	var gain := 0.0
 	if current_planet == 0 and not travelling:
@@ -613,7 +640,7 @@ func _begin_launch_sequence() -> void:
 
 func _ship_platform_clearance() -> float:
 	var minimum_y := 0.0
-	var pending: Array[Node] = [ship.model, weapons_module]
+	var pending: Array[Node] = [ship.model]
 	while not pending.is_empty():
 		var node := pending.pop_back() as Node
 		if node.name == &"markers":
@@ -902,6 +929,7 @@ func _restore_planet_1_materials() -> void:
 
 
 func _begin_planet_1_departure() -> void:
+	departure_music.play()
 	travelling = true
 	_left_platform = true
 	_repulsion_countdown = -1.0
@@ -958,6 +986,7 @@ func _start_protected_combat() -> void:
 	battle.set_protected_mode(true)
 	if not battle.active:
 		battle.set_active(true)
+		warzone_audio.start()
 
 
 func _eject_weapons_module() -> void:
@@ -990,6 +1019,7 @@ func _skip_arrival_cutscene() -> void:
 
 
 func _finish_planet_2_arrival() -> void:
+	departure_music.stop()
 	var flight_velocity: Vector3 = departure.velocity
 	var offset := solar_positions[1] - frame_origin
 	ship.position -= offset
@@ -1035,6 +1065,8 @@ func _finish_planet_2_arrival() -> void:
 
 
 func _begin_planet_3_departure() -> void:
+	warzone_audio.stop()
+	departure_music.play()
 	travelling = true
 	_planet2_dialogue_phase = ""
 	terminal.stop_dialogue()

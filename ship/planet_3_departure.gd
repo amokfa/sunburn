@@ -100,6 +100,8 @@ func _hull_clearance(attitude: Basis) -> float:
 		var node := pending.pop_back() as Node
 		if node.name == &"markers":
 			continue
+		if node is Node3D and not node.visible:
+			continue
 		if node is MeshInstance3D and node.mesh != null:
 			var local_transform: Transform3D = _ship._model_rest_transform * model_inverse * node.global_transform
 			for surface in range(node.mesh.get_surface_count()):

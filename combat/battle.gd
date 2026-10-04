@@ -12,6 +12,7 @@ const OrbitalIntercept = preload("res://combat/orbital_intercept.gd")
 signal player_hit
 signal player_destroyed
 signal enemy_fleet_destroyed
+signal enemy_destroyed(remaining: int)
 var damage_enabled := true
 var allow_player_targeting := true
 var targeting_hud_enabled := false
@@ -451,6 +452,7 @@ func _on_ship_destroyed(wreck: PlanetShip) -> void:
 	if wreck != player:
 		var remaining := _refresh_ship_counter()
 		print("%d ai ships left" % remaining)
+		enemy_destroyed.emit(remaining)
 	var explosion = Explosion.instantiate()
 	explosion.size_multiplier = 3.0
 	explosion.initial_scale = 1.0
