@@ -4,7 +4,7 @@ render_mode unshaded, blend_add, cull_front, depth_draw_never, fog_disabled;
 uniform vec4 glow_color : source_color = vec4(1.0, 0.35, 0.04, 1.0);
 uniform float glow_intensity : hint_range(0.0, 4.0) = 1.2;
 // Core radius divided by shell radius (1 / 1.12 for the default shell).
-uniform float surface_radius_ratio : hint_range(0.1, 0.999) = 0.892857;
+uniform float surface_radius_ratio : hint_range(0.00001, 0.999) = 0.892857;
 uniform float fade_power : hint_range(0.2, 4.0) = 1.0;
 uniform float glow_density : hint_range(0.1, 32.0) = 12.0;
 

@@ -89,6 +89,7 @@ var _sun_normal_wave_amplitude := 0.0
 var _sun_normal_aabb := AABB()
 var _sun_normal_halo_scale := Vector3.ONE
 var _sun_normal_halo_intensity := 1.2
+var _sun_normal_halo_surface_ratio := 0.7
 var _planet3_surface_material: StandardMaterial3D
 
 @export_group("Sun final phase")
@@ -209,6 +210,7 @@ func _reset() -> void:
 	halo.scale = _sun_normal_halo_scale
 	halo.show()
 	_sun_halo_material.set_shader_parameter("glow_intensity", _sun_normal_halo_intensity)
+	_sun_halo_material.set_shader_parameter("surface_radius_ratio", _sun_normal_halo_surface_ratio)
 	planets[0].show()
 	planets[1].show()
 	warzone_audio.stop()
@@ -606,6 +608,7 @@ func _setup_sun_flash() -> void:
 	_sun_normal_halo_scale = halo.scale
 	_sun_halo_material = halo.material_override.duplicate() as ShaderMaterial
 	_sun_normal_halo_intensity = _sun_halo_material.get_shader_parameter("glow_intensity")
+	_sun_normal_halo_surface_ratio = _sun_halo_material.get_shader_parameter("surface_radius_ratio")
 	_sun_yellow_halo = _sun_halo_material.get_shader_parameter("glow_color")
 	halo.material_override = _sun_halo_material
 	var world_environment: WorldEnvironment = $WorldEnvironment
@@ -700,7 +703,10 @@ func _step_sun_collapse(delta: float) -> void:
 	# Counter the parent's shrinking scale to preserve the original shell radius.
 	var halo := sun.get_node("GlowShell") as MeshInstance3D
 	halo.scale = _sun_normal_halo_scale * (_sun_collapse_start_radius / maxf(sun_radius, 0.001))
-	var glow_fade := smoothstep(0.0, sun_collapse_duration * 0.5, t)
+	# The outer shell stays fixed; its density gradient starts at the current core.
+	var shell_radius := _sun_collapse_start_radius * _sun_normal_halo_scale.x
+	_sun_halo_material.set_shader_parameter("surface_radius_ratio", clampf(sun_radius / maxf(shell_radius, 0.001), 0.00001, 0.999))
+	var glow_fade := smoothstep(0.0, sun_collapse_duration * 0.75, t)
 	_sun_halo_material.set_shader_parameter("glow_intensity", _sun_normal_halo_intensity * (1.0 - glow_fade))
 	_update_sun()
 	if t >= sun_collapse_duration:
