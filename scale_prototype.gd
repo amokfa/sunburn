@@ -394,10 +394,20 @@ func menu_expects_mouse_capture() -> bool:
 
 
 func menu_can_skip_cutscene() -> bool:
-	return _intro_in_progress or departure.active or planet_3_departure.active or travelling
+	if not _gameplay_started or _solar_death or _player_death_pending:
+		return false
+	return (
+		_intro_in_progress or departure.active or planet_3_departure.active or travelling
+		or _explosion_dialogue_in_progress or not explosion_dialogue_delay.is_stopped()
+		or not _planet2_dialogue_phase.is_empty()
+		or _planet3_dialogue_phase in ["malfunction", "landing", "collapse_wait", "collapse"]
+		or not landing_dialogue_delay.is_stopped() or _sun_collapse_elapsed >= 0.0
+	)
 
 
 func _skip_active_cutscene() -> void:
+	if not menu_can_skip_cutscene():
+		return
 	if _intro_in_progress:
 		terminal.finish_dialogue()
 	elif planet_3_departure.active:
@@ -406,6 +416,30 @@ func _skip_active_cutscene() -> void:
 		_skip_arrival_cutscene()
 	elif travelling and _travel_tween != null:
 		_travel_tween.custom_step(10000.0)
+	elif _sun_final_started:
+		# Finish the visual transition as well as the conversation. Keep the
+		# final transcript open after BX loses power, just like normal playback.
+		if _sun_flash_tween != null and _sun_flash_tween.is_running():
+			_sun_flash_tween.custom_step(10000.0)
+		if _sun_collapse_elapsed >= 0.0:
+			_step_sun_collapse(sun_collapse_duration)
+		if _planet3_dialogue_phase == "collapse_wait":
+			_collapse_dialogue_countdown = -1.0
+			_planet3_dialogue_phase = "collapse"
+			terminal.play_dialogue(Planet3Dialogue.ON_COLLAPSE, true, false)
+		if _planet3_dialogue_phase == "collapse":
+			terminal.finish_dialogue()
+			terminal.open()
+	elif not landing_dialogue_delay.is_stopped():
+		landing_dialogue_delay.stop()
+		_begin_landing_dialogue()
+		terminal.finish_dialogue()
+	elif not explosion_dialogue_delay.is_stopped():
+		explosion_dialogue_delay.stop()
+		_begin_planet_1_phase_2()
+		terminal.finish_dialogue()
+	else:
+		terminal.finish_dialogue()
 
 
 func _set_camera_sensitivity(value: float) -> void:
@@ -454,7 +488,7 @@ func _on_intro_message_finished(index: int) -> void:
 
 
 func _on_intro_finished() -> void:
-	if _planet3_dialogue_phase == "collapse":
+	if _planet3_dialogue_phase in ["collapse", "ended"]:
 		_planet3_dialogue_phase = "ended"
 		terminal.allow_toggle = false
 		terminal.set_process_input(false)

@@ -165,6 +165,7 @@ script = ExtResource("20_departure")
 
 [node name="Planet2Music" type="AudioStreamPlayer" parent="." unique_id=201942840]
 stream = ExtResource("21_music3")
+volume_db = 6.0
 bus = &"mus3"
 
 [node name="PlayerHitAudio" type="AudioStreamPlayer" parent="." unique_id=635785322]

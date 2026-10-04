@@ -3,6 +3,9 @@ extends SceneTree
 ## Exercises the menu against a small paused world; does not run the game.
 var _checks_failed := false
 
+class Travel extends Node:
+	var active := false
+
 class World extends Node:
 	var menu: CanvasLayer
 	var can_skip := false
@@ -102,6 +105,40 @@ func run() -> void:
 	for pair in [[1.0, 0.5], [5.0, 1.0], [10.0, 2.0]]:
 		main._set_camera_sensitivity(pair[0])
 		check(absf(main.mouse_sensitivity / main._base_mouse_sensitivity - pair[1]) < 0.0001, "Sensitivity endpoints must match")
+	# Exercise the real story's eligibility, not just the menu's mock world.
+	main.departure = Travel.new()
+	main.planet_3_departure = Travel.new()
+	main.explosion_dialogue_delay = main.get_node("ExplosionDialogueDelay")
+	main.landing_dialogue_delay = main.get_node("LandingDialogueDelay")
+	main._gameplay_started = true
+	check(not main.menu_can_skip_cutscene(), "Ordinary gameplay must not expose cutscene skip")
+	for flag in ["_intro_in_progress", "_explosion_dialogue_in_progress", "travelling"]:
+		main.set(flag, true)
+		check(main.menu_can_skip_cutscene(), "Skip must cover " + flag)
+		main.set(flag, false)
+	for phase in ["overheat", "fuel"]:
+		main._planet2_dialogue_phase = phase
+		check(main.menu_can_skip_cutscene(), "Planet 2 story conversations must expose skip")
+	main._planet2_dialogue_phase = ""
+	for phase in ["malfunction", "landing", "collapse_wait", "collapse"]:
+		main._planet3_dialogue_phase = phase
+		check(main.menu_can_skip_cutscene(), "Planet 3 story sequences must expose skip")
+	main._planet3_dialogue_phase = "ended"
+	check(not main.menu_can_skip_cutscene(), "Finished finale must not expose skip")
+	var story = load("res://ui/assistant_terminal.tscn").instantiate()
+	root.add_child(story)
+	main.terminal = story
+	story.message_finished.connect(main._on_intro_message_finished)
+	story.dialogue_finished.connect(main._on_intro_finished)
+	main._sun_final_started = true
+	main._planet3_dialogue_phase = "collapse"
+	story.play_dialogue(main.Planet3Dialogue.ON_COLLAPSE)
+	main._skip_active_cutscene()
+	check(main._planet3_dialogue_phase == "ended", "Finale skip must retain the ended state")
+	check(story._is_open and not story.is_processing_input(), "Finale skip must leave the transcript open with input disabled")
+	main.departure.free()
+	main.planet_3_departure.free()
+	story.free()
 	main.free()
 	world.free()
 	await process_frame
