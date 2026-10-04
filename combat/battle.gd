@@ -11,6 +11,7 @@ const VelocityHistory = preload("res://combat/velocity_history.gd")
 const OrbitalIntercept = preload("res://combat/orbital_intercept.gd")
 signal player_hit
 signal player_destroyed
+signal enemy_fleet_destroyed
 var damage_enabled := true
 var allow_player_targeting := true
 var targeting_hud_enabled := false
@@ -51,6 +52,14 @@ var _ship_indices: Dictionary = {}
 var _collision_targets: Array[PlanetShip] = []
 var _spacing_grid: Dictionary = {}
 var _velocity_histories: Dictionary = {}
+var _overheat_active := false
+var _overheat_elapsed := 0.0
+var _overheat_duration := 0.0
+var _overheat_kill_queue: Array[AIShip] = []
+var _overheat_kill_times: Array[float] = []
+var _overheat_killed_count := 0
+var _overheat_completion_emitted := false
+var _overheat_started := false
 @onready var _missiles: Node3D = $Missiles
 @onready var _explosions: Node3D = $Explosions
 @onready var _ship_counter: Label = $FleetHUD/Counter
@@ -93,6 +102,9 @@ func set_active(value: bool) -> void:
 		for child in container.get_children():
 			child.free()
 	if not value:
+		_overheat_active = false
+		_overheat_started = false
+		_overheat_kill_queue.clear()
 		for ship in ships:
 			ship.bind_to_planet(null)
 		return
@@ -114,6 +126,70 @@ func set_active(value: bool) -> void:
 	for ship in ships:
 		_choose_target(ship)
 	_refresh_ship_counter()
+
+
+func begin_weapon_overheat(duration: float = 15.0) -> void:
+	if not active or _overheat_active:
+		return
+	_overheat_active = true
+	_overheat_started = true
+	_overheat_elapsed = 0.0
+	_overheat_duration = maxf(duration, 0.0)
+	_overheat_killed_count = 0
+	_overheat_completion_emitted = false
+	_overheat_kill_queue.clear()
+	_overheat_kill_times.clear()
+	var schedule: Array[Dictionary] = []
+	for ship in ships:
+		if ship.can_fight:
+			schedule.append({
+				"time": _population_rng.randf_range(0.0, _overheat_duration),
+				"ship": ship
+			})
+	schedule.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return float(a["time"]) < float(b["time"])
+	)
+	for entry in schedule:
+		_overheat_kill_times.append(float(entry["time"]))
+		_overheat_kill_queue.append(entry["ship"] as AIShip)
+	if _overheat_kill_queue.is_empty() or is_zero_approx(_overheat_duration):
+		_overheat_elapsed = _overheat_duration
+		_advance_weapon_overheat(0.0)
+
+
+func force_finish_weapon_overheat() -> void:
+	if not _overheat_started:
+		begin_weapon_overheat(0.0)
+		return
+	if not _overheat_active:
+		return
+	_overheat_duration = 0.0
+	_overheat_elapsed = 0.0
+	_advance_weapon_overheat(0.0)
+
+
+func _advance_weapon_overheat(delta: float) -> void:
+	if not _overheat_active:
+		return
+	_overheat_elapsed = minf(_overheat_elapsed + delta, _overheat_duration)
+	while _overheat_killed_count < _overheat_kill_queue.size() and _overheat_kill_times[_overheat_killed_count] <= _overheat_elapsed:
+		_overheat_kill_queue[_overheat_killed_count].destroy_from_weapon_overheat()
+		_overheat_killed_count += 1
+	_refresh_ship_counter()
+	if _overheat_killed_count >= _overheat_kill_queue.size():
+		_overheat_active = false
+		_check_weapon_overheat_completion()
+
+
+func _check_weapon_overheat_completion() -> void:
+	if not _overheat_started or _overheat_completion_emitted or _overheat_killed_count < _overheat_kill_queue.size():
+		return
+	for ship in ships:
+		if not ship.is_destroyed:
+			return
+	_overheat_completion_emitted = true
+	$FleetHUD.hide()
+	enemy_fleet_destroyed.emit()
 
 
 func _resize_fleet(count: int) -> void:
@@ -182,6 +258,7 @@ func _process(delta: float) -> void:
 		# Average speed components rather than world headings, which curve over time.
 		_velocity_histories[target].add_sample(Vector3(tangent_speed, radial_speed, 0.0), delta)
 	delta = minf(delta, 0.1)
+	_advance_weapon_overheat(delta)
 	var radius := planet.global_basis.x.length()
 	_player_position = to_local(player.global_position)
 	var camera := get_viewport().get_camera_3d()
@@ -382,6 +459,8 @@ func _on_ship_destroyed(wreck: PlanetShip) -> void:
 	explosion.global_position = wreck.global_position
 	if wreck == player:
 		player_destroyed.emit()
+	else:
+		_check_weapon_overheat_completion()
 
 func _step_missiles(delta: float) -> void:
 	if _missiles.get_child_count() == 0:

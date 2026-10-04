@@ -12,6 +12,7 @@ var _planet: Node3D
 var _ship: ShipController
 var _collecting := false
 var _collected := 0
+var _active_cell_count := 0
 var _previous_ship_position := Vector3.ZERO
 var _rng := RandomNumberGenerator.new()
 @onready var _counter: Label = $HUD/Counter
@@ -23,8 +24,9 @@ func _ready() -> void:
 	_counter.hide()
 
 
-func begin(planet: Node3D, player: ShipController) -> void:
+func begin(planet: Node3D, player: ShipController, requested_count := -1, ground_level := false) -> void:
 	clear(true)
+	_active_cell_count = cell_count if requested_count < 0 else requested_count
 	_planet = planet
 	_ship = player
 	global_position = planet.global_position
@@ -39,7 +41,7 @@ func begin(planet: Node3D, player: ShipController) -> void:
 	var water_radius := (ocean.mesh as SphereMesh).radius * ocean.global_basis.x.length() if ocean != null else 0.0
 	var ceiling: float = radius * player.maximum_altitude_ratio - 10.0
 	for attempt in range(1000):
-		if _cells.size() == cell_count:
+		if _cells.size() == _active_cell_count:
 			break
 		var cosine := _rng.randf_range(cos(deg_to_rad(spawn_cone_degrees)), 1.0)
 		var angle := _rng.randf_range(0.0, TAU)
@@ -51,11 +53,13 @@ func begin(planet: Node3D, player: ShipController) -> void:
 		if hit.is_empty():
 			continue
 		var ground_radius := terrain.to_global(hit.position).distance_to(planet.global_position)
-		var floor_height: float = maxf(ground_radius, water_radius) - radius + player.surface_clearance + 8.0
-		var low := maxf(25.0, floor_height)
-		if low > ceiling:
+		var surface_altitude: float = maxf(ground_radius, water_radius) - radius
+		var floor_height := maxf(25.0, surface_altitude + player.surface_clearance + 8.0)
+		var altitude := surface_altitude + _rng.randf_range(30.0, 50.0) if ground_level else floor_height
+		if altitude > ceiling:
 			continue
-		var altitude := _rng.randf_range(low, maxf(low, minf(90.0, ceiling)))
+		if not ground_level:
+			altitude = _rng.randf_range(floor_height, maxf(floor_height, minf(90.0, ceiling)))
 		var candidate := direction * (radius + altitude)
 		var separated := true
 		for cell in _cells:
@@ -67,14 +71,15 @@ func begin(planet: Node3D, player: ShipController) -> void:
 		var cell := PickupScene.instantiate() as Node3D
 		add_child(cell)
 		cell.position = candidate
+		cell.scale = Vector3.ONE * 3.0 if ground_level else Vector3.ONE
 		_cells.append(cell)
-	if _cells.size() != cell_count:
+	if _cells.size() != _active_cell_count:
 		push_error("Could not place all fuel cells within the flight boundaries")
 		clear()
 		return
 	_previous_ship_position = player.global_position
 	_collecting = true
-	_counter.text = "FUEL CELLS  0 / %d" % cell_count
+	_counter.text = "FUEL CELLS  0 / %d" % _active_cell_count
 	_counter.show()
 
 
@@ -91,7 +96,7 @@ func _process(_delta: float) -> void:
 		_cells.remove_at(index)
 		_collected += 1
 		_pickup_sound.play()
-		_counter.text = "FUEL CELLS  %d / %d" % [_collected, cell_count]
+		_counter.text = "FUEL CELLS  %d / %d" % [_collected, _active_cell_count]
 		cell.set_process(false)
 		var animation := create_tween().bind_node(cell)
 		animation.tween_property(cell, "scale", Vector3.ONE * 0.01, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
@@ -110,7 +115,7 @@ func collect_all() -> void:
 	for cell in _cells:
 		cell.queue_free()
 	_cells.clear()
-	_counter.text = "FUEL CELLS  %d / %d" % [_collected, cell_count]
+	_counter.text = "FUEL CELLS  %d / %d" % [_collected, _active_cell_count]
 	_pickup_sound.play()
 	all_collected.emit()
 
@@ -125,6 +130,7 @@ func clear(stop_audio := false) -> void:
 	if stop_audio:
 		_pickup_sound.stop()
 	_collected = 0
+	_active_cell_count = 0
 	_cells.clear()
 	for child in get_children():
 		if child is Node3D:

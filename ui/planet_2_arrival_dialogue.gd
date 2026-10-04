@@ -156,3 +156,27 @@ const ARRIVAL := [
         "text": "Best of luck"
     }
 ]
+
+const PLANET2_OVERHEAT := [
+	{
+		"speaker": "Lars",
+		"text": "What is happening?",
+		"auto_advance_seconds": 3.0,
+		"timed": true
+	},
+	{
+		"speaker": "BX",
+		"text": "Apparently the elevated temperature has caused the weapon modules to explode inside all these ships"
+	}
+]
+
+const PLANET2_FUEL := [
+	{
+		"speaker": "BX",
+		"text": "I suggest we scavange the fuel cells from the destroyed ships and jump to planet 3"
+	},
+	{
+		"speaker": "Lars",
+		"text": "Alright"
+	}
+]

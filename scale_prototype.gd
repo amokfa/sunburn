@@ -15,6 +15,17 @@ var _arrival_dialogue_phase := ""
 var _arrival_skipping := false
 var _weapons_ejected := false
 var _player_death_pending := false
+var _planet2_fight_elapsed := 0.0
+var _planet2_overheat_elapsed := 0.0
+var _planet2_overheat_started := false
+var _planet2_dialogue_started := false
+var _planet2_explanation_finished := false
+var _planet2_dialogue_phase := ""
+var _planet2_fleet_destroyed := false
+var _planet2_cells_spawned := false
+var _planet2_cells_collected := false
+var _sun_passed_planet2_200m := false
+var _sun_passed_planet2_100m := false
 var _gameplay_camera_blend := 1.0
 var _gameplay_camera_local := Transform3D.IDENTITY
 @onready var planet_2_music: AudioStreamPlayer = $Planet2Music
@@ -68,6 +79,7 @@ var _normal_ambient_energy := 0.0
 @export var sun_expansion_time_to_planet_1: float = 120.0
 @export var planet_2_sun_approach_time: float = 175.0
 @export var planet_2_sun_approach_gap: float = 200.0
+@export var planet_2_final_100m_time: float = 120.0
 
 @export_group("Sun lighting")
 @export var sunlight_ship_offset: float = 200.0
@@ -118,6 +130,7 @@ func _ready() -> void:
 	departure.descent_finished.connect(_finish_planet_2_arrival)
 	battle.player_hit.connect(_on_player_missile_hit)
 	battle.player_destroyed.connect(_on_player_destroyed)
+	battle.enemy_fleet_destroyed.connect(_on_planet2_fleet_destroyed)
 	terminal.message_advanced.connect(_on_arrival_message_advanced)
 	fuel_cells.all_collected.connect(_on_planet_1_fuel_collected)
 	# Set runtime looping too, so this works before the editor reimports the audio.
@@ -149,6 +162,17 @@ func _reset() -> void:
 	_arrival_skipping = false
 	_weapons_ejected = false
 	_player_death_pending = false
+	_planet2_fight_elapsed = 0.0
+	_planet2_overheat_elapsed = 0.0
+	_planet2_overheat_started = false
+	_planet2_dialogue_started = false
+	_planet2_explanation_finished = false
+	_planet2_dialogue_phase = ""
+	_planet2_fleet_destroyed = false
+	_planet2_cells_spawned = false
+	_planet2_cells_collected = false
+	_sun_passed_planet2_200m = false
+	_sun_passed_planet2_100m = false
 	_gameplay_camera_blend = 1.0
 	weapons_module.show()
 	for child in cutscene_debris.get_children():
@@ -243,6 +267,8 @@ func _reset() -> void:
 
 
 func _on_intro_message_finished(index: int) -> void:
+	if not _planet2_dialogue_phase.is_empty():
+		return
 	if not _arrival_dialogue_phase.is_empty():
 		_on_arrival_message_finished(index)
 		return
@@ -272,6 +298,15 @@ func _on_intro_message_finished(index: int) -> void:
 
 
 func _on_intro_finished() -> void:
+	if _planet2_dialogue_phase == "overheat":
+		_planet2_dialogue_phase = ""
+		_planet2_explanation_finished = true
+		if _planet2_fleet_destroyed:
+			_show_planet2_fuel_dialogue()
+		return
+	if _planet2_dialogue_phase == "fuel":
+		_planet2_dialogue_phase = ""
+		return
 	if _arrival_dialogue_phase == "arrival":
 		_arrival_dialogue_phase = ""
 		departure.begin_descent()
@@ -303,6 +338,13 @@ func _begin_planet_1_phase_2() -> void:
 
 
 func _on_planet_1_fuel_collected() -> void:
+	if current_planet == 1 and _planet2_cells_spawned:
+		_planet2_cells_collected = true
+		await get_tree().create_timer(0.25).timeout
+		if current_planet == 1 and _planet2_cells_collected and not travelling:
+			terminal.stop_dialogue()
+			_travel_to_next_planet()
+		return
 	if current_planet != 0 or travelling or _solar_death or _fuel_departure_pending:
 		return
 	_fuel_departure_pending = true
@@ -315,6 +357,51 @@ func _on_planet_1_fuel_collected() -> void:
 	terminal.close()
 	_fuel_departure_pending = false
 	_travel_to_next_planet()
+
+
+func _begin_planet2_overheat(force_instant: bool) -> void:
+	if current_planet != 1:
+		return
+	if not _planet2_overheat_started:
+		_planet2_overheat_started = true
+		_planet2_overheat_elapsed = 0.0
+		_planet2_dialogue_started = false
+		_planet2_explanation_finished = false
+		_planet2_fleet_destroyed = false
+		battle.begin_weapon_overheat(0.0 if force_instant else 15.0)
+	elif force_instant:
+		battle.force_finish_weapon_overheat()
+	if force_instant:
+		var snap_radius := sun.global_position.distance_to(planets[1].global_position) - planet_radii.y - 300.0
+		sun_radius = maxf(snap_radius, 0.0)
+		_sun_expanding = true
+		_sun_passed_planet2_200m = true
+		_sun_passed_planet2_100m = false
+		sun_expansion_speed = 100.0 / 30.0
+		_update_sun()
+		if _planet2_cells_spawned:
+			fuel_cells.collect_all()
+
+
+func _on_planet2_fleet_destroyed() -> void:
+	_planet2_fleet_destroyed = true
+	_spawn_planet2_fuel_cells()
+
+
+func _spawn_planet2_fuel_cells() -> void:
+	if _planet2_cells_spawned or not _planet2_fleet_destroyed:
+		return
+	_planet2_cells_spawned = true
+	fuel_cells.begin(planets[1], ship, 10, true)
+	if _planet2_explanation_finished:
+		_show_planet2_fuel_dialogue()
+
+
+func _show_planet2_fuel_dialogue() -> void:
+	if _planet2_dialogue_phase == "fuel":
+		return
+	_planet2_dialogue_phase = "fuel"
+	terminal.play_dialogue(ArrivalDialogue.PLANET2_FUEL, true, false)
 
 
 func _set_frame_origin(origin: Vector3) -> void:
@@ -342,6 +429,28 @@ func _process(delta: float) -> void:
 			next_radius = minf(next_radius, maxf(sun_radius, departure.sun_stop_radius()))
 		sun_radius = next_radius
 		sun.scale = Vector3.ONE * sun_radius
+	if current_planet == 1 and _sun_expanding:
+		var planet2_gap := sun.global_position.distance_to(planets[1].global_position) - sun_radius - planet_radii.y
+		if not _sun_passed_planet2_200m and planet2_gap <= planet_2_sun_approach_gap:
+			_sun_passed_planet2_200m = true
+			sun_expansion_speed = 100.0 / 30.0
+		if not _sun_passed_planet2_100m and planet2_gap <= 100.0:
+			_sun_passed_planet2_100m = true
+			sun_expansion_speed = 100.0 / maxf(planet_2_final_100m_time, 0.001)
+		if planet2_gap <= 100.0 and not _planet2_cells_collected:
+			_show_solar_death()
+			return
+	if current_planet == 1 and planet_2_music.playing and not travelling:
+		if not _planet2_overheat_started:
+			_planet2_fight_elapsed += delta
+			if _planet2_fight_elapsed >= 150.0:
+				_begin_planet2_overheat(false)
+		elif not _planet2_dialogue_started:
+			_planet2_overheat_elapsed += delta
+			if _planet2_overheat_elapsed >= 10.0:
+				_planet2_dialogue_started = true
+				_planet2_dialogue_phase = "overheat"
+				terminal.play_dialogue(ArrivalDialogue.PLANET2_OVERHEAT, true, false)
 	# The sun reaches the near side of the flight shell at center distance - 1.5R.
 	if current_planet == 0 and not travelling and not _fuel_departure_pending and _sun_expanding:
 		var sun_gap := sun.global_position.distance_to(planets[0].global_position) - sun_radius
@@ -559,6 +668,8 @@ func _skip_checkpoint() -> void:
 				var contact_radius := sun.global_position.distance_to(planets[0].global_position) - planet_radii.x
 				sun_radius = maxf(sun_radius, contact_radius)
 				_update_sun()
+	elif current_planet == 1:
+		_begin_planet2_overheat(true)
 	elif current_planet == 2 or ship.is_destroyed:
 		_reset()
 	else:
@@ -637,6 +748,8 @@ func _travel_to_next_planet(continue_from_departure := false) -> void:
 	if current_planet == 0:
 		_fade_out_planet_1_music()
 		phase_2_music.stop()
+	elif current_planet == 1:
+		planet_2_music.stop()
 	forest_ambience.stop()
 	terminal.close()
 	if current_planet == 0 and not continue_from_departure:
@@ -844,6 +957,16 @@ func _finish_planet_2_arrival() -> void:
 	_update_occluders()
 	battle.sync_player_position()
 	battle.set_protected_mode(false)
+	_planet2_fight_elapsed = 0.0
+	_planet2_overheat_elapsed = 0.0
+	_planet2_overheat_started = false
+	_planet2_dialogue_started = false
+	_planet2_explanation_finished = false
+	_planet2_fleet_destroyed = false
+	_planet2_cells_spawned = false
+	_planet2_cells_collected = false
+	_sun_passed_planet2_200m = false
+	_sun_passed_planet2_100m = false
 	# This clock starts with mus3 and the return of full player controls.
 	var target_radius := sun.global_position.distance_to(planets[1].global_position) - planet_radii.y - planet_2_sun_approach_gap
 	sun_expansion_speed = maxf(target_radius - sun_radius, 0.0) / maxf(planet_2_sun_approach_time, 0.001)

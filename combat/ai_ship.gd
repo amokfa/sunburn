@@ -31,6 +31,13 @@ var separation_priority: float = 0.0
 func maximum_lives() -> int:
 	return 4
 
+
+func destroy_from_weapon_overheat() -> void:
+	if not can_fight:
+		return
+	lives_remaining = 1
+	receive_missile_hit(Vector3.ZERO, Vector3.ZERO)
+
 func _ready() -> void:
 	super._ready()
 	for exhaust: ThrusterController in _thrusters.values():

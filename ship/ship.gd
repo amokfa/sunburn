@@ -268,14 +268,18 @@ func receive_missile_hit(impulse: Vector3, torque_impulse: Vector3) -> void:
 	apply_torque_impulse(torque_impulse)
 	lives_remaining -= 1
 	if lives_remaining == 0:
-		_wreck_velocity = velocity
-		_wreck_spin = _planet.global_basis.orthonormalized() * _navigation_basis() * _impact_angular_velocity
-		_wreck_spin += radial_up * _yaw_velocity
-		_wreck_remaining = 2.0
-		is_dying = true
-		_last_stabilization_torque = Vector3.ZERO
-		for exhaust: ThrusterController in _thrusters.values():
-			exhaust.set_static_power(0.0)
+		_begin_wreck()
+
+
+func _begin_wreck() -> void:
+	_wreck_velocity = velocity
+	_wreck_spin = _planet.global_basis.orthonormalized() * _navigation_basis() * _impact_angular_velocity
+	_wreck_spin += radial_up * _yaw_velocity
+	_wreck_remaining = 2.0
+	is_dying = true
+	_last_stabilization_torque = Vector3.ZERO
+	for exhaust: ThrusterController in _thrusters.values():
+		exhaust.set_static_power(0.0)
 
 func step_wreck(delta: float) -> void:
 	if not is_dying:

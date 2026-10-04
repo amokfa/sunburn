@@ -20,12 +20,11 @@
 [ext_resource type="Texture2D" uid="uid://dhb0ph8d02ktu" path="res://assets/you_died.jpg" id="18_death_image"]
 [ext_resource type="AudioStream" uid="uid://chk2tw6vji0kg" path="res://assets/sfx/you_died.mp3" id="19_death_audio"]
 [ext_resource type="Script" uid="uid://kjlmgswxeo25" path="res://ship/planet_departure.gd" id="20_departure"]
-[ext_resource type="Script" uid="uid://2ka8k7whcsv" path="res://ship/movement_settings.gd" id="movement_settings"]
-
-[ext_resource type="AudioStream" path="res://assets/sfx/mus/mus3.mp3" id="21_music3"]
-[ext_resource type="AudioStream" path="res://assets/sfx/explosion2.mp3" id="22_hit_audio"]
-[ext_resource type="AudioStream" path="res://assets/sfx/explosion1.mp3" id="23_death_explosion"]
+[ext_resource type="AudioStream" uid="uid://h6fcohs8nhwo" path="res://assets/sfx/mus/mus3.mp3" id="21_music3"]
+[ext_resource type="AudioStream" uid="uid://bq8snj1scn8jf" path="res://assets/sfx/explosion2.mp3" id="22_hit_audio"]
+[ext_resource type="AudioStream" uid="uid://b4fnwctwyhp23" path="res://assets/sfx/explosion1.mp3" id="23_death_explosion"]
 [ext_resource type="PackedScene" path="res://ship/weapons_module.tscn" id="24_weapons_module"]
+[ext_resource type="Script" uid="uid://2ka8k7whcsv" path="res://ship/movement_settings.gd" id="movement_settings"]
 
 [sub_resource type="Sky" id="Sky"]
 sky_material = ExtResource("2_sky")
@@ -38,7 +37,7 @@ ambient_light_color = Color(1, 1, 1, 1)
 ambient_light_energy = 0.02
 reflected_light_source = 1
 
-[sub_resource type="Resource" id="Resource_egb0w"]
+[sub_resource type="Resource" id="Resource_072px"]
 resource_local_to_scene = true
 script = ExtResource("movement_settings")
 horizontal_damping = 1.6
@@ -78,7 +77,10 @@ transform = Transform3D(250, 0, 0, 0, 250, 0, 0, 0, 250, -1800, 0, 0)
 
 [node name="Ship" parent="." unique_id=1306759738 instance=ExtResource("7_ship")]
 transform = Transform3D(0, 0, -1, -0.8, 0.6, 0, 0.6, 0.8, 0, -276, 207, 0)
-planet_1_movement = SubResource("Resource_egb0w")
+planet_1_movement = SubResource("Resource_072px")
+
+[node name="WeaponsModule" parent="Ship" unique_id=586741800 instance=ExtResource("24_weapons_module")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.32, 0.12)
 
 [node name="Camera" type="Camera3D" parent="." unique_id=1243361966]
 transform = Transform3D(0, 0, -1, -0.880679, 0.473711, 0, 0.473711, 0.880679, 0, -274.5946, 212.74374, 0)
@@ -159,20 +161,17 @@ stretch_mode = 6
 [node name="PlanetDeparture" type="Node" parent="." unique_id=177567179]
 script = ExtResource("20_departure")
 
-[node name="Planet2Music" type="AudioStreamPlayer" parent="."]
+[node name="Planet2Music" type="AudioStreamPlayer" parent="." unique_id=201942840]
 stream = ExtResource("21_music3")
 bus = &"mus3"
 
-[node name="PlayerHitAudio" type="AudioStreamPlayer" parent="."]
+[node name="PlayerHitAudio" type="AudioStreamPlayer" parent="." unique_id=635785322]
 stream = ExtResource("22_hit_audio")
-bus = &"explosion2"
 max_polyphony = 8
+bus = &"explosion2"
 
-[node name="PlayerDeathExplosionAudio" type="AudioStreamPlayer" parent="."]
+[node name="PlayerDeathExplosionAudio" type="AudioStreamPlayer" parent="." unique_id=1434110898]
 stream = ExtResource("23_death_explosion")
 bus = &"explosion1"
 
-[node name="WeaponsModule" parent="Ship" instance=ExtResource("24_weapons_module")]
-position = Vector3(0, -0.32, 0.12)
-
-[node name="CutsceneDebris" type="Node3D" parent="."]
+[node name="CutsceneDebris" type="Node3D" parent="." unique_id=1486103310]
