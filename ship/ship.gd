@@ -167,6 +167,7 @@ var _visual_time: float = 0.0
 var _wobble_noise := FastNoiseLite.new()
 var _thrusters: Dictionary = {}
 var _last_yaw_torque: float = 0.0
+var _model_emission_materials: Array[BaseMaterial3D] = []
 
 
 func _ready() -> void:
@@ -253,6 +254,7 @@ func active_booster_count() -> int:
 
 
 func reset_health() -> void:
+	set_model_emission_enabled(true)
 	lives_remaining = maximum_lives()
 	is_dying = false
 	is_destroyed = false
@@ -450,6 +452,32 @@ func _update_thrusters(horizontal: Vector2, vertical: float, yaw_torque: float) 
 				power = 0.0
 		var exhaust: ThrusterController = _thrusters[marker_name]
 		exhaust.set_power(power)
+
+
+func set_model_emission_enabled(enabled: bool) -> void:
+	# Duplicate only this ship's hull materials; AI ships share the imported model.
+	if not enabled and _model_emission_materials.is_empty():
+		var markers := model.get_node("markers")
+		for node in model.find_children("*", "MeshInstance3D", true, false):
+			var hull := node as MeshInstance3D
+			if markers.is_ancestor_of(hull) or hull.mesh == null:
+				continue
+			if hull.material_override is BaseMaterial3D:
+				var original := hull.material_override as BaseMaterial3D
+				if original.emission_enabled:
+					var material := original.duplicate() as BaseMaterial3D
+					hull.material_override = material
+					_model_emission_materials.append(material)
+				continue
+			for surface in range(hull.mesh.get_surface_count()):
+				var original := hull.get_active_material(surface) as BaseMaterial3D
+				if original == null or not original.emission_enabled:
+					continue
+				var material := original.duplicate() as BaseMaterial3D
+				hull.set_surface_override_material(surface, material)
+				_model_emission_materials.append(material)
+	for material in _model_emission_materials:
+		material.emission_enabled = enabled
 
 
 func set_cutscene_thrust(forward_power: float, brake_power: float, delta: float = 1.0 / 60.0) -> void:

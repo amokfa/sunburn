@@ -1330,6 +1330,7 @@ func _finish_planet_3_crash() -> void:
 	ship.mouse_look_enabled = false
 	ship.set_process(false)
 	ship.set_cutscene_thrust(0.0, 0.0)
+	ship.set_model_emission_enabled(false)
 	_crash_landed = true
 	travelling = false
 	_rocket_audio_enabled = false
