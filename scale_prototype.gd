@@ -4,6 +4,7 @@ const ShipController = preload("res://ship/ship.gd")
 const IntroDialogue = preload("res://ui/intro_dialogue.gd")
 const ExplosionDialogue = preload("res://ui/planet_1_explosion_dialogue.gd")
 const ArrivalDialogue = preload("res://ui/planet_2_arrival_dialogue.gd")
+const Planet3Dialogue = preload("res://ui/planet_3_dialogue.gd")
 const EngulfedSurface = preload("res://planets/engulfed_surface.gdshader")
 var _heated_surfaces: Array[Dictionary] = []
 var _heat_material: ShaderMaterial
@@ -34,6 +35,13 @@ var _gameplay_camera_local := Transform3D.IDENTITY
 @onready var weapons_module: Node3D = $Ship/WeaponsModule
 @onready var cutscene_debris: Node3D = $CutsceneDebris
 @onready var departure = $PlanetDeparture
+@onready var planet_3_departure = $Planet3Departure
+var _crash_landed := false
+var _crash_camera_direction := Vector3.FORWARD
+var _planet3_dialogue_phase := ""
+var _planet3_sun_stop_radius := -1.0
+@onready var booster_dialogue_delay: Timer = $BoosterDialogueDelay
+@onready var landing_dialogue_delay: Timer = $LandingDialogueDelay
 var _travel_tween: Tween
 var _fuel_departure_pending := false
 @onready var fuel_cells = $Planet1FuelCells
@@ -80,6 +88,8 @@ var _normal_ambient_energy := 0.0
 @export var planet_2_sun_approach_time: float = 175.0
 @export var planet_2_sun_approach_gap: float = 200.0
 @export var planet_2_final_100m_time: float = 120.0
+@export var planet_3_sun_approach_time: float = 150.0
+@export var planet_3_sun_approach_gap: float = 100.0
 
 @export_group("Sun lighting")
 @export var sunlight_ship_offset: float = 200.0
@@ -124,6 +134,13 @@ var _platform_clearance := 0.5
 
 
 func _ready() -> void:
+	planet_3_departure.boosters_failed.connect(_on_planet_3_boosters_failed)
+	booster_dialogue_delay.timeout.connect(_begin_booster_dialogue)
+	landing_dialogue_delay.timeout.connect(_begin_landing_dialogue)
+	planet_3_departure.source_heated.connect(_heat_planet_2)
+	planet_3_departure.missile_impact.connect(_on_player_missile_hit)
+	planet_3_departure.crash_impact.connect(_on_planet_3_crash_impact)
+	planet_3_departure.crash_finished.connect(_finish_planet_3_crash)
 	departure.source_heated.connect(_heat_planet_1)
 	departure.rear_view_ready.connect(_begin_departure_farewell)
 	departure.destination_view_ready.connect(_begin_arrival_conversation)
@@ -158,6 +175,12 @@ func _update_occluders() -> void:
 
 
 func _reset() -> void:
+	booster_dialogue_delay.stop()
+	landing_dialogue_delay.stop()
+	_planet3_dialogue_phase = ""
+	_planet3_sun_stop_radius = -1.0
+	planet_3_departure.cancel()
+	_crash_landed = false
 	_arrival_dialogue_phase = ""
 	_arrival_skipping = false
 	_weapons_ejected = false
@@ -267,6 +290,8 @@ func _reset() -> void:
 
 
 func _on_intro_message_finished(index: int) -> void:
+	if not _planet3_dialogue_phase.is_empty():
+		return
 	if not _planet2_dialogue_phase.is_empty():
 		return
 	if not _arrival_dialogue_phase.is_empty():
@@ -298,6 +323,9 @@ func _on_intro_message_finished(index: int) -> void:
 
 
 func _on_intro_finished() -> void:
+	if not _planet3_dialogue_phase.is_empty():
+		_planet3_dialogue_phase = ""
+		return
 	if _planet2_dialogue_phase == "overheat":
 		_planet2_dialogue_phase = ""
 		_planet2_explanation_finished = true
@@ -427,9 +455,13 @@ func _process(delta: float) -> void:
 		var next_radius := sun_radius + maxf(sun_expansion_speed, 0.0) * delta
 		if departure.active:
 			next_radius = minf(next_radius, maxf(sun_radius, departure.sun_stop_radius()))
+		if _planet3_sun_stop_radius >= 0.0 and (planet_3_departure.active or current_planet == 2):
+			next_radius = minf(next_radius, _planet3_sun_stop_radius)
+			if next_radius >= _planet3_sun_stop_radius:
+				_sun_expanding = false
 		sun_radius = next_radius
 		sun.scale = Vector3.ONE * sun_radius
-	if current_planet == 1 and _sun_expanding:
+	if current_planet == 1 and _sun_expanding and not planet_3_departure.active:
 		var planet2_gap := sun.global_position.distance_to(planets[1].global_position) - sun_radius - planet_radii.y
 		if not _sun_passed_planet2_200m and planet2_gap <= planet_2_sun_approach_gap:
 			_sun_passed_planet2_200m = true
@@ -466,7 +498,9 @@ func _process(delta: float) -> void:
 	rocket_audio.update_layers(ship.active_booster_count(), _rocket_audio_enabled and ship.can_fight, delta)
 	if _opening_camera_moved:
 		_opening_framing_weight = maxf(0.0, _opening_framing_weight - delta * 5.0)
-	if departure.active:
+	if planet_3_departure.active:
+		planet_3_departure.step(delta)
+	elif departure.active:
 		departure.step(delta)
 	else:
 		_update_camera()
@@ -475,6 +509,8 @@ func _process(delta: float) -> void:
 
 
 func _show_solar_death() -> void:
+	booster_dialogue_delay.stop()
+	landing_dialogue_delay.stop()
 	if _solar_death:
 		return
 	_solar_death = true
@@ -625,7 +661,7 @@ func _update_ocean_sun() -> void:
 
 func _update_camera() -> void:
 	var radial_up := ship.radial_up
-	var direction := ship.view_forward
+	var direction := _crash_camera_direction if _crash_landed else ship.view_forward
 	var orbit_direction := direction.rotated(radial_up, deg_to_rad(opening_camera_angle_degrees) * _opening_camera_blend)
 	var offset := -orbit_direction * cos(camera_pitch) + radial_up * -sin(camera_pitch)
 	var target := ship.global_position + radial_up * lerpf(1.5, 0.35, _opening_camera_blend)
@@ -643,6 +679,9 @@ func _update_camera() -> void:
 
 
 func _skip_checkpoint() -> void:
+	if planet_3_departure.active:
+		planet_3_departure.skip_to_crash()
+		return
 	if departure.active:
 		_skip_arrival_cutscene()
 		return
@@ -690,7 +729,24 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if departure.active:
 		return
+	if planet_3_departure.active and planet_3_departure.camera_controls_enabled:
+		if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+			planet_3_departure.rotate_camera(-event.relative.x * mouse_sensitivity, -event.relative.y * mouse_sensitivity)
+		elif event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		return
 	if travelling:
+		return
+	if _crash_landed:
+		if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+			_crash_camera_direction = _crash_camera_direction.rotated(ship.radial_up, -event.relative.x * mouse_sensitivity).normalized()
+			camera_pitch = clampf(camera_pitch - event.relative.y * mouse_sensitivity, -1.4, 1.4)
+		elif event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		return
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_T:
 		trigger_sun_expansion()
@@ -754,6 +810,9 @@ func _travel_to_next_planet(continue_from_departure := false) -> void:
 	terminal.close()
 	if current_planet == 0 and not continue_from_departure:
 		_begin_planet_1_departure()
+		return
+	if current_planet == 1:
+		_begin_planet_3_departure()
 		return
 	departure.cancel()
 	ship.surface_repulsion_enabled = true
@@ -973,6 +1032,125 @@ func _finish_planet_2_arrival() -> void:
 	_sun_expanding = true
 	planet_2_music.play()
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
+func _begin_planet_3_departure() -> void:
+	travelling = true
+	_planet2_dialogue_phase = ""
+	terminal.stop_dialogue()
+	terminal.allow_toggle = false
+	terminal.set_process_input(false)
+	battle.set_active(false)
+	_opening_camera_blend = 0.0
+	_opening_framing_weight = 0.0
+	_rocket_audio_enabled = true
+	planet_3_departure.begin(ship, planets[1], planets[2], camera, sun)
+	var target_radius := sun.global_position.distance_to(planets[2].global_position) - planet_radii.z - planet_3_sun_approach_gap
+	_planet3_sun_stop_radius = target_radius
+	sun_expansion_speed = maxf(target_radius - sun_radius, 0.0) / maxf(planet_3_sun_approach_time, 0.001)
+	_sun_expanding = true
+	_update_occluders()
+
+
+func _heat_planet_2() -> void:
+	var material := ShaderMaterial.new()
+	material.shader = EngulfedSurface
+	material.set_shader_parameter("surface_color", _heat_color)
+	material.set_shader_parameter("reveal", 0.0)
+	var pending: Array[Node] = [planets[1]]
+	var atmospheres: Array[Dictionary] = []
+	while not pending.is_empty():
+		var node := pending.pop_back() as Node
+		if node is GeometryInstance3D:
+			var geometry := node as GeometryInstance3D
+			if node.name == &"Atmosphere":
+				_heated_surfaces.append({"node": geometry, "override": geometry.material_override})
+				var atmosphere := geometry.material_override.duplicate() as ShaderMaterial
+				atmospheres.append({"material": atmosphere, "color": atmosphere.get_shader_parameter("glow_color")})
+				geometry.material_override = atmosphere
+			else:
+				_heated_surfaces.append({"node": geometry, "overlay": geometry.material_overlay})
+				geometry.material_overlay = material
+		pending.append_array(node.get_children())
+	_heat_tween = create_tween()
+	_heat_tween.tween_method(_set_planet_2_heat.bind(material, atmospheres), 0.0, 1.0, planet_3_departure.source_color_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _set_planet_2_heat(strength: float, material: ShaderMaterial, atmospheres: Array[Dictionary]) -> void:
+	material.set_shader_parameter("reveal", strength)
+	for entry in atmospheres:
+		var color: Color = entry["color"]
+		entry["material"].set_shader_parameter("glow_color", color.lerp(_heat_color, strength))
+
+
+func _finish_planet_3_crash() -> void:
+	booster_dialogue_delay.stop()
+	landing_dialogue_delay.start()
+	var landed_transform := ship.global_transform
+	var offset := solar_positions[2] - frame_origin
+	ship.position -= offset
+	camera.position -= offset
+	for effect: Node3D in cutscene_debris.get_children():
+		effect.global_position -= offset
+	current_planet = 2
+	_set_frame_origin(solar_positions[2])
+	ship.set_movement_profile(2)
+	ship.bind_to_planet(planets[2])
+	# Binding prepares radial camera coordinates; freeze motion and retain the
+	# authored crash attitude instead of letting stabilization level the hull.
+	ship.global_basis = landed_transform.basis
+	ship.controls_enabled = false
+	ship.mouse_look_enabled = false
+	ship.set_process(false)
+	ship.set_cutscene_thrust(0.0, 0.0)
+	_crash_landed = true
+	travelling = false
+	_rocket_audio_enabled = false
+	rocket_audio.stop()
+	var up := ship.radial_up
+	var forward := -camera.global_basis.z
+	_crash_camera_direction = (forward - up * forward.dot(up)).normalized()
+	if _crash_camera_direction.length_squared() < 0.001:
+		_crash_camera_direction = ship.view_forward
+	camera_pitch = clampf(asin(clampf(forward.dot(up), -1.0, 1.0)), -1.4, 1.4)
+	_gameplay_camera_local = ship.global_transform.affine_inverse() * camera.global_transform
+	_gameplay_camera_blend = 0.0
+	terminal.allow_toggle = true
+	terminal.set_process_input(true)
+	_update_occluders()
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
+func _on_planet_3_boosters_failed() -> void:
+	terminal.set_process(true)
+	terminal.set_process_input(true)
+	terminal.allow_toggle = false
+	booster_dialogue_delay.start()
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
+func _begin_booster_dialogue() -> void:
+	if not planet_3_departure.active or _solar_death:
+		return
+	_planet3_dialogue_phase = "malfunction"
+	terminal.play_dialogue(Planet3Dialogue.MALFUNCTION, true, false)
+
+
+func _begin_landing_dialogue() -> void:
+	if not _crash_landed or _solar_death:
+		return
+	_planet3_dialogue_phase = "landing"
+	terminal.play_dialogue(Planet3Dialogue.AFTER_LANDING, true, false)
+
+
+func _on_planet_3_crash_impact() -> void:
+	var explosion = preload("res://combat/explosion.tscn").instantiate()
+	explosion.size_multiplier = 3.0
+	explosion.initial_scale = 1.0
+	explosion.lifetime = 1.2
+	cutscene_debris.add_child(explosion)
+	explosion.global_position = ship.global_position
+	player_death_explosion_audio.play()
 
 
 func _on_player_missile_hit() -> void:

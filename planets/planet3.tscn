@@ -4,16 +4,20 @@
 [ext_resource type="Script" path="res://planets/surface_collider.gd" id="surface_script"]
 
 [ext_resource type="ArrayMesh" path="res://planets/planet3_terrain.res" id="1_43ufh"]
+[ext_resource type="Material" path="res://planets/terrain3_material.tres" id="terrain_material"]
+[ext_resource type="Script" path="res://planets/barren_terrain.gd" id="terrain_script"]
 
 [sub_resource type="SphereOccluder3D" id="SphereOccluder3D_0h4pa"]
-radius = 0.995
+radius = 0.987
 
 [node name="Planet3" type="Node3D" unique_id=1716493062]
-metadata/maximum_surface_radius = 1.0
+metadata/maximum_surface_radius = 1.008
 metadata/generation_seed = 73129
 
 [node name="Terrain" type="MeshInstance3D" parent="." unique_id=743555573]
 mesh = ExtResource("1_43ufh")
+material_override = ExtResource("terrain_material")
+script = ExtResource("terrain_script")
 
 [node name="CoreOccluder" type="OccluderInstance3D" parent="." unique_id=1188471260]
 visible = false

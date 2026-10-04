@@ -25,6 +25,7 @@
 [ext_resource type="AudioStream" uid="uid://b4fnwctwyhp23" path="res://assets/sfx/explosion1.mp3" id="23_death_explosion"]
 [ext_resource type="PackedScene" path="res://ship/weapons_module.tscn" id="24_weapons_module"]
 [ext_resource type="Script" uid="uid://2ka8k7whcsv" path="res://ship/movement_settings.gd" id="movement_settings"]
+[ext_resource type="Script" path="res://ship/planet_3_departure.gd" id="25_departure3"]
 
 [sub_resource type="Sky" id="Sky"]
 sky_material = ExtResource("2_sky")
@@ -175,3 +176,14 @@ stream = ExtResource("23_death_explosion")
 bus = &"explosion1"
 
 [node name="CutsceneDebris" type="Node3D" parent="." unique_id=1486103310]
+
+[node name="Planet3Departure" type="Node" parent="."]
+script = ExtResource("25_departure3")
+
+[node name="BoosterDialogueDelay" type="Timer" parent="."]
+wait_time = 2.0
+one_shot = true
+
+[node name="LandingDialogueDelay" type="Timer" parent="."]
+wait_time = 5.0
+one_shot = true

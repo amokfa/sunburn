@@ -90,6 +90,8 @@ func midpoint(a: int, b: int, edges: Dictionary) -> int:
 func elevation(p: Vector3, kind: int) -> float:
 	var continent := broad.get_noise_3dv(p)
 	var hills := detail.get_noise_3dv(p)
+	if kind == 2:
+		return continent * 0.006 + hills * 0.002
 	if kind == 0:
 		return clampf(continent * 0.085 + hills * 0.013 - 0.006, -0.04, 0.06)
 	if kind == 1:
@@ -116,7 +118,9 @@ func land_color(p: Vector3, height: float, kind: int) -> Color:
 		var dust := Color(0.61, 0.26, 0.115)
 		var basalt := Color(0.27, 0.115, 0.07)
 		return dust.lerp(basalt, smoothstep(0.008, 0.065, height)) * (1.0 + variation)
-	return Color(0.43, 0.43, 0.41) * (1.0 + variation * 0.5)
+	var dust := Color(0.48, 0.48, 0.46)
+	var rock := Color(0.3, 0.31, 0.32)
+	return dust.lerp(rock, clampf(0.5 + broad.get_noise_3dv(p) * 0.8, 0.0, 1.0)) * (1.0 + variation * 0.5)
 
 func bake_planet(kind: int) -> void:
 	var root := Node3D.new()
@@ -167,6 +171,8 @@ func bake_planet(kind: int) -> void:
 	terrain.mesh = mesh
 	if kind == 0:
 		terrain.material_override = load("res://planets/terrain1_material.tres")
+	elif kind == 2:
+		terrain.material_override = load("res://planets/terrain3_material.tres")
 	add_owned(root, terrain)
 	if kind < 2:
 		var atmosphere := load("res://planets/atmosphere.tscn").instantiate() as MeshInstance3D
