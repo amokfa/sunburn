@@ -679,7 +679,7 @@ func _begin_sun_collapse() -> void:
 	_sun_collapse_start_radius = sun_radius
 	_sun_collapse_elapsed = 0.0
 	# Large waves need matching render bounds throughout the collapse.
-	var extent := 1.02 + _sun_normal_wave_amplitude * 20.0
+	var extent := 1.02 + _sun_normal_wave_amplitude * 10.0
 	sun.custom_aabb = AABB(Vector3.ONE * -extent, Vector3.ONE * extent * 2.0)
 
 
@@ -688,13 +688,14 @@ func _step_sun_collapse(delta: float) -> void:
 	var t := _sun_collapse_elapsed
 	_sun_blue_blend = smoothstep(0.0, sun_collapse_duration, t)
 	sun_radius = lerpf(_sun_collapse_start_radius, sun_final_radius, _sun_blue_blend)
-	var wave_multiplier := lerpf(1.0, 20.0, smoothstep(0.0, 5.0, t))
+	var wave_multiplier := lerpf(1.0, 10.0, smoothstep(0.0, 5.0, t))
 	wave_multiplier *= 1.0 - smoothstep(sun_collapse_duration - 5.0, sun_collapse_duration, t)
 	_sun_material.set_shader_parameter("wave_amplitude", _sun_normal_wave_amplitude * wave_multiplier)
 	# Counter the parent's shrinking scale to preserve the original shell radius.
 	var halo := sun.get_node("GlowShell") as MeshInstance3D
 	halo.scale = _sun_normal_halo_scale * (_sun_collapse_start_radius / maxf(sun_radius, 0.001))
-	_sun_halo_material.set_shader_parameter("glow_intensity", _sun_normal_halo_intensity * (1.0 - _sun_blue_blend))
+	var glow_fade := smoothstep(0.0, sun_collapse_duration * 0.5, t)
+	_sun_halo_material.set_shader_parameter("glow_intensity", _sun_normal_halo_intensity * (1.0 - glow_fade))
 	_update_sun()
 	if t >= sun_collapse_duration:
 		_sun_collapse_elapsed = -1.0

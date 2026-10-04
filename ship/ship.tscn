@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://b5t1exp25aole" path="res://ship/ship.gd" id="1_controller"]
 [ext_resource type="PackedScene" uid="uid://ccsqdtevxwxvb" path="res://assets/ship3.glb" id="2_model"]
 [ext_resource type="PackedScene" uid="uid://7twv45k1xq05" path="res://ship/thruster.tscn" id="4_thruster"]
+[ext_resource type="PackedScene" path="res://ship/weapons_module.tscn" id="5_weapons_module"]
 
 [node name="Ship" type="Node3D" unique_id=1857046056]
 process_priority = -10
@@ -10,6 +11,9 @@ script = ExtResource("1_controller")
 
 [node name="Model" parent="." unique_id=136460692 instance=ExtResource("2_model")]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
+
+[node name="WeaponsModule" parent="Model" unique_id=586741800 instance=ExtResource("5_weapons_module")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, -0.32, -0.12)
 
 [node name="markers" type="Node3D" parent="Model" unique_id=1847963995]
 

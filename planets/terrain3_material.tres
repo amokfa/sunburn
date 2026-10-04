@@ -1,6 +1,6 @@
-[gd_resource type="StandardMaterial3D" format=3]
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://bddjpq0ydbgtj"]
 
 [resource]
 vertex_color_use_as_albedo = true
-roughness = 0.97
+roughness = 0.43
 disable_receive_shadows = true

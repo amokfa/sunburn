@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bsdcbcqnf7syv"]
 
-[ext_resource type="ArrayMesh" uid="uid://barhtnr3l0s63" path="res://sun/icosphere.res" id="1_mesh"]
+[ext_resource type="ArrayMesh" path="res://sun/icosphere.res" id="1_mesh"]
 [ext_resource type="Shader" uid="uid://dmsenlqju6x6r" path="res://sun/sun.gdshader" id="2_shader"]
 [ext_resource type="Shader" uid="uid://dtk5lvgdcrny0" path="res://sun/halo.gdshader" id="3_halo"]
 
@@ -32,6 +32,7 @@ shader_parameter/red_color = Color(4.7188716, 0.1651605, 0.0235944, 1)
 shader_parameter/blue_color = Color(0.45, 0.7, 1, 1)
 shader_parameter/color_progress = 0.0
 shader_parameter/collapse_progress = 0.0
+shader_parameter/explosion_strength = 0.0
 shader_parameter/spot_color = Color(0, 0, 0, 1)
 shader_parameter/spot_strength = 0.4510000214225
 shader_parameter/wave_amplitude = 0.01600000076

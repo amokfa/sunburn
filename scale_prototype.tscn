@@ -23,12 +23,11 @@
 [ext_resource type="AudioStream" uid="uid://h6fcohs8nhwo" path="res://assets/sfx/mus/mus3.mp3" id="21_music3"]
 [ext_resource type="AudioStream" uid="uid://bq8snj1scn8jf" path="res://assets/sfx/explosion2.mp3" id="22_hit_audio"]
 [ext_resource type="AudioStream" uid="uid://b4fnwctwyhp23" path="res://assets/sfx/explosion1.mp3" id="23_death_explosion"]
-[ext_resource type="PackedScene" path="res://ship/weapons_module.tscn" id="24_weapons_module"]
-[ext_resource type="Script" uid="uid://2ka8k7whcsv" path="res://ship/movement_settings.gd" id="movement_settings"]
-[ext_resource type="Script" path="res://ship/planet_3_departure.gd" id="25_departure3"]
-[ext_resource type="AudioStream" path="res://assets/sfx/mus/mus4.mp3" id="26_music4"]
-[ext_resource type="AudioStream" path="res://assets/sfx/sun.mp3" id="27_sun_audio"]
+[ext_resource type="Script" uid="uid://bn0gdb108wh4o" path="res://ship/planet_3_departure.gd" id="25_departure3"]
+[ext_resource type="AudioStream" uid="uid://cdaa8b850xsy7" path="res://assets/sfx/mus/mus4.mp3" id="26_music4"]
+[ext_resource type="AudioStream" uid="uid://bcu6wsl63q34q" path="res://assets/sfx/sun.mp3" id="27_sun_audio"]
 [ext_resource type="PackedScene" path="res://combat/warzone_audio.tscn" id="28_warzone_audio"]
+[ext_resource type="Script" uid="uid://2ka8k7whcsv" path="res://ship/movement_settings.gd" id="movement_settings"]
 
 [sub_resource type="Sky" id="Sky"]
 sky_material = ExtResource("2_sky")
@@ -41,7 +40,7 @@ ambient_light_color = Color(1, 1, 1, 1)
 ambient_light_energy = 0.02
 reflected_light_source = 1
 
-[sub_resource type="Resource" id="Resource_072px"]
+[sub_resource type="Resource" id="Resource_uc0kh"]
 resource_local_to_scene = true
 script = ExtResource("movement_settings")
 horizontal_damping = 1.6
@@ -81,10 +80,7 @@ transform = Transform3D(250, 0, 0, 0, 250, 0, 0, 0, 250, -1800, 0, 0)
 
 [node name="Ship" parent="." unique_id=1306759738 instance=ExtResource("7_ship")]
 transform = Transform3D(0, 0, -1, -0.8, 0.6, 0, 0.6, 0.8, 0, -276, 207, 0)
-planet_1_movement = SubResource("Resource_072px")
-
-[node name="WeaponsModule" parent="Ship/Model" unique_id=586741800 instance=ExtResource("24_weapons_module")]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, -0.32, -0.12)
+planet_1_movement = SubResource("Resource_uc0kh")
 
 [node name="Camera" type="Camera3D" parent="." unique_id=1243361966]
 transform = Transform3D(0, 0, -1, -0.880679, 0.473711, 0, 0.473711, 0.880679, 0, -274.5946, 212.74374, 0)
@@ -181,24 +177,24 @@ bus = &"explosion1"
 
 [node name="CutsceneDebris" type="Node3D" parent="." unique_id=1486103310]
 
-[node name="Planet3Departure" type="Node" parent="."]
+[node name="Planet3Departure" type="Node" parent="." unique_id=1992410419]
 script = ExtResource("25_departure3")
 
-[node name="BoosterDialogueDelay" type="Timer" parent="."]
+[node name="BoosterDialogueDelay" type="Timer" parent="." unique_id=541649440]
 wait_time = 2.0
 one_shot = true
 
-[node name="LandingDialogueDelay" type="Timer" parent="."]
+[node name="LandingDialogueDelay" type="Timer" parent="." unique_id=544970654]
 wait_time = 5.0
 one_shot = true
 
-[node name="DepartureMusic" type="AudioStreamPlayer" parent="."]
+[node name="DepartureMusic" type="AudioStreamPlayer" parent="." unique_id=335131324]
 stream = ExtResource("26_music4")
 bus = &"mus4"
 
-[node name="SunAmbience" type="AudioStreamPlayer" parent="."]
+[node name="SunAmbience" type="AudioStreamPlayer" parent="." unique_id=1609752394]
 stream = ExtResource("27_sun_audio")
 volume_db = -80.0
 bus = &"sun"
 
-[node name="WarzoneAudio" parent="." instance=ExtResource("28_warzone_audio")]
+[node name="WarzoneAudio" parent="." unique_id=930151519 instance=ExtResource("28_warzone_audio")]
