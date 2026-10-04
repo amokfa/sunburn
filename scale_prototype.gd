@@ -81,6 +81,20 @@ var _sun_material: ShaderMaterial
 var _sun_halo_material: ShaderMaterial
 var _sun_yellow_halo := Color.WHITE
 var _normal_ambient_energy := 0.0
+var _sun_final_started := false
+var _sun_collapse_elapsed := -1.0
+var _sun_collapse_start_radius := 0.0
+var _sun_blue_blend := 0.0
+var _sun_normal_wave_amplitude := 0.0
+var _sun_normal_aabb := AABB()
+var _sun_normal_halo_scale := Vector3.ONE
+var _sun_normal_halo_intensity := 1.2
+
+@export_group("Sun final phase")
+@export var sun_final_radius := 100.0
+@export var sun_collapse_duration := 20.0
+@export var sun_final_light_energy := 0.005
+@export var sun_final_ambient_energy := 0.0005
 
 @export_group("Solar system scale")
 @export var planet_radii := Vector3(300.0, 240.0, 180.0)
@@ -184,6 +198,17 @@ func _update_occluders() -> void:
 
 
 func _reset() -> void:
+	_sun_final_started = false
+	_sun_collapse_elapsed = -1.0
+	_sun_blue_blend = 0.0
+	_sun_material.set_shader_parameter("wave_amplitude", _sun_normal_wave_amplitude)
+	sun.custom_aabb = _sun_normal_aabb
+	var halo := sun.get_node("GlowShell") as MeshInstance3D
+	halo.scale = _sun_normal_halo_scale
+	halo.show()
+	_sun_halo_material.set_shader_parameter("glow_intensity", _sun_normal_halo_intensity)
+	planets[0].show()
+	planets[1].show()
 	warzone_audio.stop()
 	sun_ambience.stop()
 	sun_ambience.volume_db = -80.0
@@ -464,6 +489,10 @@ func _fade_out_planet_1_music() -> void:
 func _process(delta: float) -> void:
 	if _solar_death:
 		return
+	if _sun_final_started:
+		_sun_expanding = false
+	if _sun_collapse_elapsed >= 0.0:
+		_step_sun_collapse(delta)
 	if _sun_expanding:
 		var next_radius := sun_radius + maxf(sun_expansion_speed, 0.0) * delta
 		if departure.active:
@@ -566,8 +595,12 @@ func _setup_sun_flash() -> void:
 	# Keep runtime flash changes out of the shared resources and editor preview.
 	_sun_material = sun.material_override.duplicate() as ShaderMaterial
 	sun.material_override = _sun_material
+	_sun_normal_wave_amplitude = _sun_material.get_shader_parameter("wave_amplitude")
+	_sun_normal_aabb = sun.custom_aabb
 	var halo := sun.get_node("GlowShell") as MeshInstance3D
+	_sun_normal_halo_scale = halo.scale
 	_sun_halo_material = halo.material_override.duplicate() as ShaderMaterial
+	_sun_normal_halo_intensity = _sun_halo_material.get_shader_parameter("glow_intensity")
 	_sun_yellow_halo = _sun_halo_material.get_shader_parameter("glow_color")
 	halo.material_override = _sun_halo_material
 	var world_environment: WorldEnvironment = $WorldEnvironment
@@ -580,6 +613,8 @@ func _setup_sun_flash() -> void:
 
 
 func trigger_sun_expansion() -> void:
+	if _sun_final_started:
+		return
 	sun_trigger_audio.play()
 	sun_expansion_delay.stop()
 	_sun_expansion_triggered = true
@@ -589,6 +624,10 @@ func trigger_sun_expansion() -> void:
 			_intro_music_fade.kill()
 		intro_music.stop()
 		explosion_dialogue_delay.start()
+	_play_sun_flash()
+
+
+func _play_sun_flash() -> void:
 	if _sun_flash_tween != null:
 		_sun_flash_tween.kill()
 	_sun_flash_tween = create_tween()
@@ -598,7 +637,7 @@ func trigger_sun_expansion() -> void:
 
 
 func _begin_sun_growth() -> void:
-	if _sun_expanding:
+	if _sun_expanding or _sun_final_started:
 		return
 	var target_radius := sun.global_position.distance_to(planets[0].global_position) - 2.0 * planet_radii.x
 	sun_expansion_speed = maxf(target_radius - sun_radius, 0.0) / maxf(sun_expansion_time_to_planet_1, 0.001)
@@ -610,8 +649,57 @@ func _set_sun_flash(strength: float) -> void:
 	_sun_flash_strength = strength
 	_environment.ambient_light_energy = _normal_ambient_energy * lerpf(1.0, 100.0, strength)
 	_sky_material.set_shader_parameter("flash_intensity", strength)
+	var flash_color := Color.WHITE
+	if _sun_final_started:
+		var red: Color = _sun_material.get_shader_parameter("red_color")
+		var brightness := maxf(maxf(red.r, red.g), maxf(red.b, 0.001))
+		flash_color = Color(red.r / brightness, red.g / brightness, red.b / brightness, 1.0)
+	_sky_material.set_shader_parameter("flash_color", flash_color)
 	_sun_material.set_shader_parameter("explosion_strength", strength)
 	_update_sunlight()
+
+
+func trigger_sun_final_phase() -> void:
+	if _sun_final_started or _solar_death:
+		return
+	_sun_final_started = true
+	_sun_expanding = false
+	planets[0].hide()
+	planets[1].hide()
+	sun_expansion_delay.stop()
+	explosion_dialogue_delay.stop()
+	_sun_blue_blend = 0.0
+	_update_sun_color()
+	sun_trigger_audio.play()
+	_play_sun_flash()
+	_sun_flash_tween.tween_callback(_begin_sun_collapse)
+
+
+func _begin_sun_collapse() -> void:
+	_sun_collapse_start_radius = sun_radius
+	_sun_collapse_elapsed = 0.0
+	# Large waves need matching render bounds throughout the collapse.
+	var extent := 1.02 + _sun_normal_wave_amplitude * 20.0
+	sun.custom_aabb = AABB(Vector3.ONE * -extent, Vector3.ONE * extent * 2.0)
+
+
+func _step_sun_collapse(delta: float) -> void:
+	_sun_collapse_elapsed = minf(_sun_collapse_elapsed + delta, sun_collapse_duration)
+	var t := _sun_collapse_elapsed
+	_sun_blue_blend = smoothstep(0.0, sun_collapse_duration, t)
+	sun_radius = lerpf(_sun_collapse_start_radius, sun_final_radius, _sun_blue_blend)
+	var wave_multiplier := lerpf(1.0, 20.0, smoothstep(0.0, 5.0, t))
+	wave_multiplier *= 1.0 - smoothstep(sun_collapse_duration - 5.0, sun_collapse_duration, t)
+	_sun_material.set_shader_parameter("wave_amplitude", _sun_normal_wave_amplitude * wave_multiplier)
+	# Counter the parent's shrinking scale to preserve the original shell radius.
+	var halo := sun.get_node("GlowShell") as MeshInstance3D
+	halo.scale = _sun_normal_halo_scale * (_sun_collapse_start_radius / maxf(sun_radius, 0.001))
+	_sun_halo_material.set_shader_parameter("glow_intensity", _sun_normal_halo_intensity * (1.0 - _sun_blue_blend))
+	_update_sun()
+	if t >= sun_collapse_duration:
+		_sun_collapse_elapsed = -1.0
+		sun.custom_aabb = _sun_normal_aabb
+		halo.hide()
 
 
 func _update_sun_ambience() -> void:
@@ -763,6 +851,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		_skip_checkpoint()
 		get_viewport().set_input_as_handled()
 		return
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_T:
+		trigger_sun_final_phase()
+		get_viewport().set_input_as_handled()
+		return
 	if departure.active:
 		return
 	if planet_3_departure.active and planet_3_departure.camera_controls_enabled:
@@ -783,10 +875,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-		return
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_T:
-		trigger_sun_expansion()
-		get_viewport().set_input_as_handled()
 		return
 	if not ship.controls_enabled:
 		if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
@@ -820,6 +908,22 @@ func _update_sun() -> void:
 
 
 func _update_sun_color() -> void:
+	if _sun_final_started:
+		_sun_material.set_shader_parameter("color_progress", 1.0)
+		_sun_material.set_shader_parameter("collapse_progress", _sun_blue_blend)
+		var red: Color = _sun_material.get_shader_parameter("red_color")
+		var blue: Color = _sun_material.get_shader_parameter("blue_color")
+		var red_brightness := maxf(maxf(red.r, red.g), maxf(red.b, 0.001))
+		var blue_brightness := maxf(maxf(blue.r, blue.g), maxf(blue.b, 0.001))
+		var red_tint := Color(red.r / red_brightness, red.g / red_brightness, red.b / red_brightness, 1.0)
+		var blue_tint := Color(blue.r / blue_brightness, blue.g / blue_brightness, blue.b / blue_brightness, 1.0)
+		var tint := red_tint.lerp(blue_tint, _sun_blue_blend)
+		_sun_halo_material.set_shader_parameter("glow_color", tint * _sun_yellow_halo.r)
+		sunlight.light_color = tint
+		_environment.ambient_light_color = tint
+		_environment.ambient_light_energy = lerpf(_normal_ambient_energy, sun_final_ambient_energy, _sun_blue_blend)
+		return
+	_sun_material.set_shader_parameter("collapse_progress", 0.0)
 	# Fully red when the surface first touches the near side of planet 2.
 	var red_radius := orbit_radii.y - planet_radii.y
 	var progress := smoothstep(initial_sun_radius, maxf(red_radius, initial_sun_radius + 0.001), sun_radius)
@@ -840,7 +944,8 @@ func _sun_surface_color() -> Color:
 	var yellow: Color = _sun_material.get_shader_parameter("yellow_color")
 	var red: Color = _sun_material.get_shader_parameter("red_color")
 	var progress: float = _sun_material.get_shader_parameter("color_progress")
-	return yellow.lerp(red, progress)
+	var blue: Color = _sun_material.get_shader_parameter("blue_color")
+	return yellow.lerp(red, progress).lerp(blue, _sun_blue_blend)
 
 
 func _update_sunlight() -> void:
@@ -853,7 +958,10 @@ func _update_sunlight() -> void:
 	var surface_distance := maxf(sun_to_ship.length() - sun_radius, 1.0)
 	# Reference energy at reference distance, capped as the sun reaches the ship.
 	var energy := sunlight_reference_energy * pow(maxf(sunlight_reference_distance, 1.0) / surface_distance, sunlight_falloff)
-	sunlight.light_energy = clampf(energy, 0.0, maxf(sunlight_max_energy, 0.0)) * lerpf(1.0, 10.0, _sun_flash_strength)
+	energy = clampf(energy, 0.0, maxf(sunlight_max_energy, 0.0))
+	if _sun_final_started:
+		energy = lerpf(energy, sun_final_light_energy, _sun_blue_blend)
+	sunlight.light_energy = energy * lerpf(1.0, 10.0, _sun_flash_strength)
 
 
 func _travel_to_next_planet(continue_from_departure := false) -> void:

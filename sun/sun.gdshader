@@ -5,11 +5,13 @@ uniform sampler2D noise_texture : repeat_enable, filter_linear_mipmap;
 uniform sampler2D noise_texture_b : repeat_enable, filter_linear_mipmap;
 uniform vec4 yellow_color : source_color = vec4(1.0, 0.28, 0.015, 1.0);
 uniform vec4 red_color : source_color = vec4(1.0, 0.035, 0.005, 1.0);
+uniform vec4 blue_color : source_color = vec4(0.45, 0.7, 1.0, 1.0);
 uniform float color_progress : hint_range(0.0, 1.0) = 0.0;
+uniform float collapse_progress : hint_range(0.0, 1.0) = 0.0;
 uniform float explosion_strength = 0.0;
 uniform vec4 spot_color : source_color = vec4(0.65, 0.19, 0.025, 1.0);
 uniform float spot_strength : hint_range(0.0, 1.0) = 0.65;
-uniform float wave_amplitude : hint_range(0.0, 0.05, 0.001) = 0.012;
+uniform float wave_amplitude : hint_range(0.0, 1.0, 0.001) = 0.012;
 uniform float wave_frequency : hint_range(1.0, 60.0) = 18.0;
 uniform float wave_speed : hint_range(0.0, 4.0) = 0.65;
 uniform float spot_scale : hint_range(0.1, 8.0) = 1.8;
@@ -59,5 +61,7 @@ void fragment() {
 	float spots = mix(field_a, field_b, blend);
 	float darkness = smoothstep(spot_threshold - spot_softness * 0.5, spot_threshold + spot_softness * 0.5, spots);
 	vec3 surface_color = mix(yellow_color.rgb, red_color.rgb, color_progress);
-	ALBEDO = mix(surface_color, spot_color.rgb, darkness * spot_strength) * max(1.0, explosion_strength);
+	surface_color = mix(surface_color, blue_color.rgb, collapse_progress);
+	vec3 spots_color = mix(spot_color.rgb, blue_color.rgb * 0.8, collapse_progress);
+	ALBEDO = mix(surface_color, spots_color, darkness * spot_strength) * max(1.0, explosion_strength);
 }
