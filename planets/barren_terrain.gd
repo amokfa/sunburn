@@ -1,6 +1,10 @@
 @tool
 extends MeshInstance3D
 ## Gentle geometry and vertex colour noise, sampled in 3D without texture tiles.
+@export var bump_height_metres := 1.0
+@export var bump_frequency := 18.0
+@export var reference_radius_metres := 180.0
+var _preview_mesh: ArrayMesh
 
 func _ready() -> void:
 	var source := mesh as ArrayMesh
@@ -27,7 +31,11 @@ func _ready() -> void:
 		var direction := vertices[index].normalized()
 		var continent := broad.get_noise_3dv(direction)
 		var hills := detail.get_noise_3dv(direction)
-		vertices[index] = direction * (1.0 + continent * 0.006 + hills * 0.002)
+		# Short, continuous rises and dips, with no spherical UV seams or tiling.
+		var bump := detail.get_noise_3dv(direction * (bump_frequency / 12.0)) * 3.0
+		bump /= sqrt(1.0 + bump * bump)
+		var bump_height := bump * bump_height_metres / maxf(reference_radius_metres, 0.001)
+		vertices[index] = direction * (1.0 + continent * 0.006 + hills * 0.002 + bump_height)
 		var shade := clampf(0.5 + continent * 0.8, 0.0, 1.0)
 		var grain := 1.0 + detail.get_noise_3dv(direction * 2.0) * 0.04
 		colors[index] = Color(0.48, 0.48, 0.46).lerp(Color(0.3, 0.31, 0.32), shade) * grain
@@ -46,4 +54,9 @@ func _ready() -> void:
 	arrays[Mesh.ARRAY_COLOR] = colors
 	var terrain := ArrayMesh.new()
 	terrain.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-	mesh = terrain
+	if Engine.is_editor_hint():
+		# Preview the deformation without replacing the serialized mesh reference.
+		_preview_mesh = terrain
+		RenderingServer.instance_set_base(get_instance(), terrain.get_rid())
+	else:
+		mesh = terrain

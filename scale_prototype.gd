@@ -89,6 +89,7 @@ var _sun_normal_wave_amplitude := 0.0
 var _sun_normal_aabb := AABB()
 var _sun_normal_halo_scale := Vector3.ONE
 var _sun_normal_halo_intensity := 1.2
+var _planet3_surface_material: StandardMaterial3D
 
 @export_group("Sun final phase")
 @export var sun_final_radius := 100.0
@@ -201,6 +202,7 @@ func _reset() -> void:
 	_sun_final_started = false
 	_sun_collapse_elapsed = -1.0
 	_sun_blue_blend = 0.0
+	_planet3_surface_material.roughness = 1.0
 	_sun_material.set_shader_parameter("wave_amplitude", _sun_normal_wave_amplitude)
 	sun.custom_aabb = _sun_normal_aabb
 	var halo := sun.get_node("GlowShell") as MeshInstance3D
@@ -593,6 +595,9 @@ func _show_solar_death() -> void:
 
 func _setup_sun_flash() -> void:
 	# Keep runtime flash changes out of the shared resources and editor preview.
+	var terrain := planets[2].get_node("Terrain") as MeshInstance3D
+	_planet3_surface_material = terrain.material_override.duplicate() as StandardMaterial3D
+	terrain.material_override = _planet3_surface_material
 	_sun_material = sun.material_override.duplicate() as ShaderMaterial
 	sun.material_override = _sun_material
 	_sun_normal_wave_amplitude = _sun_material.get_shader_parameter("wave_amplitude")
@@ -687,6 +692,7 @@ func _step_sun_collapse(delta: float) -> void:
 	_sun_collapse_elapsed = minf(_sun_collapse_elapsed + delta, sun_collapse_duration)
 	var t := _sun_collapse_elapsed
 	_sun_blue_blend = smoothstep(0.0, sun_collapse_duration, t)
+	_planet3_surface_material.roughness = lerpf(1.0, 0.5, _sun_blue_blend)
 	sun_radius = lerpf(_sun_collapse_start_radius, sun_final_radius, _sun_blue_blend)
 	var wave_multiplier := lerpf(1.0, 10.0, smoothstep(0.0, 5.0, t))
 	wave_multiplier *= 1.0 - smoothstep(sun_collapse_duration - 5.0, sun_collapse_duration, t)
@@ -790,7 +796,10 @@ func _update_camera() -> void:
 	var orbit_direction := direction.rotated(radial_up, deg_to_rad(opening_camera_angle_degrees) * _opening_camera_blend)
 	var offset := -orbit_direction * cos(camera_pitch) + radial_up * -sin(camera_pitch)
 	var target := ship.global_position + radial_up * lerpf(1.5, 0.35, _opening_camera_blend)
-	camera.global_position = target + offset * lerpf(camera_distance, 8.0, _opening_camera_blend)
+	var orbit_radius := lerpf(camera_distance, 8.0, _opening_camera_blend)
+	if _crash_landed:
+		orbit_radius *= 3.0
+	camera.global_position = target + offset * orbit_radius
 	var look_direction := (target - camera.global_position).normalized()
 	if _opening_camera_blend * _opening_framing_weight > 0.0:
 		var ship_direction := (ship.global_position - camera.global_position).normalized()

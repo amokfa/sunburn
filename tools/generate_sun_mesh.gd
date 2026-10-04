@@ -17,6 +17,16 @@ func midpoint(a: int, b: int) -> int:
 	return index
 
 func _initialize() -> void:
+	var subdivisions := SUBDIVISIONS
+	var density_doublings := DENSITY_DOUBLINGS
+	var output_path := "res://sun/icosphere.res"
+	for argument in OS.get_cmdline_user_args():
+		if argument.begins_with("--subdivisions="):
+			subdivisions = argument.get_slice("=", 1).to_int()
+		elif argument.begins_with("--density-doublings="):
+			density_doublings = argument.get_slice("=", 1).to_int()
+		elif argument.begins_with("--output="):
+			output_path = argument.get_slice("=", 1)
 	var t := (1.0 + sqrt(5.0)) / 2.0
 	vertices.assign([
 		Vector3(-1, t, 0), Vector3(1, t, 0), Vector3(-1, -t, 0), Vector3(1, -t, 0),
@@ -37,7 +47,7 @@ func _initialize() -> void:
 		Vector2i(5, 9), Vector2i(4, 11), Vector2i(10, 11), Vector2i(6, 10), Vector2i(7, 8),
 		Vector2i(3, 4), Vector2i(3, 4), Vector2i(3, 6), Vector2i(3, 6), Vector2i(8, 9),
 		Vector2i(5, 9), Vector2i(4, 11), Vector2i(6, 10), Vector2i(7, 8), Vector2i(8, 9)]
-	for level in range(SUBDIVISIONS):
+	for level in range(subdivisions):
 		edge_midpoints.clear()
 		var refined: Array[Vector3i] = []
 		var refined_edges: Array[Vector2i] = []
@@ -60,7 +70,7 @@ func _initialize() -> void:
 			refined_edges.append(Vector2i(ca, bc))
 		faces = refined
 		split_edges = refined_edges
-	for level in range(DENSITY_DOUBLINGS):
+	for level in range(density_doublings):
 		edge_midpoints.clear()
 		var doubled: Array[Vector3i] = []
 		var doubled_edges: Array[Vector2i] = []
@@ -87,10 +97,10 @@ func _initialize() -> void:
 	arrays[Mesh.ARRAY_INDEX] = indices
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-	var result := ResourceSaver.save(mesh, "res://sun/icosphere.res")
+	var result := ResourceSaver.save(mesh, output_path)
 	if result != OK:
 		push_error("Could not save sun mesh: %s" % error_string(result))
 		quit(1)
 		return
-	print("Baked sun icosphere: %d vertices, %d triangles" % [vertices.size(), faces.size()])
+	print("Baked %s: %d vertices, %d triangles" % [output_path, vertices.size(), faces.size()])
 	quit()

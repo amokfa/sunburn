@@ -91,7 +91,9 @@ func elevation(p: Vector3, kind: int) -> float:
 	var continent := broad.get_noise_3dv(p)
 	var hills := detail.get_noise_3dv(p)
 	if kind == 2:
-		return continent * 0.006 + hills * 0.002
+		var bump := detail.get_noise_3dv(p * 1.5) * 3.0
+		bump /= sqrt(1.0 + bump * bump)
+		return continent * 0.006 + hills * 0.002 + bump / 180.0
 	if kind == 0:
 		return clampf(continent * 0.085 + hills * 0.013 - 0.006, -0.04, 0.06)
 	if kind == 1:
