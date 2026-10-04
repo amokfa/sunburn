@@ -1,0 +1,1 @@
+{"enabled_classes": ["RefCounted", "Node3D", "Camera3D", "Viewport", "TriangleMesh", "RandomNumberGenerator", "PhysicsDirectSpaceState3D", "PhysicsRayQueryParameters3D", "World3D", "OS"]}

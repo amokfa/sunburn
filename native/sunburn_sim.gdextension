@@ -1,0 +1,8 @@
+[configuration]
+entry_symbol = "sunburn_sim_init"
+compatibility_minimum = "4.7"
+reloadable = false
+
+[libraries]
+linux.x86_64 = "res://native/bin/libsunburn_sim.so"
+web.wasm32 = "res://native/bin/sunburn_sim.wasm"

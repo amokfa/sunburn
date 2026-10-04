@@ -1020,8 +1020,15 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not _gameplay_started:
 		return
 	if _solar_death:
+		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_P:
+			_reset()
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		return
 	if ship.is_dying or _player_death_pending:
+		return
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_P:
+		_skip_checkpoint()
+		get_viewport().set_input_as_handled()
 		return
 	if departure.active:
 		return

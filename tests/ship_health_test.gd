@@ -37,12 +37,16 @@ func run_checks() -> void:
 	game.set_process(false)
 	game.ship.set_process(false)
 	var battle = game.battle
-	battle.ships.assign(battle.ships.slice(0, 2))
 	var planet: Node3D = game.planets[1]
 	game.ship.global_position = planet.global_position + Vector3.UP * 285
 	game.ship.bind_to_planet(planet)
 	game.ship.set_process(false)
 	battle.set_active(true)
+	battle._resize_fleet(2)
+	battle._velocity_histories.clear()
+	battle._velocity_histories[game.ship] = battle.VelocityHistory.new()
+	for target in battle.ships:
+		battle._velocity_histories[target] = battle.VelocityHistory.new()
 	battle.set_process(false)
 	var enemy = battle.ships[0]
 	var survivor = battle.ships[1]
@@ -62,7 +66,7 @@ func run_checks() -> void:
 	assert(survivor.target == null)
 	# AI wreck timers are advanced by the battle even though AI node processing is off.
 	enemy.reset(planet)
-	for hit in range(3):
+	for hit in range(enemy.maximum_lives()):
 		enemy.receive_missile_hit(Vector3.RIGHT * 1000, Vector3.UP * 1000)
 	for step in range(20):
 		battle._process(0.1)
@@ -70,7 +74,7 @@ func run_checks() -> void:
 	game._reset()
 	assert(game.ship.lives_remaining == 5 and game.ship.visible and game.ship.can_fight)
 	battle.set_active(true)
-	assert(enemy.lives_remaining == 3 and enemy.visible and enemy.can_fight)
+	assert(enemy.lives_remaining == enemy.maximum_lives() and enemy.visible and enemy.can_fight)
 	game.free()
-	print("PASS: five player lives, three AI lives, lethal impulses, disabled controls/thrusters/stabilization, two-second ballistic tumble, large explosion, target exclusion, AI timer and reset")
+	print("PASS: configured player and AI lives, lethal impulses, disabled controls/thrusters/stabilization, two-second ballistic tumble, large explosion, target exclusion, AI timer and reset")
 	quit()

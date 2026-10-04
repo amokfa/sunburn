@@ -11,11 +11,12 @@ config_version=5
 [application]
 
 config/name="Sunburn"
-boot_splash/image="res://assets/splash.png"
-boot_splash/bg_color=Color(0, 0, 0, 1)
 run/main_scene="res://scale_prototype.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
+boot_splash/bg_color=Color(0, 0, 0, 1)
+boot_splash/image="res://assets/splash.png"
 config/icon="res://assets/sunburn_icon.png"
+run/main_scene.web_bench="res://tests/native_web_bench.tscn"
 
 [audio]
 

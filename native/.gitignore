@@ -1,0 +1,4 @@
+/vendor/
+/build*/
+/bin/*
+!/bin/.gitkeep

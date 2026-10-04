@@ -1,0 +1,26 @@
+{
+  "warmup_seconds": 30,
+  "measurement_seconds": 10,
+  "viewport": [
+    1280,
+    720
+  ],
+  "damage_enabled": false,
+  "browser": "Playwright Chromium 153, headful",
+  "godot": "4.7 custom afddf6e25",
+  "emscripten": "4.0.20",
+  "gdscript": {
+    "cpu_ms": 13.1566666666667,
+    "fps": 50.9792684308381,
+    "native": false,
+    "peak_missiles": 267,
+    "ships": 214
+  },
+  "cpp_wasm": {
+    "cpu_ms": 4.96907103825137,
+    "fps": 91.4795695627978,
+    "native": true,
+    "peak_missiles": 271,
+    "ships": 214
+  }
+}

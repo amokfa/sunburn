@@ -42,6 +42,7 @@ var planet: Node3D
 var player: Node3D
 var ships: Array[AIShip] = []
 var active: bool = false
+var _native_sim: RefCounted
 var ai_speed: float = 40.0
 var missile_speed: float = 100.0
 var _player_previous := Vector3.ZERO
@@ -66,6 +67,8 @@ var _overheat_started := false
 @onready var _ship_counter: Label = $FleetHUD/Counter
 
 func _ready() -> void:
+	if not OS.has_feature("gdscript_sim") and ClassDB.class_exists("SunburnSimulation"):
+		_native_sim = ClassDB.instantiate("SunburnSimulation")
 	for child in $Ships.get_children():
 		ships.append(child)
 		child.destroyed.connect(_on_ship_destroyed)
@@ -90,6 +93,8 @@ func follow_planet() -> void:
 		global_transform = Transform3D(planet.global_basis.orthonormalized(), planet.global_position)
 
 func set_active(value: bool) -> void:
+	if _native_sim != null:
+		_native_sim.reset()
 	active = value
 	visible = value
 	$FleetHUD.visible = value
@@ -246,6 +251,9 @@ func _process(delta: float) -> void:
 	if not is_instance_valid(planet) or not is_instance_valid(player):
 		set_active(false)
 		return
+	if _native_sim != null:
+		_native_sim.step(self, delta)
+		return
 	follow_planet()
 	# Snapshot all targets before advancing any AI so firing order has no effect.
 	var inverse_basis := global_basis.inverse()
@@ -295,6 +303,9 @@ func _process(delta: float) -> void:
 			_fire(ship, _intercept_direction(ship.position, ship.target))
 	_step_missiles(delta)
 	_player_previous = _player_position
+
+func _native_make_explosion() -> Node3D:
+	return Explosion.instantiate()
 
 func _target_position(target: Node3D) -> Vector3:
 	return _player_position if target == player else target.position
@@ -432,6 +443,8 @@ func _intercept_direction(origin: Vector3, target: Node3D) -> Vector3:
 	var speeds: Vector3 = _velocity_histories[target].average()
 	# At rest there is no tangent heading; do not invent tangential movement.
 	var tangent_speed := speeds.x if tangent.length_squared() > 0.0 else 0.0
+	if _native_sim != null:
+		return _native_sim.intercept_direction(origin, position, tangent, tangent_speed, speeds.y, missile_speed)
 	return OrbitalIntercept.direction(origin, position, tangent, tangent_speed, speeds.y, missile_speed, MissileState.LIFETIME_SECONDS)
 
 func _fire(ship: AIShip, aim: Vector3) -> void:
@@ -465,6 +478,9 @@ func _on_ship_destroyed(wreck: PlanetShip) -> void:
 		_check_weapon_overheat_completion()
 
 func _step_missiles(delta: float) -> void:
+	if _native_sim != null:
+		_native_sim.step_missiles(self, delta)
+		return
 	if _missiles.get_child_count() == 0:
 		return
 	var previous := PackedVector3Array()
