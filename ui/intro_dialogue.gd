@@ -3,7 +3,7 @@ extends RefCounted
 const MESSAGES := [
 	{
 		"speaker": "BX",
-		"text": "Good morning Lars!"
+		"text": "Good morning, Lars!"
 	},
 	{
 		"speaker": "Lars",
@@ -11,15 +11,15 @@ const MESSAGES := [
 	},
 	{
 		"speaker": "BX",
-		"text": "I'm BX5, the new AI assistant interface for your ship!"
+		"text": "I am BX5, your ship's new AI assistant interface."
 	},
 	{
 		"speaker": "BX",
-		"text": "Your ship received a firmware update last night"
+		"text": "Your ship received a firmware update last night."
 	},
 	{
 		"speaker": "BX",
-		"text": "Would you like me to walk you through all the exciting new features that were added to your ship?"
+		"text": "Would you like an overview of all the exciting new features added to your ship?"
 	},
 	{
 		"speaker": "Lars",
@@ -27,11 +27,11 @@ const MESSAGES := [
 	},
 	{
 		"speaker": "BX",
-		"text": "As you wish!"
+		"text": "As you wish."
 	},
 	{
 		"speaker": "BX",
-		"text": "At the very least you should familiarize yourself with the new and improved ship controls."
+		"text": "At the very least, you should familiarize yourself with the new and improved ship controls."
 	},
 	{
 		"speaker": "BX",
@@ -39,7 +39,7 @@ const MESSAGES := [
 	},
 	{
 		"speaker": "Lars",
-		"text": "Alright, fine!"
+		"text": "All right, fine."
 	},
 	{
 		"speaker": "BX",
@@ -48,31 +48,31 @@ const MESSAGES := [
 	},
 	{
 		"speaker": "BX",
-		"text": "Your ship will automatically turn to face the direction you're looking at."
+		"text": "Your ship will automatically turn to face the direction in which you're looking."
 	},
 	{
 		"speaker": "BX",
-		"text": "Hold 'Q' to liftoff",
+		"text": "Hold 'Q' to lift off.",
 		"unlock": "ascend",
 		"wait_altitude": 50.0
 	},
 	{
 		"speaker": "BX",
-		"text": "and 'E' to come back down",
+		"text": "Use 'E' to descend.",
 		"unlock": "descend",
 		"auto_advance_seconds": 2.0
 	},
 	{
 		"speaker": "BX",
-		"text": "Use 'W', 'S', 'A', and 'D' to move the ship horizontally.",
+		"text": "Use 'W', 'S', 'A', and 'D' to move horizontally.",
 		"unlock": "horizontal"
 	},
 	{
 		"speaker": "BX",
-		"text": "And that's about it!"
+		"text": "That covers the basics."
 	},
 	{
 		"speaker": "BX",
-		"text": "Play with it for a while and let me know if you have any questions."
+		"text": "Try them out for a while, and let me know if you have any questions."
 	}
 ]

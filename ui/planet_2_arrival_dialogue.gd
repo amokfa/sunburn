@@ -3,7 +3,7 @@ extends RefCounted
 const FAREWELL := [
 	{
 		"speaker": "Lars",
-		"text": "Here goes our planet",
+		"text": "There goes our planet.",
 		"auto_advance_seconds": 1.0,
 		"timed": true
 	},
@@ -15,7 +15,7 @@ const FAREWELL := [
 	},
 	{
 		"speaker": "BX",
-		"text": "Yes",
+		"text": "Yes.",
 		"event": "face_planet_2",
 		"timed": true
 	}
@@ -24,16 +24,16 @@ const FAREWELL := [
 const ARRIVAL := [
 	{
 		"speaker": "BX",
-		"text": "There are around 200 other ships on planet 2 right now",
+		"text": "Approximately 200 other ships are currently on planet 2.",
 		"event": "begin_combat"
 	},
 	{
 		"speaker": "Lars",
-		"text": "Great! We can work together to figure out what to do now."
+		"text": "Great! We can work together and figure out what to do."
 	},
 	{
 		"speaker": "BX",
-		"text": "I doubt that's going to happen as you expect"
+		"text": "I doubt it will work out as you expect."
 	},
 	{
 		"speaker": "Lars",
@@ -41,11 +41,11 @@ const ARRIVAL := [
 	},
 	{
 		"speaker": "BX",
-		"text": "Planet 2 has turned into a warzone"
+		"text": "Planet 2 has become a war zone."
 	},
 	{
 		"speaker": "BX",
-		"text": "Everyone is trying to kill everyone else"
+		"text": "Every ship is trying to kill every other ship."
 	},
 	{
 		"speaker": "Lars",
@@ -53,59 +53,59 @@ const ARRIVAL := [
 	},
 	{
 		"speaker": "BX",
-		"text": "The sun won't stop at planet 1. It'll keep expanding until planet 2 is destroyed as well"
+		"text": "The sun will not stop at planet 1. It will continue expanding until it destroys planet 2 as well."
 	},
 	{
 		"speaker": "BX",
-		"text": "The only hope of survival is jumping to planet 3"
+		"text": "Our only hope of survival is to reach planet 3."
 	},
 	{
 		"speaker": "BX",
-		"text": "However, all of the ships are very low on fuel after their jump from planet 1 to planet 2"
+		"text": "However, all the ships are running low on fuel after the jump from planet 1 to planet 2."
 	},
 	{
 		"speaker": "BX",
-		"text": "By my calculations, there's barely enough fuel on planet 2 for one ship to make the jump"
+		"text": "By my calculations, there is barely enough fuel on planet 2 for one ship to make the jump."
 	},
 	{
 		"speaker": "BX",
-		"text": "So the entire planet has turned into a battle royale"
+		"text": "So everyone on this planet wants everyone else's fuel."
 	},
 	{
 		"speaker": "Lars",
-		"text": "This is madness"
+		"text": "This is madness."
 	},
 	{
 		"speaker": "BX",
-		"text": "They are desperate"
+		"text": "They are desperate."
 	},
 	{
 		"speaker": "BX",
-		"text": "There is no other choice"
+		"text": "There is no other choice."
 	},
 	{
 		"speaker": "BX",
-		"text": "I'll bring the weapon systems online"
+		"text": "I will bring the weapons systems online."
 	},
 	{
 		"speaker": "Lars",
-		"text": "No"
+		"text": "No."
 	},
 	{
 		"speaker": "Lars",
-		"text": "Eject the weapons module"
+		"text": "Eject the weapons module."
 	},
 	{
 		"speaker": "Lars",
-		"text": "We need to lose weight"
+		"text": "We need to shed some weight."
 	},
 	{
 		"speaker": "BX",
-		"text": "It doesn't matter how much weight we lose, we do not have enough fuel to reach planet 3"
+		"text": "It does not matter how much weight we lose; we still do not have enough fuel to reach planet 3."
 	},
 	{
 		"speaker": "Lars",
-		"text": "We aren't going to planet 3. We need to be agile to dodge the projectiles coming towards us."
+		"text": "We're not going to planet 3. We need to be agile enough to dodge the incoming projectiles."
 	},
 	{
 		"speaker": "BX",
@@ -113,25 +113,25 @@ const ARRIVAL := [
 	},
 	{
 		"speaker": "Lars",
-		"text": "Do it",
+		"text": "Do it.",
 		"next_delay_seconds": 2.0,
 		"advance_event": "eject_weapons"
 	},
 	{
 		"speaker": "BX",
-		"text": "Weapons module ejected"
+		"text": "Weapons module ejected."
 	},
 	{
 		"speaker": "BX",
-		"text": "Before we descend on planet 2, I think we should talk about the software updates that were installed last night"
+		"text": "Before we descend to planet 2, we should discuss the software updates installed last night."
 	},
 	{
 		"speaker": "Lars",
-		"text": "Tell me"
+		"text": "Go on."
 	},
 	{
 		"speaker": "BX",
-		"text": "Your sensor modules have been upgraded. Now they are capable of detecting combat vehicles that are trying to target you and highlight them on your HUD."
+		"text": "Your sensor modules have been upgraded. They can now detect combat vehicles targeting you and highlight them on your HUD."
 	},
 	{
 		"speaker": "BX",
@@ -139,7 +139,7 @@ const ARRIVAL := [
 	},
 	{
 		"speaker": "Lars",
-		"text": "Sure",
+		"text": "Sure.",
 		"next_delay_seconds": 2.0
 	},
 	{
@@ -149,7 +149,7 @@ const ARRIVAL := [
 	},
 	{
 		"speaker": "Lars",
-		"text": "Alright let's do it"
+		"text": "All right, let's do it."
 	},
 	{
 		"speaker": "BX",
@@ -160,7 +160,7 @@ const ARRIVAL := [
 const PLANET2_OVERHEAT := [
 	{
 		"speaker": "Lars",
-		"text": "What is happening?",
+		"text": "What's happening?",
 		"auto_advance_seconds": 3.0,
 		"timed": true
 	},
