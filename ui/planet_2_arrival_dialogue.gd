@@ -148,6 +148,18 @@ const ARRIVAL := [
 		"event": "enable_threatwatch"
 	},
 	{
+		"speaker": "BX",
+		"text": "Red crosshairs mark ships currently targeting you. The markers update as their targets change."
+	},
+	{
+		"speaker": "BX",
+		"text": "Those ships pose the greatest immediate threat. Pay particularly close attention to them."
+	},
+	{
+		"speaker": "BX",
+		"text": "But keep watching your surroundings. There is considerable fighting down there, and stray projectiles can hit you even when you are not their intended target."
+	},
+	{
 		"speaker": "Lars",
 		"text": "All right, let's do it."
 	},

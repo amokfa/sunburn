@@ -8,7 +8,7 @@ var _rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
 	_rng.randomize()
-	var stream := $Layer1.stream.duplicate() as AudioStreamMP3
+	var stream := $Layer1.stream as AudioStreamMP3
 	stream.loop = true
 	for child: AudioStreamPlayer in get_children():
 		child.stream = stream

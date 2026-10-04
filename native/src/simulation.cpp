@@ -550,7 +550,6 @@ class SunburnSimulation : public RefCounted {
                 }
             }
         }
-        Camera3D *camera = battle->get_viewport()->get_camera_3d();
         for (Ship &s : fleet) {
             if (flag(s.node, "is_dying")) {
                 s.node->call("step_wreck", delta);
@@ -613,8 +612,6 @@ class SunburnSimulation : public RefCounted {
             integrate(s, cfg, delta, horizontal, vertical, radius, terrain, terrain_scale,
                       flag(s.node, "surface_repulsion_enabled"));
             bool can_fire = reload <= 0 && target &&
-                            (target != player ||
-                             (camera && camera->is_position_in_frustum(s.node->get_global_position()))) &&
                             (target_position(target) - s.pos).length() <= number(battle, "firing_range");
             double reaction = number(s.node, "fire_reaction_remaining");
             bool fire = false;

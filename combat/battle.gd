@@ -270,7 +270,6 @@ func _process(delta: float) -> void:
 	_advance_weapon_overheat(delta)
 	var radius := planet.global_basis.x.length()
 	_player_position = to_local(player.global_position)
-	var camera := get_viewport().get_camera_3d()
 	for ship in ships:
 		ship.previous_position = ship.position
 	_rebuild_spacing_grid()
@@ -297,8 +296,7 @@ func _process(delta: float) -> void:
 		var can_fire := false
 		if ship.reload_remaining <= 0.0 and is_instance_valid(ship.target):
 			var offset: Vector3 = _target_position(ship.target) - ship.position
-			var in_camera := ship.target != player or (camera != null and camera.is_position_in_frustum(ship.global_position))
-			can_fire = in_camera and offset.length() <= firing_range # and _visible(ship, offset, radius)
+			can_fire = offset.length() <= firing_range # and _visible(ship, offset, radius)
 		if _ready_to_fire(ship, can_fire, delta):
 			_fire(ship, _intercept_direction(ship.position, ship.target))
 	_step_missiles(delta)

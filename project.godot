@@ -11,15 +11,16 @@ config_version=5
 [application]
 
 config/name="Sunburn"
-run/main_scene="res://scale_prototype.tscn"
+run/main_scene="res://boot.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 boot_splash/bg_color=Color(0, 0, 0, 1)
-boot_splash/image="res://assets/splash.png"
+boot_splash/show_image=true
 config/icon="res://assets/sunburn_icon.png"
 run/main_scene.web_bench="res://tests/native_web_bench.tscn"
 
 [audio]
 
+general/default_playback_type.web=1
 buses/default_bus_layout="uid://deitc54swwi2c"
 default_bus_layout="res://default_bus_layout.tres"
 
@@ -39,6 +40,7 @@ window/stretch/aspect="expand"
 
 [rendering]
 
+environment/defaults/default_clear_color=Color(0, 0, 0, 1)
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"

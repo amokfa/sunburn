@@ -191,13 +191,13 @@ func _ready() -> void:
 	terminal.message_advanced.connect(_on_arrival_message_advanced)
 	fuel_cells.all_collected.connect(_on_planet_1_fuel_collected)
 	# Set runtime looping too, so this works before the editor reimports the audio.
-	var looping_music := phase_2_music.stream.duplicate() as AudioStreamOggVorbis
+	var looping_music := phase_2_music.stream as AudioStreamOggVorbis
 	looping_music.loop = true
 	phase_2_music.stream = looping_music
-	var looping_departure_music := departure_music.stream.duplicate() as AudioStreamMP3
+	var looping_departure_music := departure_music.stream as AudioStreamMP3
 	looping_departure_music.loop = true
 	departure_music.stream = looping_departure_music
-	var looping_sun := sun_ambience.stream.duplicate() as AudioStreamMP3
+	var looping_sun := sun_ambience.stream as AudioStreamMP3
 	looping_sun.loop = true
 	sun_ambience.stream = looping_sun
 	_setup_sun_flash()

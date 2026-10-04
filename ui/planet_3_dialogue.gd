@@ -48,6 +48,8 @@ const ON_COLLAPSE := [
 	{"speaker": "Lars", "text": "The rain, I think. It's a stupid thing to miss."},
 	{"speaker": "BX", "text": "Why?"},
 	{"speaker": "Lars", "text": "I used to wish it would stop. Now I'd give anything to hear it again."},
-	{"speaker": "BX", "text": "Tell me what it sounded li", "timed": true, "auto_advance_seconds": 2.},
+	{"speaker": "BX", "text": "Tell me what it...", "timed": true, "auto_advance_seconds": 2.},
+	{"speaker": "Lars", "text": "Hey..."},
+	{"speaker": "Lars", "text": "BX?"},
 	{"speaker": "Lars", "text": "Are you there?", "timed": true, "event": "assistant_power_lost"},
 ]
