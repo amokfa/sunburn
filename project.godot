@@ -10,10 +10,12 @@ config_version=5
 
 [application]
 
-config/name="Jammin"
+config/name="Sunburn"
+boot_splash/image="res://assets/splash.png"
+boot_splash/bg_color=Color(0, 0, 0, 1)
 run/main_scene="res://scale_prototype.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
-config/icon="res://icon.svg"
+config/icon="res://assets/sunburn_icon.png"
 
 [audio]
 

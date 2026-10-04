@@ -109,7 +109,7 @@ var _planet3_surface_material: StandardMaterial3D
 @export var initial_sun_radius: float = 250.0
 
 @export_group("Sun expansion")
-@export var sun_expansion_time_to_planet_1: float = 120.0
+@export var sun_expansion_time_to_planet_1: float = 150.0
 @export var planet_2_sun_approach_time: float = 200.0
 @export var planet_2_fight_duration: float = 175.0
 @export var planet_2_sun_approach_gap: float = 200.0
@@ -194,6 +194,9 @@ func _ready() -> void:
 	var looping_music := phase_2_music.stream.duplicate() as AudioStreamOggVorbis
 	looping_music.loop = true
 	phase_2_music.stream = looping_music
+	var looping_departure_music := departure_music.stream.duplicate() as AudioStreamMP3
+	looping_departure_music.loop = true
+	departure_music.stream = looping_departure_music
 	var looping_sun := sun_ambience.stream.duplicate() as AudioStreamMP3
 	looping_sun.loop = true
 	sun_ambience.stream = looping_sun
@@ -1017,19 +1020,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not _gameplay_started:
 		return
 	if _solar_death:
-		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_P:
-			_reset()
-			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		return
 	if ship.is_dying or _player_death_pending:
-		return
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_P:
-		_skip_checkpoint()
-		get_viewport().set_input_as_handled()
-		return
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_T:
-		trigger_sun_final_phase()
-		get_viewport().set_input_as_handled()
 		return
 	if departure.active:
 		return
@@ -1213,8 +1205,9 @@ func _heat_planet_1() -> void:
 				_heated_surfaces.append({"node": geometry, "overlay": geometry.material_overlay})
 				geometry.material_overlay = _heat_material
 		pending.append_array(node.get_children())
+	_set_planet_1_heat(0.1)
 	_heat_tween = create_tween()
-	_heat_tween.tween_method(_set_planet_1_heat, 0.0, 1.0, maxf(departure.source_color_duration, 0.01)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_heat_tween.tween_method(_set_planet_1_heat, 0.1, 1.0, 60.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
 func _set_planet_1_heat(strength: float) -> void:
