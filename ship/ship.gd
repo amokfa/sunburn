@@ -359,13 +359,8 @@ func _process(delta: float) -> void:
 	if not is_instance_valid(_planet):
 		bind_to_planet(null)
 		return
-	# Releasing the mouse pauses flight input, but the ship still follows its planet.
-	if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		_move(delta)
-	else:
-		_update_transform()
-		_update_visual_tilt(delta, Vector2.ZERO)
-		_update_thrusters(Vector2.ZERO, 0.0, 0.0)
+	# The scene tree owns pausing; losing pointer lock pauses the whole game.
+	_move(delta)
 
 
 func set_view_direction(direction: Vector3) -> void:

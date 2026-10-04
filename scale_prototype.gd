@@ -86,6 +86,8 @@ var _sun_collapse_elapsed := -1.0
 var _sun_collapse_start_radius := 0.0
 var _sun_blue_blend := 0.0
 var _sun_normal_wave_amplitude := 0.0
+var _sun_normal_wave_speed := 0.65
+var _sun_wave_phase := 0.0
 var _sun_normal_aabb := AABB()
 var _sun_normal_halo_scale := Vector3.ONE
 var _sun_normal_halo_intensity := 1.2
@@ -154,9 +156,22 @@ var _opening_framing_weight := 1.0
 var _opening_camera_moved := false
 var _platform_clearance := 0.5
 @onready var launch_platform = $Planet1/platform/LaunchPlatform
+@onready var game_menu = $GameMenu
+var _gameplay_started := false
+var _base_mouse_sensitivity := 0.003
+var _shader_time := 0.0
 
 
 func _ready() -> void:
+	_base_mouse_sensitivity = mouse_sensitivity
+	game_menu.begin_requested.connect(_begin_intro)
+	game_menu.pause_requested.connect(_pause_game)
+	game_menu.resume_requested.connect(_resume_game)
+	game_menu.abort_requested.connect(_return_to_main_menu)
+	game_menu.quit_requested.connect(get_tree().quit)
+	game_menu.skip_cutscene_requested.connect(_skip_active_cutscene)
+	game_menu.sensitivity_changed.connect(_set_camera_sensitivity)
+	_set_camera_sensitivity(game_menu.sensitivity_value)
 	planet_3_departure.boosters_failed.connect(_on_planet_3_boosters_failed)
 	booster_dialogue_delay.timeout.connect(_begin_booster_dialogue)
 	landing_dialogue_delay.timeout.connect(_begin_landing_dialogue)
@@ -192,8 +207,8 @@ func _ready() -> void:
 		solar_positions.append(Vector3(cos(angle), 0.0, sin(angle)) * orbit_radii[index])
 		planets[index].scale = Vector3.ONE * planet_radii[index]
 	battle.configure(planets[1], ship)
-	_reset()
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	_reset(false)
+	game_menu.show_main()
 
 
 func _update_occluders() -> void:
@@ -203,13 +218,19 @@ func _update_occluders() -> void:
 			occluder.visible = not travelling and index == current_planet
 
 
-func _reset() -> void:
+func _reset(start_intro := true) -> void:
+	_gameplay_started = start_intro
+	_shader_time = 0.0
+	RenderingServer.global_shader_parameter_set("game_time", _shader_time)
 	_sun_final_started = false
 	_sun_collapse_elapsed = -1.0
 	_collapse_dialogue_countdown = -1.0
 	_sun_blue_blend = 0.0
 	_planet3_surface_material.roughness = 1.0
 	_sun_material.set_shader_parameter("wave_amplitude", _sun_normal_wave_amplitude)
+	_sun_wave_phase = 0.0
+	_sun_material.set_shader_parameter("wave_speed", _sun_normal_wave_speed)
+	_sun_material.set_shader_parameter("wave_time", _sun_wave_phase)
 	sun.custom_aabb = _sun_normal_aabb
 	var halo := sun.get_node("GlowShell") as MeshInstance3D
 	halo.scale = _sun_normal_halo_scale
@@ -286,7 +307,7 @@ func _reset() -> void:
 	rocket_audio.stop()
 	_launch_started = false
 	_rocket_audio_enabled = false
-	_intro_in_progress = true
+	_intro_in_progress = start_intro
 	_intro_wait_altitude = -1.0
 	if _intro_music_fade != null:
 		_intro_music_fade.kill()
@@ -331,9 +352,64 @@ func _reset() -> void:
 	ship.descend_input_enabled = false
 	ship.horizontal_input_enabled = false
 	ship.allow_parked_view = false
-	terminal.play_dialogue(IntroDialogue.MESSAGES)
 	_update_forest_ambience()
 	forest_ambience.play()
+	if start_intro:
+		_begin_intro()
+	else:
+		ship.set_process(false)
+		terminal.stop_dialogue()
+		terminal.set_process_input(false)
+
+
+func _begin_intro() -> void:
+	_gameplay_started = true
+	_intro_in_progress = true
+	ship.set_process(true)
+	terminal.set_process(true)
+	terminal.set_process_input(true)
+	terminal.play_dialogue(IntroDialogue.MESSAGES)
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
+func _pause_game() -> void:
+	get_tree().paused = true
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+
+func _resume_game() -> void:
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if _solar_death else Input.MOUSE_MODE_CAPTURED
+	get_tree().paused = false
+
+
+func _return_to_main_menu() -> void:
+	_reset(false)
+	get_tree().paused = false
+	game_menu.show_main()
+
+
+func menu_expects_mouse_capture() -> bool:
+	return _gameplay_started and not _solar_death
+
+
+func menu_can_skip_cutscene() -> bool:
+	return _intro_in_progress or departure.active or planet_3_departure.active or travelling
+
+
+func _skip_active_cutscene() -> void:
+	if _intro_in_progress:
+		terminal.finish_dialogue()
+	elif planet_3_departure.active:
+		planet_3_departure.skip_to_crash()
+	elif departure.active:
+		_skip_arrival_cutscene()
+	elif travelling and _travel_tween != null:
+		_travel_tween.custom_step(10000.0)
+
+
+func _set_camera_sensitivity(value: float) -> void:
+	var multiplier := lerpf(0.5, 1.0, (value - 1.0) / 4.0) if value <= 5.0 else lerpf(1.0, 2.0, (value - 5.0) / 5.0)
+	mouse_sensitivity = _base_mouse_sensitivity * multiplier
 
 
 func _on_intro_message_finished(index: int) -> void:
@@ -427,7 +503,7 @@ func _begin_planet_1_phase_2() -> void:
 func _on_planet_1_fuel_collected() -> void:
 	if current_planet == 1 and _planet2_cells_spawned:
 		_planet2_cells_collected = true
-		await get_tree().create_timer(0.25).timeout
+		await get_tree().create_timer(0.25, false).timeout
 		if current_planet == 1 and _planet2_cells_collected and not travelling:
 			terminal.stop_dialogue()
 			_travel_to_next_planet()
@@ -436,7 +512,7 @@ func _on_planet_1_fuel_collected() -> void:
 		return
 	_fuel_departure_pending = true
 	# Let the final collection animation and 10/10 counter read before departure.
-	await get_tree().create_timer(0.25).timeout
+	await get_tree().create_timer(0.25, false).timeout
 	if current_planet != 0 or travelling or not _fuel_cells_spawned or not _planet_1_phase_2_started:
 		return
 	if _explosion_dialogue_in_progress:
@@ -508,6 +584,14 @@ func _fade_out_planet_1_music() -> void:
 
 
 func _process(delta: float) -> void:
+	_shader_time += delta
+	RenderingServer.global_shader_parameter_set("game_time", _shader_time)
+	# Integrate speed so changing it accelerates the waves without jumping phase.
+	var wave_speed: float = _sun_material.get_shader_parameter("wave_speed")
+	_sun_wave_phase += delta * wave_speed
+	_sun_material.set_shader_parameter("wave_time", _sun_wave_phase)
+	if not _gameplay_started:
+		return
 	if _solar_death:
 		return
 	if _sun_final_started:
@@ -630,6 +714,7 @@ func _setup_sun_flash() -> void:
 	_sun_material = sun.material_override.duplicate() as ShaderMaterial
 	sun.material_override = _sun_material
 	_sun_normal_wave_amplitude = _sun_material.get_shader_parameter("wave_amplitude")
+	_sun_normal_wave_speed = _sun_material.get_shader_parameter("wave_speed")
 	_sun_normal_aabb = sun.custom_aabb
 	var halo := sun.get_node("GlowShell") as MeshInstance3D
 	_sun_normal_halo_scale = halo.scale
@@ -729,6 +814,7 @@ func _begin_sun_collapse() -> void:
 func _step_sun_collapse(delta: float) -> void:
 	_sun_collapse_elapsed = minf(_sun_collapse_elapsed + delta, sun_collapse_duration)
 	var t := _sun_collapse_elapsed
+	_sun_material.set_shader_parameter("wave_speed", _sun_normal_wave_speed * lerpf(1.0, 10.0, smoothstep(0.0, 10.0, t)))
 	_sun_blue_blend = smoothstep(0.0, sun_collapse_duration, t)
 	_planet3_surface_material.roughness = lerpf(1.0, 0.5, _sun_blue_blend)
 	sun_radius = lerpf(_sun_collapse_start_radius, sun_final_radius, _sun_blue_blend)
@@ -891,6 +977,8 @@ func _skip_checkpoint() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not _gameplay_started:
+		return
 	if _solar_death:
 		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_P:
 			_reset()
@@ -911,8 +999,6 @@ func _unhandled_input(event: InputEvent) -> void:
 	if planet_3_departure.active and planet_3_departure.camera_controls_enabled:
 		if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 			planet_3_departure.rotate_camera(-event.relative.x * mouse_sensitivity, -event.relative.y * mouse_sensitivity)
-		elif event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
-			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		return
@@ -922,14 +1008,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 			_crash_camera_direction = _crash_camera_direction.rotated(ship.radial_up, -event.relative.x * mouse_sensitivity).normalized()
 			camera_pitch = clampf(camera_pitch - event.relative.y * mouse_sensitivity, -1.4, 1.4)
-		elif event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
-			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		return
 	if not ship.controls_enabled:
-		if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
-			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED and ship.bound_planet != null:
 		if not ship.mouse_look_enabled:
@@ -946,8 +1028,6 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventKey and event.pressed and not event.echo:
 		if event.physical_keycode == KEY_Q:
 			_begin_launch_sequence()
-		elif event.keycode == KEY_ESCAPE:
-			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 
 
@@ -1396,6 +1476,6 @@ func _on_player_destroyed() -> void:
 	rocket_audio.stop()
 	_rocket_audio_enabled = false
 	player_death_explosion_audio.play()
-	await get_tree().create_timer(1.2).timeout
+	await get_tree().create_timer(1.2, false).timeout
 	if _player_death_pending and not _solar_death:
 		_show_solar_death()

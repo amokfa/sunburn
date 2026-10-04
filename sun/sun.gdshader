@@ -1,4 +1,5 @@
 shader_type spatial;
+global uniform float game_time;
 render_mode unshaded, cull_disabled, fog_disabled;
 
 uniform sampler2D noise_texture : repeat_enable, filter_linear_mipmap;
@@ -13,7 +14,9 @@ uniform vec4 spot_color : source_color = vec4(0.65, 0.19, 0.025, 1.0);
 uniform float spot_strength : hint_range(0.0, 1.0) = 0.65;
 uniform float wave_amplitude : hint_range(0.0, 1.0, 0.001) = 0.012;
 uniform float wave_frequency : hint_range(1.0, 60.0) = 18.0;
-uniform float wave_speed : hint_range(0.0, 4.0) = 0.65;
+uniform float wave_speed : hint_range(0.0, 20.0) = 0.65;
+// Runtime supplies integrated phase; standalone scene previews use the clock.
+uniform float wave_time = -1.0;
 uniform float spot_scale : hint_range(0.1, 8.0) = 1.8;
 uniform vec2 spot_velocity_a = vec2(0.006, -0.0036);
 uniform vec2 spot_velocity_b = vec2(-0.003, 0.0075);
@@ -37,7 +40,7 @@ float surface_noise(sampler2D source, vec3 p, float scale, vec2 drift) {
 void vertex() {
 	vec3 p = normalize(VERTEX);
 	surface_direction = p;
-	float t = TIME * wave_speed;
+	float t = wave_time >= 0.0 ? wave_time : game_time * wave_speed;
 	float wave = sin(dot(p, vec3(1.0, 0.7, 0.3)) * wave_frequency + t);
 	wave += 0.5 * sin(dot(p, vec3(-0.4, 0.8, 1.0)) * wave_frequency * 1.7 - t * 1.3);
 	wave += 0.25 * sin(dot(p, vec3(0.6, -1.0, 0.5)) * wave_frequency * 2.5 + t * 0.8);
@@ -47,8 +50,8 @@ void vertex() {
 
 void fragment() {
 	vec3 p = normalize(surface_direction);
-	float field_a = surface_noise(noise_texture, p, spot_scale, TIME * spot_velocity_a);
-	float field_b = surface_noise(noise_texture_b, p, spot_scale, TIME * spot_velocity_b);
+	float field_a = surface_noise(noise_texture, p, spot_scale, game_time * spot_velocity_a);
+	float field_b = surface_noise(noise_texture_b, p, spot_scale, game_time * spot_velocity_b);
 	// The unit spherical direction supplies a continuous phase offset, including
 	// across the longitude seam and at the poles. Repeated texture regions no
 	// longer switch between A and B in lockstep.
@@ -57,7 +60,7 @@ void fragment() {
 		+ 0.3 * sin(dot(p, vec3(3.7, -2.9, 4.1)))
 	);
 	// A -> B -> A over one period, with different timing around the sphere.
-	float blend = 0.5 + 0.5 * sin(TAU * TIME / max(spot_blend_period, 0.001) - PI * 0.5 + phase_offset);
+	float blend = 0.5 + 0.5 * sin(TAU * game_time / max(spot_blend_period, 0.001) - PI * 0.5 + phase_offset);
 	float spots = mix(field_a, field_b, blend);
 	float darkness = smoothstep(spot_threshold - spot_softness * 0.5, spot_threshold + spot_softness * 0.5, spots);
 	vec3 surface_color = mix(yellow_color.rgb, red_color.rgb, color_progress);

@@ -1,41 +1,6 @@
 [gd_resource type="ShaderMaterial" format=3 uid="uid://bvvba1c2nd6ga"]
 
 [ext_resource type="Shader" uid="uid://dxwadh1ujmuvd" path="res://sky/starfield.gdshader" id="1"]
-[ext_resource type="Texture2D" uid="uid://bmibkxe42f5to" path="res://sky/StarField.jpg" id="2"]
-[ext_resource type="Texture2D" uid="uid://dvaqrjr7d1sw8" path="res://sky/Milkyway.jpg" id="3"]
-
-[sub_resource type="FastNoiseLite" id="NoiseA"]
-seed = 4242
-frequency = 0.045
-fractal_octaves = 4
-
-[sub_resource type="NoiseTexture2D" id="TextureA"]
-noise = SubResource("NoiseA")
-seamless = true
-
-[sub_resource type="FastNoiseLite" id="NoiseB"]
-seed = 9271
-frequency = 0.045
-fractal_octaves = 4
-
-[sub_resource type="NoiseTexture2D" id="TextureB"]
-noise = SubResource("NoiseB")
-seamless = true
 
 [resource]
 shader = ExtResource("1")
-shader_parameter/starfield = ExtResource("2")
-shader_parameter/milkyway = ExtResource("3")
-shader_parameter/milkyway_brightness = 0.2130000101175
-shader_parameter/noise_texture = SubResource("TextureA")
-shader_parameter/noise_texture_b = SubResource("TextureB")
-shader_parameter/sky_brightness = 1.8710000888725
-shader_parameter/flash_intensity = 0.0
-shader_parameter/flash_color = Color(1, 1, 1, 1)
-shader_parameter/shimmer_scale = 8.0
-shader_parameter/velocity_a = Vector2(0.012, -0.008)
-shader_parameter/velocity_b = Vector2(-0.008, 0.015)
-shader_parameter/blend_period = 12.0
-shader_parameter/phase_variation = 0.7
-shader_parameter/minimum_brightness = 0.45
-shader_parameter/maximum_brightness = 1.35

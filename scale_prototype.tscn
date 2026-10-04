@@ -28,6 +28,7 @@
 [ext_resource type="AudioStream" uid="uid://bcu6wsl63q34q" path="res://assets/sfx/sun.mp3" id="27_sun_audio"]
 [ext_resource type="PackedScene" path="res://combat/warzone_audio.tscn" id="28_warzone_audio"]
 [ext_resource type="Script" uid="uid://2ka8k7whcsv" path="res://ship/movement_settings.gd" id="movement_settings"]
+[ext_resource type="PackedScene" path="res://ui/game_menu.tscn" id="29_game_menu"]
 
 [sub_resource type="Sky" id="Sky"]
 sky_material = ExtResource("2_sky")
@@ -124,7 +125,7 @@ script = ExtResource("9_perf")
 [node name="AssistantTerminal" parent="." unique_id=449289178 instance=ExtResource("10_terminal")]
 
 [node name="SunExpansionDelay" type="Timer" parent="." unique_id=1794205865]
-wait_time = 60.0
+wait_time = 30.0
 one_shot = true
 
 [node name="Planet1FuelCells" parent="." unique_id=972960667 instance=ExtResource("15_fuel_cells")]
@@ -198,3 +199,5 @@ volume_db = -80.0
 bus = &"sun"
 
 [node name="WarzoneAudio" parent="." unique_id=930151519 instance=ExtResource("28_warzone_audio")]
+
+[node name="GameMenu" parent="." instance=ExtResource("29_game_menu")]

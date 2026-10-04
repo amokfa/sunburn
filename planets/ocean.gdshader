@@ -1,4 +1,5 @@
 shader_type spatial;
+global uniform float game_time;
 render_mode shadows_disabled;
 
 // Adapted from wanderer's lake: four drifting noise normals and Fresnel color.
@@ -33,7 +34,7 @@ void vertex() {
 }
 
 vec2 wave_slopes(vec2 uv) {
-	float t = TIME * wave_speed;
+	float t = game_time * wave_speed;
 	vec2 n1 = texture(noise1, uv + vec2(0.0, -t)).rg;
 	vec2 n2 = texture(noise2, uv * 0.73 + vec2(0.0, t * 0.9)).rg;
 	vec2 n3 = texture(noise1, uv + vec2(-t * 1.1, 0.0) + vec2(0.37, 0.19)).rg;

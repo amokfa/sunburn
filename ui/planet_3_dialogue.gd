@@ -29,7 +29,7 @@ const ON_COLLAPSE := [
 	{"speaker": "BX", "text": "It looks like it's collapsing into a blue dwarf now"},
 	{"speaker": "Lars", "text": "So it's over?"},
 	{"speaker": "BX", "text": "The expansion is. It won't reach us now."},
-	{"speaker": "Lars", "text": "So we're safe?"},
+	{"speaker": "Lars", "text": "So we're safe"},
 	{"speaker": "BX", "text": "We're safer here"},
 	{"speaker": "BX", "text": "There's enough light to see it. Not enough to power the ship. Or keep this planet warm."},
 	{"speaker": "Lars", "text": "Then we wait. Someone might find us."},
@@ -48,5 +48,6 @@ const ON_COLLAPSE := [
 	{"speaker": "Lars", "text": "The rain, I think. Stupid thing to miss."},
 	{"speaker": "BX", "text": "Why?"},
 	{"speaker": "Lars", "text": "I used to wish it would stop. Now I'd give anything to hear it again."},
-	{"speaker": "BX", "text": "Tell me what it sounded li", "timed": true, "event": "assistant_power_lost"}
+	{"speaker": "BX", "text": "Tell me what it sounded li", "timed": true, "auto_advance_seconds": 2.},
+	{"speaker": "BX", "text": "Are you there?", "timed": true, "event": "assistant_power_lost"},
 ]

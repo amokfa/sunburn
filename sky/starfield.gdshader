@@ -1,4 +1,5 @@
 shader_type sky;
+global uniform float game_time;
 
 uniform sampler2D starfield : source_color, repeat_enable, filter_linear_mipmap;
 uniform sampler2D milkyway : source_color, repeat_enable, filter_linear_mipmap;
@@ -28,13 +29,13 @@ float spherical_noise(sampler2D source, vec3 p, vec2 drift) {
 
 void sky() {
 	vec3 p = normalize(EYEDIR);
-	float field_a = spherical_noise(noise_texture, p, TIME * velocity_a);
-	float field_b = spherical_noise(noise_texture_b, p, TIME * velocity_b);
+	float field_a = spherical_noise(noise_texture, p, game_time * velocity_a);
+	float field_b = spherical_noise(noise_texture_b, p, game_time * velocity_b);
 	float phase_offset = TAU * phase_variation * (
 		dot(p, vec3(1.3, 1.7, -1.1))
 		+ 0.3 * sin(dot(p, vec3(3.7, -2.9, 4.1)))
 	);
-	float blend = 0.5 + 0.5 * sin(TAU * TIME / max(blend_period, 0.001) - PI * 0.5 + phase_offset);
+	float blend = 0.5 + 0.5 * sin(TAU * game_time / max(blend_period, 0.001) - PI * 0.5 + phase_offset);
 	float field = mix(field_a, field_b, blend);
 	float brightness = mix(minimum_brightness, maximum_brightness, smoothstep(0.2, 0.8, field));
 	// Match Wanderer's starfield orientation and preserve the tiny stars.
