@@ -20,7 +20,7 @@
 [ext_resource type="Texture2D" uid="uid://dhb0ph8d02ktu" path="res://assets/you_died.jpg" id="18_death_image"]
 [ext_resource type="AudioStream" uid="uid://chk2tw6vji0kg" path="res://assets/sfx/you_died.mp3" id="19_death_audio"]
 [ext_resource type="Script" uid="uid://kjlmgswxeo25" path="res://ship/planet_departure.gd" id="20_departure"]
-[ext_resource type="AudioStream" uid="uid://h6fcohs8nhwo" path="res://assets/sfx/mus/mus3.mp3" id="21_music3"]
+[ext_resource type="AudioStream" path="res://assets/sfx/mus/mus3.ogg" id="21_music3"]
 [ext_resource type="AudioStream" uid="uid://bq8snj1scn8jf" path="res://assets/sfx/explosion2.mp3" id="22_hit_audio"]
 [ext_resource type="AudioStream" uid="uid://b4fnwctwyhp23" path="res://assets/sfx/explosion1.mp3" id="23_death_explosion"]
 [ext_resource type="Script" uid="uid://bn0gdb108wh4o" path="res://ship/planet_3_departure.gd" id="25_departure3"]

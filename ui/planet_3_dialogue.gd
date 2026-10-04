@@ -29,7 +29,7 @@ const ON_COLLAPSE := [
 	{"speaker": "BX", "text": "It appears to be collapsing into a blue dwarf."},
 	{"speaker": "Lars", "text": "So it's over?"},
 	{"speaker": "BX", "text": "The expansion has stopped. It will not reach us."},
-	{"speaker": "Lars", "text": "So we're safe?"},
+	{"speaker": "Lars", "text": "So we're safe"},
 	{"speaker": "BX", "text": "We are safer here."},
 	{"speaker": "BX", "text": "It gives off enough light to see by, but not enough to power the ship or keep this planet warm."},
 	{"speaker": "Lars", "text": "Then we wait. Someone might find us."},

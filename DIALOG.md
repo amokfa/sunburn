@@ -89,4 +89,4 @@ Lars: Sure.
 BX: ThreatWatch online.
 Lars: All right, let's do it.
 BX: Best of luck.
-The ship descends smoothly. Full targeting and damage resume; mus3.mp3 starts. Player missile hits play explosion2.mp3. The final wreck explosion plays explosion1.mp3, then the death image fades in with you_died.mp3.
+The ship descends smoothly. Full targeting and damage resume; mus3.ogg starts. Player missile hits play explosion2.mp3. The final wreck explosion plays explosion1.mp3, then the death image fades in with you_died.mp3.

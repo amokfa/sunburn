@@ -110,7 +110,8 @@ var _planet3_surface_material: StandardMaterial3D
 
 @export_group("Sun expansion")
 @export var sun_expansion_time_to_planet_1: float = 120.0
-@export var planet_2_sun_approach_time: float = 175.0
+@export var planet_2_sun_approach_time: float = 200.0
+@export var planet_2_fight_duration: float = 175.0
 @export var planet_2_sun_approach_gap: float = 200.0
 @export var planet_2_final_100m_time: float = 120.0
 @export var planet_3_sun_approach_time: float = 120.0
@@ -633,7 +634,7 @@ func _process(delta: float) -> void:
 	if current_planet == 1 and planet_2_music.playing and not travelling:
 		if not _planet2_overheat_started:
 			_planet2_fight_elapsed += delta
-			if _planet2_fight_elapsed >= 150.0:
+			if _planet2_fight_elapsed >= planet_2_fight_duration:
 				_begin_planet2_overheat(false)
 		elif not _planet2_dialogue_started:
 			_planet2_overheat_elapsed += delta
